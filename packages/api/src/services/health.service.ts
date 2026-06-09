@@ -5,7 +5,7 @@ export function getHealthStatus(): HealthStatus {
   return {
     status: "ok",
     service: "pulso-nutricional-api",
-    version: "0.0.0-mc2",
+    version: "0.0.0-mc3",
     timestamp: new Date().toISOString(),
     environment: process.env["NODE_ENV"] ?? "development",
   };

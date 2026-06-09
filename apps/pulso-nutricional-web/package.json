@@ -11,6 +11,7 @@
     "lint": "echo \"[pulso-nutricional-web] lint placeholder — ESLint se configurará en un microciclo posterior\""
   },
   "dependencies": {
+    "@pulso/shared": "workspace:*",
     "next": "^15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -205,9 +205,10 @@
 |------------|------------|
 | MC-0       | ✅ Completado (mergeado en `main`) |
 | MC-1       | ✅ Completado (mergeado en `main`) |
-| MC-2       | **En curso** (API mínima) |
-| MC-3..MC-12| Pendientes |
+| MC-2       | ✅ Completado (mergeado en `main`) |
+| MC-3       | **En curso** (Pulso Nutricional PC: pacientes y ficha) |
+| MC-4..MC-12| Pendientes |
 
-> **MC-2 frena aquí.** No se avanza a MC-3 sin una nueva indicación explícita.
+> **MC-3 frena aquí.** No se avanza a MC-4 sin una nueva indicación explícita.
 > La decisión técnica de esta etapa quedó registrada en
-> [`../decisiones/0003-api-minima.md`](../decisiones/0003-api-minima.md).
+> [`../decisiones/0004-pacientes-ficha-minima.md`](../decisiones/0004-pacientes-ficha-minima.md).
