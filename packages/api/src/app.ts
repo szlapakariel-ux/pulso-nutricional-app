@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import { healthRoutes } from "./routes/health.routes.js";
+import { patientsRoutes } from "./routes/patients.routes.js";
 
 /**
  * Crea y configura la instancia de Fastify.
@@ -15,6 +16,7 @@ export function buildApp() {
 
   // Rutas
   app.register(healthRoutes);
+  app.register(patientsRoutes);
 
   return app;
 }

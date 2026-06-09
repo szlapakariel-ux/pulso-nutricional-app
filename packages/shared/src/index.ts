@@ -19,3 +19,14 @@ export type {
 // Tipos de la API
 export type { HealthStatus, HealthResponse } from "./types/health.js";
 export type { ApiErrorResponse } from "./types/api.js";
+
+// Tipos de pacientes (MC-3 — datos mock)
+export type {
+  PatientId,
+  ProfessionalId,
+  PatientStatus,
+  PatientSummary,
+  PatientDetail,
+  ProfessionalSummary,
+  PatientVisibilityNote,
+} from "./types/patient.js";
