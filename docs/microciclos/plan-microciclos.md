@@ -206,9 +206,9 @@
 | MC-0       | ✅ Completado (mergeado en `main`) |
 | MC-1       | ✅ Completado (mergeado en `main`) |
 | MC-2       | ✅ Completado (mergeado en `main`) |
-| MC-3       | **En curso** (Pulso Nutricional PC: pacientes y ficha) |
+| MC-3       | ✅ Completado (mergeado en `main`) |
 | MC-4..MC-12| Pendientes |
 
-> **MC-3 frena aquí.** No se avanza a MC-4 sin una nueva indicación explícita.
+> **MC-3 completado.** No se avanza a MC-4 sin una nueva indicación explícita.
 > La decisión técnica de esta etapa quedó registrada en
 > [`../decisiones/0004-pacientes-ficha-minima.md`](../decisiones/0004-pacientes-ficha-minima.md).
