@@ -204,9 +204,10 @@
 | Microciclo | Estado     |
 |------------|------------|
 | MC-0       | ✅ Completado (mergeado en `main`) |
-| MC-1       | **En curso** (estructura técnica inicial) |
-| MC-2..MC-12| Pendientes |
+| MC-1       | ✅ Completado (mergeado en `main`) |
+| MC-2       | **En curso** (API mínima) |
+| MC-3..MC-12| Pendientes |
 
-> **MC-1 frena aquí.** No se avanza a MC-2 sin una nueva indicación explícita.
+> **MC-2 frena aquí.** No se avanza a MC-3 sin una nueva indicación explícita.
 > La decisión técnica de esta etapa quedó registrada en
-> [`../decisiones/0002-estructura-tecnica-inicial.md`](../decisiones/0002-estructura-tecnica-inicial.md).
+> [`../decisiones/0003-api-minima.md`](../decisiones/0003-api-minima.md).
