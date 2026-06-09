@@ -1,0 +1,31 @@
+# Dependencias
+node_modules/
+
+# Builds / artefactos
+dist/
+.next/
+out/
+build/
+
+# Caché de herramientas
+.turbo/
+*.tsbuildinfo
+
+# Generado por Next.js (se regenera con `next dev`/`next build`)
+next-env.d.ts
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Variables de entorno (en MC-1 no debe haber ninguna con valores reales)
+.env
+.env.*
+!.env.example
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

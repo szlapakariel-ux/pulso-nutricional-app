@@ -1,0 +1,16 @@
+{
+  "name": "@pulso/pulso-nutricional-mobile",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pulso Nutricional Mobile — versión reducida del profesional. En MC-1 es solo placeholder/documentación (no se construye app mobile real).",
+  "type": "module",
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"[pulso-nutricional-mobile] lint placeholder — ESLint se configurará en un microciclo posterior\"",
+    "build": "echo \"[pulso-nutricional-mobile] sin build — app mobile no implementada en MC-1 (ver README)\""
+  },
+  "devDependencies": {
+    "@pulso/config": "workspace:*",
+    "typescript": "^5.7.2"
+  }
+}

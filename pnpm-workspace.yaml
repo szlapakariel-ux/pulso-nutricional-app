@@ -1,0 +1,5 @@
+# Workspaces del monorepo de Pulso Nutricional.
+# Las apps son las tres experiencias; los packages son código compartido / API.
+packages:
+  - "apps/*"
+  - "packages/*"

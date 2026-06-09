@@ -1,0 +1,17 @@
+{
+  "name": "@pulso/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Configuración compartida del monorepo (tsconfig base). Placeholder de lint para futuros microciclos.",
+  "files": [
+    "tsconfig.base.json"
+  ],
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  },
+  "scripts": {
+    "type-check": "echo \"[config] sin código TS que chequear (solo configuración compartida)\"",
+    "lint": "echo \"[config] lint placeholder — ESLint se configurará en un microciclo posterior\"",
+    "build": "echo \"[config] sin build — paquete de configuración\""
+  }
+}

@@ -203,7 +203,10 @@
 
 | Microciclo | Estado     |
 |------------|------------|
-| MC-0       | **En curso** (este microciclo) |
-| MC-1..MC-12| Pendientes |
+| MC-0       | ✅ Completado (mergeado en `main`) |
+| MC-1       | **En curso** (estructura técnica inicial) |
+| MC-2..MC-12| Pendientes |
 
-> **MC-0 frena aquí.** No se avanza a MC-1 sin una nueva indicación explícita.
+> **MC-1 frena aquí.** No se avanza a MC-2 sin una nueva indicación explícita.
+> La decisión técnica de esta etapa quedó registrada en
+> [`../decisiones/0002-estructura-tecnica-inicial.md`](../decisiones/0002-estructura-tecnica-inicial.md).

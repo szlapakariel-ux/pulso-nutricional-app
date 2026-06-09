@@ -1,0 +1,21 @@
+{
+  "name": "pulso-nutricional-app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo de Pulso Nutricional — sistema PWA de seguimiento nutricional (estructura técnica inicial, MC-1).",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "type-check": "turbo run type-check",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  }
+}

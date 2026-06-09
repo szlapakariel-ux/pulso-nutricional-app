@@ -1,0 +1,25 @@
+{
+  "name": "@pulso/pulso-nutricional-web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pulso Nutricional PC — panel profesional (placeholder MC-1, sin funcionalidad de negocio).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"[pulso-nutricional-web] lint placeholder — ESLint se configurará en un microciclo posterior\""
+  },
+  "dependencies": {
+    "next": "^15.3.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@pulso/config": "workspace:*",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2"
+  }
+}
