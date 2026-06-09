@@ -1,0 +1,18 @@
+{
+  "name": "@pulso/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "API común de Pulso Nutricional. Paquete preparado en MC-1, SIN servidor ni endpoints reales (eso llega en MC-2).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"[api] lint placeholder — ESLint se configurará en un microciclo posterior\"",
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@pulso/config": "workspace:*",
+    "typescript": "^5.7.2"
+  }
+}
