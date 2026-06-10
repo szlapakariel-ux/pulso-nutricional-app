@@ -210,9 +210,9 @@
 | MC-4       | ✅ Completado (mergeado en `main`) |
 | MC-5       | ✅ Completado (mergeado en `main`) |
 | MC-6       | ✅ Completado (mergeado en `main`) |
-| MC-7       | 🔄 En curso (rama `feat/mc-7-registros-paciente-revisables`) |
+| MC-7       | ✅ Completado (mergeado en `main`) |
 | MC-8..MC-12| Pendientes |
 
-> **MC-7 en curso.** No se avanza a MC-8 sin cerrar MC-7 y recibir indicación
-> explícita. La decisión técnica de MC-6 quedó registrada en
-> [`../decisiones/0007-mi-pulso-hoy-paciente.md`](../decisiones/0007-mi-pulso-hoy-paciente.md).
+> **MC-7 completado.** No se avanza a MC-8 sin una nueva indicación explícita.
+> La decisión técnica de esta etapa quedó registrada en
+> [`../decisiones/0008-registros-paciente-revisables.md`](../decisiones/0008-registros-paciente-revisables.md).
