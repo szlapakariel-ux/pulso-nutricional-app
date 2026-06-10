@@ -31,6 +31,23 @@ export type {
   PatientVisibilityNote,
 } from "./types/patient.js";
 
+// Tipos de planes alimentarios y agenda profesional (MC-5 — datos mock)
+export type {
+  MealPlanId,
+  AgendaTemplateId,
+  AgendaItemId,
+  MealPlanStatus,
+  AgendaItemType,
+  DayMoment,
+  MealPlanItem,
+  MealPlanSummary,
+  MealPlanDetail,
+  PatientPlanAssignment,
+  PatientAgendaItem,
+  PatientDailyAgenda,
+  PlanVisibilityNote,
+} from "./types/meal-plan.js";
+
 // Tipos de consultas y mediciones profesionales (MC-4 — datos mock)
 export type {
   ConsultationId,
