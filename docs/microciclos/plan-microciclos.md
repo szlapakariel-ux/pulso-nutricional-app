@@ -535,15 +535,15 @@
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-1 | ✅ Completado (mergeado en `main`) |
 | MC-PATIENT-ID-1 | ✅ Completado (mergeado en `main`) |
-| MC-MIPULSO-2 | 🚧 En curso (rama `claude/beautiful-wozniak-9gt40d`) |
+| MC-MIPULSO-2 | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-2 en curso.** Smoke test de la cadena API del paciente demo
-> (`smoke:mi-pulso:railway`) y playbook de verificación manual en el navegador.
+> **MC-MIPULSO-2 completado.** Mi Pulso ya tiene smoke test y playbook
+> operativo para verificar modo API antes de deploy.
 > Script: [`../../scripts/smoke-mi-pulso-railway.mjs`](../../scripts/smoke-mi-pulso-railway.mjs).
 > Docs: [`../deploy/mi-pulso-api-readonly-playbook.md`](../deploy/mi-pulso-api-readonly-playbook.md),
 > [`../decisiones/0024-mi-pulso-smoke-playbook.md`](../decisiones/0024-mi-pulso-smoke-playbook.md).
-> No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> MC-MIPULSO-2 completado. Mi Pulso ya tiene smoke test y playbook operativo para verificar modo API antes de deploy. No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
