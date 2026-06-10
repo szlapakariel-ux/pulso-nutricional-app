@@ -308,7 +308,9 @@ function HoyApiView() {
     } finally {
       setTodayLoading(false);
     }
-  }, [auth]);
+  // auth.logout has a stable reference (useCallback with [] deps in usePatientAuth).
+  // Using [auth] caused a new loadToday on every render → infinite fetch loop.
+  }, [auth.logout]);
 
   // Cuando hay usuario autenticado, cargar la vista Hoy.
   useEffect(() => {
