@@ -343,6 +343,40 @@
 
 ---
 
+## MC-MIPULSO-1 — Mi Pulso: lectura inicial desde la API Railway
+
+- **Objetivo:** conectar la app del paciente (`apps/mi-pulso-web`) a la API
+  Railway en modo lectura inicial para el paciente demo, manteniendo el modo
+  mock como default y fallback seguro.
+- **Alcance permitido:**
+  - `apps/mi-pulso-web/lib/data-config.ts` — modo `mock` (default) | `api` vía
+    `NEXT_PUBLIC_PULSO_DATA_MODE` / `NEXT_PUBLIC_PULSO_API_BASE_URL`.
+  - `apps/mi-pulso-web/lib/api-client.ts` — cliente HTTP solo lectura
+    (`login`, `getMe`, `getToday`).
+  - `apps/mi-pulso-web/lib/use-patient-auth.ts` — login demo paciente + token
+    en `localStorage`.
+  - `apps/mi-pulso-web/lib/patient-mapping.ts` — mapping demo `userId →
+    patientId` (espejo documentado del guard del backend).
+  - `apps/mi-pulso-web/app/today-content.tsx` + `hoy-view.tsx` — UI con rama
+    mock (selector demo) vs api (login + carga desde API), indicador de modo.
+  - `.env.example`, ADR 0022, doc `docs/deploy/mi-pulso-api-readonly.md`.
+- **Qué NO tocar:** no web profesional, no backend API (código), no Railway,
+  no Postgres, no Prisma schema, no seed, no escritura (sin registros), no
+  review queue, no deploy de Mi Pulso, no dominio propio, no CORS de producción,
+  no avanzar a MC-11 ni MC-12.
+- **Endpoints consumidos (solo lectura):** `POST /auth/login`, `GET /auth/me`,
+  `GET /patients/:patientId/today`.
+- **Bloqueo conocido:** `/auth/me` devuelve userId, no patientId. Se replica el
+  mapping demo documentado en el frontend; el fix correcto (API exponiendo
+  patientId) queda para un próximo ciclo.
+- **Criterios de aceptación:**
+  - `pnpm type-check`, `pnpm build`, `pnpm lint` sin error.
+  - Modo mock: Mi Pulso funciona como antes (selector demo + mocks).
+  - Modo api: login demo paciente, `/auth/me` y vista Hoy desde API; sin
+    mezclar mock/API; token nunca impreso completo; 401 limpia sesión.
+
+---
+
 ## MC-API-CORS-CODE — CORS mínimo en la API para la web profesional
 
 - **Objetivo:** habilitar CORS mínimo y explícito en la API Fastify para que
@@ -446,10 +480,11 @@
 | MC-WEB-2   | ✅ Completado (desplegado en Railway) |
 | MC-WEB-3   | ✅ Completado (mergeado en `main`) |
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
+| MC-MIPULSO-1 | 🚧 En curso (rama `feat/mc-mipulso-1-api-readonly`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
-| Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
+| Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
 > **MC-WEB-3 completado.** Web profesional Railway tiene smoke test y playbook operativo.
 > Script: [`../../scripts/smoke-web-profesional-railway.mjs`](../../scripts/smoke-web-profesional-railway.mjs).
