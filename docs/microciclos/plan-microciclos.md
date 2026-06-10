@@ -589,13 +589,18 @@
 | MC-PATIENT-ID-1 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-2 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-RWY-0 | ✅ Completado (mergeado en `main`) |
-| MC-MIPULSO-FE-1  | 🔄 En curso |
+| MC-MIPULSO-FE-1  | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-FE-1 en curso.** Fix frontend: `usePatientAuth.login()` ahora
+> **MC-MIPULSO-FE-1 completado.** Fix frontend: `usePatientAuth.login()` ahora
 > llama `client.getMe()` después del login para obtener `patientId` desde
-> `/auth/me`. No se avanza a deploy real de Mi Pulso, ampliación CORS, dominio,
-> MC-11 ni MC-12 sin una nueva indicación explícita.
+> `/auth/me` (antes usaba `response.user` de `POST /auth/login`, que no incluye
+> `patientId`). Con esto la vista Hoy carga desde `GET /patients/:id/today` sin
+> quedar atascada en "Cargando tu día...".
+> Docs: [`../decisiones/0026-mi-pulso-fe-fix-patient-id-login.md`](../decisiones/0026-mi-pulso-fe-fix-patient-id-login.md).
+> Queda pendiente el **redeploy de `mi-pulso-web`** en Railway para que el fix
+> llegue a producción (`NEXT_PUBLIC_*` se inlinan en build → requiere rebuild).
+> MC-MIPULSO-FE-1 completado. Mi Pulso ya obtiene patientId desde /auth/me después del login. Queda pendiente redeploy de mi-pulso-web para llevar el fix a producción. No se avanza a dominio, Play Store, MC-11 ni MC-12 sin una nueva indicación explícita.
