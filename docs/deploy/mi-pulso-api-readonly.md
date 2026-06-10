@@ -40,7 +40,7 @@ Si `=api` pero falta `NEXT_PUBLIC_PULSO_API_BASE_URL` → fallback a `mock`.
 | Endpoint | Uso |
 |----------|-----|
 | `POST /auth/login` | Login demo paciente |
-| `GET /auth/me` | Usuario del token (userId, email, role) |
+| `GET /auth/me` | Usuario del token (userId, email, role, **patientId** para pacientes) |
 | `GET /patients/:patientId/today` | Vista Hoy (plan + agenda) |
 
 ## Estados de UI (indicador de modo)
@@ -55,12 +55,11 @@ Manejo de errores:
 - 404 en `/today` → mensaje explícito.
 - Error de red → mensaje claro, no rompe la pantalla.
 
-## 🔴 Bloqueo conocido: patientId no expuesto por la API
+## ✅ Resuelto (MC-PATIENT-ID-1): patientId expuesto en GET /auth/me
 
-`GET /auth/me` devuelve el **userId**, no el **patientId**. El mapping demo
-`userId → patientId` se replica en `lib/patient-mapping.ts` (espejo documentado
-del guard del backend). **Fix correcto (próximo ciclo):** que la API exponga el
-patientId del paciente autenticado (`/auth/me` con `patientId` o `/patients/me`).
+`GET /auth/me` ahora devuelve `patientId` cuando el usuario tiene rol `patient`.
+El mapping demo temporal `lib/patient-mapping.ts` fue eliminado del frontend.
+Ver [ADR 0023](../decisiones/0023-patient-id-en-auth-me.md).
 
 ## Probar modo api en local
 

@@ -377,6 +377,33 @@
 
 ---
 
+## MC-PATIENT-ID-1 — Exponer patientId en GET /auth/me *(ciclo técnico)*
+
+- **Objetivo:** que `GET /auth/me` devuelva el `patientId` del paciente
+  autenticado, eliminando el mapping demo temporal del frontend de Mi Pulso.
+- **Alcance permitido:**
+  - `packages/shared/src/types/auth.ts` — campo `patientId?: string` en
+    `AuthUser`.
+  - `packages/api/src/middleware/auth-guards.ts` — exportar
+    `DEMO_USER_TO_PATIENT_ID` (antes privado).
+  - `packages/api/src/controllers/auth.controller.ts` — `meController` incluye
+    `patientId` en la respuesta cuando `role === "patient"`.
+  - `apps/mi-pulso-web/app/hoy-view.tsx` — `loadToday` usa
+    `auth.user.patientId` directamente.
+  - Eliminar `apps/mi-pulso-web/lib/patient-mapping.ts`.
+  - ADR 0023, actualización de `docs/deploy/mi-pulso-api-readonly.md`.
+- **Qué NO tocar:** no Postgres, no Prisma schema, no seed, no deploy de Mi
+  Pulso, no dominio propio, no escritura de datos de paciente, no avanzar a
+  MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - `pnpm type-check`, `pnpm build`, `pnpm lint` sin error.
+  - `GET /auth/me` con token de paciente devuelve `patientId` en la respuesta.
+  - `patient-mapping.ts` eliminado del frontend.
+  - Profesional autenticado: `patientId` ausente de la respuesta (campo
+    opcional).
+
+---
+
 ## MC-API-CORS-CODE — CORS mínimo en la API para la web profesional
 
 - **Objetivo:** habilitar CORS mínimo y explícito en la API Fastify para que
@@ -481,15 +508,14 @@
 | MC-WEB-3   | ✅ Completado (mergeado en `main`) |
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-1 | ✅ Completado (mergeado en `main`) |
+| MC-PATIENT-ID-1 | 🚧 En curso (rama `claude/beautiful-wozniak-9gt40d`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-1 completado.** Mi Pulso ya tiene conexión API en modo lectura inicial con fallback mock.
-> Riesgo conocido: `/auth/me` devuelve userId y no patientId; existe mapping demo temporal en frontend
-> (`apps/mi-pulso-web/lib/patient-mapping.ts`). Próximo ciclo recomendado: exponer patientId del paciente
-> autenticado desde la API (`/auth/me` con `patientId` o endpoint `/patients/me`).
-> Docs: [`../decisiones/0022-mi-pulso-api-readonly.md`](../decisiones/0022-mi-pulso-api-readonly.md),
+> **MC-PATIENT-ID-1 en curso.** `GET /auth/me` expone `patientId` para pacientes;
+> `patient-mapping.ts` eliminado del frontend. Pendiente de merge.
+> Docs: [`../decisiones/0023-patient-id-en-auth-me.md`](../decisiones/0023-patient-id-en-auth-me.md),
 > [`../deploy/mi-pulso-api-readonly.md`](../deploy/mi-pulso-api-readonly.md).
-> MC-MIPULSO-1 completado. Mi Pulso ya tiene conexión API en modo lectura inicial con fallback mock. No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
