@@ -6,6 +6,7 @@ import { DEMO_PATIENTS } from "./patients.mock";
 import { PatientsView } from "./patients-view";
 import { ConsultationsView } from "./consultations-view";
 import { MealPlanView } from "./meal-plan-view";
+import { ReviewInboxView } from "./review-inbox-view";
 
 const STATUS_LABEL: Record<PatientStatus, string> = {
   active: "Activo",
@@ -16,7 +17,7 @@ const STATUS_LABEL: Record<PatientStatus, string> = {
 export function PanelView() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string>(DEMO_PATIENTS[0]?.id ?? "");
-  const [activeTab, setActiveTab] = useState<"ficha" | "consultas" | "plan">("ficha");
+  const [activeTab, setActiveTab] = useState<"ficha" | "consultas" | "plan" | "revision">("ficha");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -151,6 +152,21 @@ export function PanelView() {
               >
                 Plan y agenda
               </button>
+              <button
+                onClick={() => setActiveTab("revision")}
+                style={{
+                  padding: "0.75rem 1rem",
+                  border: "none",
+                  borderBottom:
+                    activeTab === "revision" ? "2px solid #1677ff" : "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontWeight: activeTab === "revision" ? 600 : 400,
+                  color: activeTab === "revision" ? "#1677ff" : "#666",
+                }}
+              >
+                Revisión
+              </button>
             </div>
 
             {/* Tab content */}
@@ -159,6 +175,7 @@ export function PanelView() {
               <ConsultationsView patient={selected} />
             )}
             {activeTab === "plan" && <MealPlanView patient={selected} />}
+            {activeTab === "revision" && <ReviewInboxView patient={selected} />}
           </>
         ) : (
           <p style={{ color: "#888" }}>Seleccioná un paciente para comenzar.</p>
