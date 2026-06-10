@@ -31,6 +31,17 @@ export type {
   PatientVisibilityNote,
 } from "./types/patient.js";
 
+// Tipos de la bandeja de revisión profesional (MC-8 — datos mock)
+export type {
+  ReviewActionType,
+  ReviewActionId,
+  ReviewActionDraft,
+  ReviewActionPreview,
+  ReviewInboxItem,
+  ReviewInboxResponse,
+  ReviewInboxStats,
+} from "./types/review-inbox.js";
+
 // Tipos de registros del paciente (MC-7 — datos mock, revisables)
 export type {
   MealLogId,
