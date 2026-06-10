@@ -207,9 +207,9 @@
 | MC-1       | ✅ Completado (mergeado en `main`) |
 | MC-2       | ✅ Completado (mergeado en `main`) |
 | MC-3       | ✅ Completado (mergeado en `main`) |
-| MC-4       | **En curso** (Nueva consulta + mediciones profesionales) |
+| MC-4       | ✅ Completado (mergeado en `main`) |
 | MC-5..MC-12| Pendientes |
 
-> **MC-4 en curso.** No se avanza a MC-5 sin una nueva indicación explícita.
+> **MC-4 completado.** No se avanza a MC-5 sin una nueva indicación explícita.
 > La decisión técnica de esta etapa quedó registrada en
 > [`../decisiones/0005-nueva-consulta-mediciones.md`](../decisiones/0005-nueva-consulta-mediciones.md).
