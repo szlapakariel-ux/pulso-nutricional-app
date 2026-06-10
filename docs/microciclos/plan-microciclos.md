@@ -264,6 +264,35 @@
 
 ---
 
+## MC-WEB-1 — Web profesional: lectura de API Railway
+
+- **Objetivo:** conectar el panel profesional (web) a la API Railway en modo
+  lectura inicial sin tocar Mi Pulso, dominio, Postgres ni avanzar a MC-11.
+- **Alcance permitido:**
+  - Cliente HTTP mínimo (`api-client.ts`) con singleton para login, `getPatients()`,
+    `getPatient(id)`, `getMealPlan(id)`, `getAgenda(id)`.
+  - Configuración de modo (`data-config.ts`): `NEXT_PUBLIC_PULSO_DATA_MODE`
+    (`mock` default | `api`), `NEXT_PUBLIC_PULSO_API_BASE_URL`.
+  - Hook React (`use-api-auth.ts`) para estado de autenticación.
+  - UI del panel integrada: login form cuando API activa sin token, carga de
+    pacientes y detalles desde API cuando autenticado, fallback automático a mock
+    si API falla, indicador visual de modo.
+  - `.env.example` documentando variables de configuración.
+  - ADR 0019 documentando la decisión.
+- **Qué NO tocar:** no Railway, no Postgres, no Prisma schema, no seed, no
+  package.json, no pnpm-lock.yaml, no datos reales, no deploy, no Mi Pulso,
+  no dominio, no avanzar a MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - Modo mock (default): experiencia actual sin cambios, usa `DEMO_PATIENTS`.
+  - Modo API: requiere login demo, carga pacientes desde Railway, soporta
+    ficha/plan/agenda por API.
+  - No mezcla datos mock/API en la misma vista.
+  - Fallback automático a mock si API falla (error handling robusto).
+  - Indicador visible en UI mostrando modo activo.
+  - `pnpm type-check`, `pnpm build` y `pnpm lint` pasan sin error.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -337,13 +366,14 @@
 | MC-10.5B   | ✅ Completado (mergeado en `main`) |
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
+| MC-WEB-1   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
-| MC-11..MC-12| Pendientes |
+| MC-11, MC-12 | Pendientes |
 
-> **MC-RWY-2 completado.** Smoke test operativo para API Railway.
-> No toca Railway, Postgres, web apps ni dominio.
-> Script: [`../../scripts/smoke-api-railway.mjs`](../../scripts/smoke-api-railway.mjs).
-> Docs: [`../deploy/railway-api-smoke-test.md`](../deploy/railway-api-smoke-test.md).
-> No se avanza a web apps, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-WEB-1 completado.** Web profesional conectada a API Railway en modo lectura.
+> No toca Mi Pulso, dominio, Postgres ni avanza a MC-11 ni MC-12.
+> Código: panel integrado con login, carga desde API, fallback a mock, modo indicador.
+> Docs: [`../decisiones/adr-0019-web-profesional-api-readonly.md`](../decisiones/adr-0019-web-profesional-api-readonly.md).
+> No se avanza a deploy web, Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
