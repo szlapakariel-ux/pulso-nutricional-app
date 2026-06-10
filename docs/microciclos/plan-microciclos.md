@@ -339,10 +339,10 @@
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
-| MC-RWY-2   | 🚧 En curso (rama `chore/mc-rwy-2-api-smoke-test`) |
+| MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-RWY-2 en curso.** Smoke test operativo para API Railway.
+> **MC-RWY-2 completado.** Smoke test operativo para API Railway.
 > No toca Railway, Postgres, web apps ni dominio.
 > Script: [`../../scripts/smoke-api-railway.mjs`](../../scripts/smoke-api-railway.mjs).
 > Docs: [`../deploy/railway-api-smoke-test.md`](../deploy/railway-api-smoke-test.md).
