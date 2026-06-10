@@ -458,6 +458,38 @@
 
 ---
 
+## MC-MIPULSO-FE-2 — Mi Pulso: fix loop infinito en Vista Hoy *(ciclo técnico)*
+
+- **Objetivo:** corregir el loop infinito de llamadas a `GET /patients/:id/today`
+  que mantenía la UI bloqueada en "Cargando tu día..." aunque la API respondiera
+  200. La API, CORS, login, `/auth/me` y `patientId` ya eran correctos.
+- **Causa raíz:** `loadToday` en `HoyApiView` usaba `[auth]` como dependencia del
+  `useCallback`. El objeto `auth` (retorno de `usePatientAuth()`) tiene una nueva
+  referencia en cada render → `loadToday` era nueva en cada render → el
+  `useEffect([auth.user, loadToday])` se disparaba en cada render →
+  `setTodayLoading(true)` → render → loop infinito.
+- **Fix:** cambiar la dependencia de `useCallback` de `[auth]` a `[auth.logout]`.
+  `logout` se define con `useCallback([], [])` en `usePatientAuth` → referencia
+  estable → `loadToday` estable → el effect solo se dispara cuando `auth.user`
+  cambia realmente.
+- **Alcance permitido:**
+  - `apps/mi-pulso-web/app/hoy-view.tsx` — un cambio de una línea en el dep array
+    de `loadToday`.
+  - ADR 0027 documentando la decisión.
+  - Actualización de este plan.
+- **Qué NO tocar:** no código de API, no Railway, no Postgres, no Prisma schema,
+  no seed, no web profesional, no dominio, no deploy, no variables de entorno,
+  no CORS, no avanzar a MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - `pnpm type-check`, `pnpm build`, `pnpm lint` sin error.
+  - Modo mock: Mi Pulso sigue funcionando sin cambios.
+  - Modo api: login → `/auth/me` → una sola llamada a `/patients/demo-1/today` →
+    Vista Hoy renderiza plan/agenda.
+  - No hay loop de llamadas a `/today` en las DevTools de red.
+  - `loading` pasa a `false` y la UI deja de mostrar "Cargando tu día...".
+
+---
+
 ## MC-MIPULSO-RWY-0 — Mi Pulso: preflight para deploy controlado en Railway *(ciclo técnico)*
 
 - **Objetivo:** preparar el preflight documental para un deploy controlado de
@@ -590,17 +622,14 @@
 | MC-MIPULSO-2 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-RWY-0 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-FE-1  | ✅ Completado (mergeado en `main`) |
+| MC-MIPULSO-FE-2  | 🔄 En curso |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-FE-1 completado.** Fix frontend: `usePatientAuth.login()` ahora
-> llama `client.getMe()` después del login para obtener `patientId` desde
-> `/auth/me` (antes usaba `response.user` de `POST /auth/login`, que no incluye
-> `patientId`). Con esto la vista Hoy carga desde `GET /patients/:id/today` sin
-> quedar atascada en "Cargando tu día...".
-> Docs: [`../decisiones/0026-mi-pulso-fe-fix-patient-id-login.md`](../decisiones/0026-mi-pulso-fe-fix-patient-id-login.md).
-> Queda pendiente el **redeploy de `mi-pulso-web`** en Railway para que el fix
-> llegue a producción (`NEXT_PUBLIC_*` se inlinan en build → requiere rebuild).
-> MC-MIPULSO-FE-1 completado. Mi Pulso ya obtiene patientId desde /auth/me después del login. Queda pendiente redeploy de mi-pulso-web para llevar el fix a producción. No se avanza a dominio, Play Store, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-MIPULSO-FE-2 en curso.** Fix loop infinito en Vista Hoy: `loadToday`
+> usaba `[auth]` como dep del `useCallback`, pero `auth` es un nuevo objeto en
+> cada render → loop infinito de fetches. Fix: usar `[auth.logout]` (referencia
+> estable) como dep. API, CORS, login y `patientId` ya eran correctos.
+> No se avanza a dominio, Play Store, MC-11 ni MC-12 sin una nueva indicación explícita.
