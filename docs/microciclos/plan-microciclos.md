@@ -622,14 +622,17 @@
 | MC-MIPULSO-2 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-RWY-0 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-FE-1  | ✅ Completado (mergeado en `main`) |
-| MC-MIPULSO-FE-2  | 🔄 En curso |
+| MC-MIPULSO-FE-2  | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-FE-2 en curso.** Fix loop infinito en Vista Hoy: `loadToday`
-> usaba `[auth]` como dep del `useCallback`, pero `auth` es un nuevo objeto en
-> cada render → loop infinito de fetches. Fix: usar `[auth.logout]` (referencia
-> estable) como dep. API, CORS, login y `patientId` ya eran correctos.
-> No se avanza a dominio, Play Store, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-MIPULSO-FE-2 completado.** Mi Pulso ya corrige el loop infinito de Vista Hoy
+> estabilizando `loadToday` con `auth.logout` (en lugar de `[auth]`). API, CORS,
+> login y `patientId` ya eran correctos; el bug era de React (efecto disparándose
+> en cada render por dependencia inestable).
+> Docs: [`../decisiones/0027-mi-pulso-fe-fix-today-loop.md`](../decisiones/0027-mi-pulso-fe-fix-today-loop.md).
+> Queda pendiente el **redeploy de `mi-pulso-web`** en Railway para que el fix
+> llegue a producción.
+> MC-MIPULSO-FE-2 completado. Mi Pulso ya corrige el loop infinito de Vista Hoy estabilizando loadToday con auth.logout. Queda pendiente redeploy de mi-pulso-web para llevar el fix a producción. No se avanza a dominio, Play Store, MC-11 ni MC-12 sin una nueva indicación explícita.
