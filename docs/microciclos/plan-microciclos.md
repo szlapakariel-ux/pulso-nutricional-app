@@ -236,6 +236,34 @@
 
 ---
 
+## MC-10.5D — Protección por rol en endpoints clave *(ciclo técnico)*
+
+- **Objetivo:** que los endpoints del dominio rechacen peticiones sin el rol
+  adecuado, sin romper el comportamiento existente.
+- **Alcance permitido:**
+  - `PULSO_AUTH_ENFORCEMENT` (`off` default | `demo`) — solo activo cuando
+    además `PULSO_AUTH_MODE=demo`.
+  - `packages/api/src/config/enforcement.ts` — selector de modo.
+  - `packages/api/src/middleware/auth-guards.ts` — `requireProfessional` y
+    `requirePatientSelf` como `preHandler` de Fastify.
+  - Actualización de los 8 archivos de rutas con los guards declarativos.
+  - `.env.example` actualizado con `PULSO_AUTH_ENFORCEMENT=off`.
+  - ADR 0015 documentando la decisión.
+- **Qué NO tocar:** no Railway, no deploy, no UI, no pantalla login, no cookies,
+  no refresh tokens, no passwordHash, no OAuth, no proteger endpoints cuando
+  enforcement está off, no cambiar contratos de respuesta exitosa, no avanzar
+  a MC-11 sin autorización.
+- **Criterios de aceptación:**
+  - Con `PULSO_AUTH_ENFORCEMENT=off`: comportamiento idéntico a MC-10.5C.
+  - Con `PULSO_AUTH_MODE=demo` + `PULSO_AUTH_ENFORCEMENT=demo`:
+    - Token ausente/inválido → 401.
+    - Paciente accede a endpoint profesional → 403.
+    - Paciente accede a datos de otro paciente → 403.
+    - Rol correcto con token válido → respuesta normal sin cambios.
+  - `pnpm type-check`, `pnpm build` y `pnpm lint` pasan sin error.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -282,9 +310,9 @@
 | MC-10.5A   | ✅ Completado (mergeado en `main`) |
 | MC-10.5B   | ✅ Completado (mergeado en `main`) |
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
-| MC-10.5D   | Pendiente |
+| MC-10.5D   | ✅ Completado (en rama — pendiente merge) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5C completado.** No se avanza a MC-10.5D ni MC-11 sin una nueva indicación explícita.
+> **MC-10.5D completado.** No se avanza a MC-11 sin una nueva indicación explícita.
 > Decisión documentada en
-> [`../decisiones/0014-auth-roles-minimos.md`](../decisiones/0014-auth-roles-minimos.md).
+> [`../decisiones/0015-role-guards-key-endpoints.md`](../decisiones/0015-role-guards-key-endpoints.md).

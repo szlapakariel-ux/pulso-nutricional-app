@@ -4,12 +4,13 @@ import {
   previewWeightLogController,
   previewNoteController,
 } from "../controllers/patient-logs.controller.js";
+import { requirePatientSelf } from "../middleware/auth-guards.js";
 
 /**
  * Rutas de registros del paciente (datos revisables) — MC-7.
  *
  * Endpoints provisionales de preview simulado, sin persistencia.
- * No usan DB, Prisma, auth ni datos reales.
+ * Guard requirePatientSelf activo cuando PULSO_AUTH_ENFORCEMENT=demo (MC-10.5D).
  *
  * DATO REVISABLE — nacen todos con origin: "patient_reported" y
  * reviewStatus: "pending". Nunca se validan automáticamente.
@@ -57,6 +58,7 @@ export async function patientLogsRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     "/patients/:patientId/meal-logs/preview",
     {
+      preHandler: requirePatientSelf as any,
       schema: {
         params: patientIdSchema,
         body: mealLogPreviewSchema,
@@ -69,6 +71,7 @@ export async function patientLogsRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     "/patients/:patientId/weight-logs/preview",
     {
+      preHandler: requirePatientSelf as any,
       schema: {
         params: patientIdSchema,
         body: weightLogPreviewSchema,
@@ -81,6 +84,7 @@ export async function patientLogsRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     "/patients/:patientId/notes/preview",
     {
+      preHandler: requirePatientSelf as any,
       schema: {
         params: patientIdSchema,
         body: notePreviewSchema,
