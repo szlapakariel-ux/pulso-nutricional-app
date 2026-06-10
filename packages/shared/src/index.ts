@@ -8,6 +8,15 @@
 
 export { SHARED_PACKAGE_VERSION } from "./version.js";
 
+// Tipos de autenticación y roles (MC-10.5C)
+export type {
+  AuthRole,
+  AuthUser,
+  LoginRequest,
+  LoginResponse,
+  AuthSession,
+} from "./types/auth.js";
+
 // Tipos del dominio central (regla revisable/validado)
 export type {
   DataOrigin,
