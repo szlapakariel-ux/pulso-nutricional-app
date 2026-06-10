@@ -7,6 +7,7 @@ import { patientTodayRoutes } from "./routes/patient-today.routes.js";
 import { patientLogsRoutes } from "./routes/patient-logs.routes.js";
 import { reviewInboxRoutes } from "./routes/review-inbox.routes.js";
 import { pdfRoutes } from "./routes/pdf.routes.js";
+import { activityRoutes } from "./routes/activity.routes.js";
 
 /**
  * Crea y configura la instancia de Fastify.
@@ -29,6 +30,7 @@ export function buildApp() {
   app.register(patientLogsRoutes);
   app.register(reviewInboxRoutes);
   app.register(pdfRoutes);
+  app.register(activityRoutes);
 
   return app;
 }

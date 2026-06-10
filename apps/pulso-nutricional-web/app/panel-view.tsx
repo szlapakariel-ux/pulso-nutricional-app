@@ -7,6 +7,7 @@ import { PatientsView } from "./patients-view";
 import { ConsultationsView } from "./consultations-view";
 import { MealPlanView } from "./meal-plan-view";
 import { ReviewInboxView } from "./review-inbox-view";
+import { ActivityView } from "./activity-view";
 
 const STATUS_LABEL: Record<PatientStatus, string> = {
   active: "Activo",
@@ -17,7 +18,7 @@ const STATUS_LABEL: Record<PatientStatus, string> = {
 export function PanelView() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string>(DEMO_PATIENTS[0]?.id ?? "");
-  const [activeTab, setActiveTab] = useState<"ficha" | "consultas" | "plan" | "revision">("ficha");
+  const [activeTab, setActiveTab] = useState<"ficha" | "consultas" | "plan" | "revision" | "actividad">("ficha");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -167,6 +168,21 @@ export function PanelView() {
               >
                 Revisión
               </button>
+              <button
+                onClick={() => setActiveTab("actividad")}
+                style={{
+                  padding: "0.75rem 1rem",
+                  border: "none",
+                  borderBottom:
+                    activeTab === "actividad" ? "2px solid #1677ff" : "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontWeight: activeTab === "actividad" ? 600 : 400,
+                  color: activeTab === "actividad" ? "#1677ff" : "#666",
+                }}
+              >
+                Actividad
+              </button>
             </div>
 
             {/* Tab content */}
@@ -176,6 +192,7 @@ export function PanelView() {
             )}
             {activeTab === "plan" && <MealPlanView patient={selected} />}
             {activeTab === "revision" && <ReviewInboxView patient={selected} />}
+            {activeTab === "actividad" && <ActivityView patient={selected} />}
           </>
         ) : (
           <p style={{ color: "#888" }}>Seleccioná un paciente para comenzar.</p>
