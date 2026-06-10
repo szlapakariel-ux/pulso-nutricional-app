@@ -17,6 +17,9 @@ importers:
 
   apps/mi-pulso-web:
     dependencies:
+      '@pulso/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       next:
         specifier: ^15.3.3
         version: 15.5.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)

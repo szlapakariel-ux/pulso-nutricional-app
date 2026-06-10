@@ -3,6 +3,7 @@ import { healthRoutes } from "./routes/health.routes.js";
 import { patientsRoutes } from "./routes/patients.routes.js";
 import { consultationsRoutes } from "./routes/consultations.routes.js";
 import { mealPlansRoutes } from "./routes/meal-plans.routes.js";
+import { patientTodayRoutes } from "./routes/patient-today.routes.js";
 
 /**
  * Crea y configura la instancia de Fastify.
@@ -21,6 +22,7 @@ export function buildApp() {
   app.register(patientsRoutes);
   app.register(consultationsRoutes);
   app.register(mealPlansRoutes);
+  app.register(patientTodayRoutes);
 
   return app;
 }

@@ -2,7 +2,7 @@
   "name": "@pulso/mi-pulso-web",
   "version": "0.0.0",
   "private": true,
-  "description": "Mi Pulso — PWA del paciente (placeholder MC-1, sin funcionalidad de negocio ni PWA real).",
+  "description": "Mi Pulso — PWA del paciente. Pantalla Hoy implementada en MC-6 con datos de demostración.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,6 +11,7 @@
     "lint": "echo \"[mi-pulso-web] lint placeholder — ESLint se configurará en un microciclo posterior\""
   },
   "dependencies": {
+    "@pulso/shared": "workspace:*",
     "next": "^15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
