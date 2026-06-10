@@ -444,17 +444,15 @@
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-WEB-1   | ✅ Completado (mergeado en `main`) |
 | MC-WEB-2   | ✅ Completado (desplegado en Railway) |
-| MC-WEB-3   | 🚧 En curso (rama `feat/mc-web-3-web-smoke-playbook`) |
+| MC-WEB-3   | ✅ Completado (mergeado en `main`) |
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-WEB-2 completado.** Web profesional desplegada en Railway y operativa contra
-> la API Railway en modo lectura. Login demo funciona, pacientes cargan, ficha/plan/agenda
-> responden sin error CORS. No toca Mi Pulso, dominio, Postgres.
-> Servicios: `pulso-nutricional-web` (Railway), `api` (Railway) con CORS.
-> Docs: [`../decisiones/adr-0019-web-profesional-api-readonly.md`](../decisiones/adr-0019-web-profesional-api-readonly.md),
-> [`../decisiones/adr-0020-api-cors-fastify-web-profesional.md`](../decisiones/adr-0020-api-cors-fastify-web-profesional.md).
+> **MC-WEB-3 completado.** Web profesional Railway tiene smoke test y playbook operativo.
+> Script: [`../../scripts/smoke-web-profesional-railway.mjs`](../../scripts/smoke-web-profesional-railway.mjs).
+> Docs: [`../deploy/web-profesional-railway-playbook.md`](../deploy/web-profesional-railway-playbook.md),
+> [`../decisiones/0021-web-profesional-smoke-playbook.md`](../decisiones/0021-web-profesional-smoke-playbook.md).
 > No se avanza a Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
