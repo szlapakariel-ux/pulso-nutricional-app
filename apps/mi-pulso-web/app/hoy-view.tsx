@@ -1,43 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import type { AgendaItemType, DayMoment } from "@pulso/shared";
+import { useState, useEffect, useCallback } from "react";
+import type { PatientTodayView } from "@pulso/shared";
 import { MOCK_TODAY_VIEWS, DEMO_PATIENT_LABELS } from "./today.mock";
-
-const MOMENT_LABEL: Record<DayMoment, string> = {
-  morning: "Mañana",
-  breakfast: "Desayuno",
-  mid_morning: "Media mañana",
-  lunch: "Almuerzo",
-  afternoon: "Tarde",
-  snack: "Merienda",
-  dinner: "Cena",
-  night: "Noche",
-};
-
-const ITEM_TYPE_ICON: Record<AgendaItemType, string> = {
-  meal: "🍽",
-  hydration: "💧",
-  medication: "💊",
-  activity: "🏃",
-  reminder: "🔔",
-};
+import { TodayContent } from "./today-content";
+import { getDataConfig } from "../lib/data-config";
+import { ApiError, getApiClient } from "../lib/api-client";
+import { usePatientAuth } from "../lib/use-patient-auth";
+import { resolveDemoPatientId } from "../lib/patient-mapping";
 
 const DEMO_PATIENT_IDS = ["demo-1", "demo-2", "demo-3"];
 
-export function HoyView() {
-  const [patientId, setPatientId] = useState("demo-1");
+/** Credenciales demo paciente (ficticias, documentadas en el repo). */
+const DEMO_PATIENT_EMAIL = "paciente-demo-uno@pulsonutricional.demo";
+const DEMO_PATIENT_PASSWORD = "demo-paciente-2026";
 
-  const view = MOCK_TODAY_VIEWS[patientId];
+/** Badge de modo en el header. */
+function ModeBadge({ label, tone }: { label: string; tone: "mock" | "api" | "error" }) {
+  const bg =
+    tone === "api"
+      ? "rgba(34,197,94,0.25)"
+      : tone === "error"
+        ? "rgba(239,68,68,0.3)"
+        : "rgba(255,255,255,0.25)";
+  return (
+    <span
+      style={{
+        fontSize: "0.7rem",
+        background: bg,
+        padding: "0.1rem 0.45rem",
+        borderRadius: 99,
+        marginLeft: "0.25rem",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
 
-  if (!view) {
-    return (
-      <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>
-        Paciente no encontrado.
-      </div>
-    );
-  }
-
+/** Shell común: contenedor + header. */
+function Shell({
+  date,
+  badge,
+  children,
+}: {
+  date: string;
+  badge: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div
       style={{
@@ -48,7 +59,6 @@ export function HoyView() {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      {/* Header */}
       <header
         style={{
           background: "#2563eb",
@@ -59,372 +69,378 @@ export function HoyView() {
           zIndex: 10,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.15rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.15rem", flexWrap: "wrap" }}>
           <span style={{ fontSize: "1.35rem", fontWeight: 700, letterSpacing: "-0.5px" }}>
             Mi Pulso
           </span>
-          <span
-            style={{
-              fontSize: "0.7rem",
-              background: "rgba(255,255,255,0.25)",
-              padding: "0.1rem 0.45rem",
-              borderRadius: 99,
-              marginLeft: "0.25rem",
-            }}
-          >
-            demo
-          </span>
+          {badge}
         </div>
         <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>
-          Hoy · {view.date}
+          Hoy · {date}
         </p>
       </header>
-
-      <main style={{ padding: "1rem 1rem 5rem" }}>
-        {/* Banner demo */}
-        <div
-          style={{
-            background: "#fffbe6",
-            border: "1px solid #ffe58f",
-            borderRadius: 10,
-            padding: "0.6rem 0.9rem",
-            marginBottom: "1rem",
-            fontSize: "0.8rem",
-            color: "#614700",
-          }}
-        >
-          ⚠️ Datos ficticios de demostración — MC-6. No representan información
-          clínica real.
-        </div>
-
-        {/* Selector de paciente demo */}
-        <div
-          style={{
-            background: "white",
-            border: "1px solid #e5e7eb",
-            borderRadius: 12,
-            padding: "0.9rem 1rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          <p
-            style={{
-              margin: "0 0 0.5rem",
-              fontSize: "0.75rem",
-              color: "#6b7280",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              fontWeight: 600,
-            }}
-          >
-            Paciente (selector demo)
-          </p>
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-            {DEMO_PATIENT_IDS.map((id) => (
-              <button
-                key={id}
-                onClick={() => setPatientId(id)}
-                style={{
-                  padding: "0.35rem 0.75rem",
-                  borderRadius: 99,
-                  border: "1px solid",
-                  borderColor: patientId === id ? "#2563eb" : "#e5e7eb",
-                  background: patientId === id ? "#eff6ff" : "white",
-                  color: patientId === id ? "#2563eb" : "#374151",
-                  fontSize: "0.82rem",
-                  fontWeight: patientId === id ? 600 : 400,
-                  cursor: "pointer",
-                }}
-              >
-                {DEMO_PATIENT_LABELS[id] ?? id}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Sin plan */}
-        {!view.plan && (
-          <div
-            style={{
-              background: "white",
-              border: "1px dashed #d1d5db",
-              borderRadius: 12,
-              padding: "2rem 1.25rem",
-              textAlign: "center",
-              color: "#9ca3af",
-            }}
-          >
-            <p style={{ margin: "0 0 0.4rem", fontSize: "1.5rem" }}>📋</p>
-            <p style={{ margin: "0 0 0.25rem", fontWeight: 600, color: "#374151" }}>
-              Sin plan asignado
-            </p>
-            <p style={{ margin: 0, fontSize: "0.85rem" }}>
-              Tu nutricionista todavía no asignó un plan para este período.
-            </p>
-          </div>
-        )}
-
-        {/* Plan alimentario */}
-        {view.plan && (
-          <section style={{ marginBottom: "1.25rem" }}>
-            <h2
-              style={{
-                margin: "0 0 0.75rem",
-                fontSize: "0.75rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                fontWeight: 700,
-                color: "#6b7280",
-              }}
-            >
-              Tu plan alimentario
-            </h2>
-
-            <div
-              style={{
-                background: "white",
-                borderRadius: 12,
-                border: "1px solid #e5e7eb",
-                overflow: "hidden",
-              }}
-            >
-              {/* Plan header */}
-              <div
-                style={{
-                  padding: "1rem 1.1rem 0.9rem",
-                  borderBottom: "1px solid #f3f4f6",
-                }}
-              >
-                <p
-                  style={{
-                    margin: "0 0 0.1rem",
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    color: "#111827",
-                  }}
-                >
-                  {view.plan.name}
-                </p>
-              </div>
-
-              {/* Indicaciones generales */}
-              <div
-                style={{
-                  padding: "0.9rem 1.1rem",
-                  background: "#eff6ff",
-                  borderBottom: "1px solid #dbeafe",
-                }}
-              >
-                <p
-                  style={{
-                    margin: "0 0 0.3rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    color: "#1d4ed8",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  Indicaciones generales
-                </p>
-                <p style={{ margin: 0, fontSize: "0.9rem", color: "#1e3a8a", lineHeight: 1.5 }}>
-                  {view.plan.generalIndications}
-                </p>
-              </div>
-
-              {/* Comidas */}
-              <div style={{ padding: "0.85rem 1.1rem 0.25rem" }}>
-                <p
-                  style={{
-                    margin: "0 0 0.65rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    color: "#6b7280",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  Comidas del día
-                </p>
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {[...view.plan.meals]
-                    .sort((a, b) => a.order - b.order)
-                    .map((meal) => (
-                      <li
-                        key={meal.id}
-                        style={{
-                          padding: "0.7rem 0.85rem",
-                          background: "#f9fafb",
-                          borderRadius: 9,
-                          border: "1px solid #f3f4f6",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "baseline",
-                            marginBottom: "0.2rem",
-                          }}
-                        >
-                          <strong style={{ fontSize: "0.9rem", color: "#111827" }}>
-                            {meal.name}
-                          </strong>
-                          <span style={{ fontSize: "0.8rem", color: "#9ca3af", marginLeft: "0.5rem" }}>
-                            {meal.timeHint}
-                          </span>
-                        </div>
-                        <p style={{ margin: 0, fontSize: "0.83rem", color: "#4b5563", lineHeight: 1.45 }}>
-                          {meal.description}
-                        </p>
-                        {meal.portionHint && (
-                          <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem", color: "#9ca3af" }}>
-                            {meal.portionHint}
-                          </p>
-                        )}
-                        <span
-                          style={{
-                            display: "inline-block",
-                            marginTop: "0.35rem",
-                            fontSize: "0.72rem",
-                            background: "#e5e7eb",
-                            color: "#6b7280",
-                            padding: "0.1rem 0.45rem",
-                            borderRadius: 99,
-                          }}
-                        >
-                          {MOMENT_LABEL[meal.moment]}
-                        </span>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-              <div style={{ height: "0.85rem" }} />
-            </div>
-          </section>
-        )}
-
-        {/* Agenda del día */}
-        <section>
-          <h2
-            style={{
-              margin: "0 0 0.75rem",
-              fontSize: "0.75rem",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              fontWeight: 700,
-              color: "#6b7280",
-            }}
-          >
-            Tu agenda de hoy
-          </h2>
-
-          {view.agendaItems.length === 0 ? (
-            <div
-              style={{
-                background: "white",
-                border: "1px dashed #d1d5db",
-                borderRadius: 12,
-                padding: "1.5rem",
-                textAlign: "center",
-                color: "#9ca3af",
-                fontSize: "0.85rem",
-              }}
-            >
-              Sin ítems de agenda para hoy.
-            </div>
-          ) : (
-            <div
-              style={{
-                background: "white",
-                borderRadius: 12,
-                border: "1px solid #e5e7eb",
-                overflow: "hidden",
-              }}
-            >
-              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                {[...view.agendaItems]
-                  .sort((a, b) => a.order - b.order)
-                  .map((item, idx) => (
-                    <li
-                      key={item.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: "0.85rem",
-                        padding: "0.9rem 1.1rem",
-                        borderBottom:
-                          idx < view.agendaItems.length - 1
-                            ? "1px solid #f3f4f6"
-                            : "none",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "1.3rem",
-                          lineHeight: 1.3,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {ITEM_TYPE_ICON[item.type]}
-                      </span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "baseline",
-                            gap: "0.5rem",
-                            marginBottom: "0.1rem",
-                          }}
-                        >
-                          <strong style={{ fontSize: "0.92rem", color: "#111827" }}>
-                            {item.title}
-                          </strong>
-                          <span
-                            style={{
-                              fontSize: "0.8rem",
-                              color: "#9ca3af",
-                              whiteSpace: "nowrap",
-                              flexShrink: 0,
-                            }}
-                          >
-                            {item.timeHint}
-                          </span>
-                        </div>
-                        {item.description && (
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: "0.83rem",
-                              color: "#6b7280",
-                              lineHeight: 1.45,
-                            }}
-                          >
-                            {item.description}
-                          </p>
-                        )}
-                        <span
-                          style={{
-                            display: "inline-block",
-                            marginTop: "0.35rem",
-                            fontSize: "0.72rem",
-                            background: "#f3f4f6",
-                            color: "#6b7280",
-                            padding: "0.1rem 0.45rem",
-                            borderRadius: 99,
-                          }}
-                        >
-                          {MOMENT_LABEL[item.moment]}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
-        </section>
-      </main>
+      <main style={{ padding: "1rem 1rem 5rem" }}>{children}</main>
     </div>
   );
+}
+
+/** Banner de demo/ficticio. */
+function DemoBanner() {
+  return (
+    <div
+      style={{
+        background: "#fffbe6",
+        border: "1px solid #ffe58f",
+        borderRadius: 10,
+        padding: "0.6rem 0.9rem",
+        marginBottom: "1rem",
+        fontSize: "0.8rem",
+        color: "#614700",
+      }}
+    >
+      ⚠️ Datos ficticios de demostración. No representan información clínica
+      real.
+    </div>
+  );
+}
+
+/** Vista Hoy en modo mock — comportamiento previo (selector demo). */
+function HoyMockView() {
+  const [patientId, setPatientId] = useState("demo-1");
+  const view = MOCK_TODAY_VIEWS[patientId];
+
+  const date = view?.date ?? new Date().toISOString().split("T")[0] ?? "";
+
+  return (
+    <Shell date={date} badge={<ModeBadge label="Modo mock" tone="mock" />}>
+      <DemoBanner />
+
+      {/* Selector de paciente demo (solo modo mock) */}
+      <div
+        style={{
+          background: "white",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: "0.9rem 1rem",
+          marginBottom: "1.25rem",
+        }}
+      >
+        <p
+          style={{
+            margin: "0 0 0.5rem",
+            fontSize: "0.75rem",
+            color: "#6b7280",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontWeight: 600,
+          }}
+        >
+          Paciente (selector demo)
+        </p>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          {DEMO_PATIENT_IDS.map((id) => (
+            <button
+              key={id}
+              onClick={() => setPatientId(id)}
+              style={{
+                padding: "0.35rem 0.75rem",
+                borderRadius: 99,
+                border: "1px solid",
+                borderColor: patientId === id ? "#2563eb" : "#e5e7eb",
+                background: patientId === id ? "#eff6ff" : "white",
+                color: patientId === id ? "#2563eb" : "#374151",
+                fontSize: "0.82rem",
+                fontWeight: patientId === id ? 600 : 400,
+                cursor: "pointer",
+              }}
+            >
+              {DEMO_PATIENT_LABELS[id] ?? id}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {view ? (
+        <TodayContent view={view} />
+      ) : (
+        <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>
+          Paciente no encontrado.
+        </div>
+      )}
+    </Shell>
+  );
+}
+
+/** Formulario de login demo paciente (modo api, sin token). */
+function PatientLoginForm({
+  onSubmit,
+  loading,
+  error,
+}: {
+  onSubmit: (email: string, password: string) => void;
+  loading: boolean;
+  error: string | null;
+}) {
+  const [email, setEmail] = useState(DEMO_PATIENT_EMAIL);
+  const [password, setPassword] = useState(DEMO_PATIENT_PASSWORD);
+
+  return (
+    <div
+      style={{
+        background: "white",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        padding: "1.25rem",
+      }}
+    >
+      <p style={{ margin: "0 0 1rem", fontWeight: 600, color: "#111827" }}>
+        Iniciar sesión demo paciente
+      </p>
+
+      <label style={{ display: "block", marginBottom: "0.75rem" }}>
+        <span style={{ display: "block", fontSize: "0.78rem", color: "#6b7280", marginBottom: "0.25rem" }}>
+          Email
+        </span>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "0.6rem 0.75rem",
+            border: "1px solid #d1d5db",
+            borderRadius: 8,
+            fontSize: "0.85rem",
+            boxSizing: "border-box",
+          }}
+        />
+      </label>
+
+      <label style={{ display: "block", marginBottom: "1rem" }}>
+        <span style={{ display: "block", fontSize: "0.78rem", color: "#6b7280", marginBottom: "0.25rem" }}>
+          Contraseña
+        </span>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "0.6rem 0.75rem",
+            border: "1px solid #d1d5db",
+            borderRadius: 8,
+            fontSize: "0.85rem",
+            boxSizing: "border-box",
+          }}
+        />
+      </label>
+
+      {error && (
+        <div
+          style={{
+            marginBottom: "1rem",
+            padding: "0.6rem 0.75rem",
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: 8,
+            color: "#b91c1c",
+            fontSize: "0.82rem",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      <button
+        type="button"
+        disabled={loading}
+        onClick={() => onSubmit(email, password)}
+        style={{
+          width: "100%",
+          padding: "0.7rem",
+          background: loading ? "#93c5fd" : "#2563eb",
+          color: "white",
+          border: "none",
+          borderRadius: 8,
+          fontSize: "0.9rem",
+          fontWeight: 600,
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "Conectando…" : "Conectar"}
+      </button>
+
+      <p style={{ margin: "0.9rem 0 0", fontSize: "0.75rem", color: "#9ca3af", textAlign: "center" }}>
+        Credenciales demo precargadas (ficticias).
+      </p>
+    </div>
+  );
+}
+
+/** Vista Hoy en modo api — login demo paciente + carga desde API. */
+function HoyApiView() {
+  const auth = usePatientAuth();
+  const [todayView, setTodayView] = useState<PatientTodayView | null>(null);
+  const [todayLoading, setTodayLoading] = useState(false);
+  const [todayError, setTodayError] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState<string | null>(null);
+
+  const loadToday = useCallback(async (userId: string) => {
+    setTodayError(null);
+    setBlocked(null);
+
+    const patientId = resolveDemoPatientId(userId);
+    if (!patientId) {
+      setBlocked(
+        "No se pudo determinar el paciente para este usuario. La API no " +
+          "expone el patientId del paciente autenticado (bloqueo conocido).",
+      );
+      return;
+    }
+
+    setTodayLoading(true);
+    try {
+      const view = await getApiClient().getToday(patientId);
+      if (!view) {
+        setTodayError("La API no devolvió la vista Hoy (404).");
+        setTodayView(null);
+      } else {
+        setTodayView(view);
+      }
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        // token expirado/ inválido → limpiar sesión y pedir login
+        auth.logout();
+        setTodayView(null);
+      } else {
+        setTodayError(
+          e instanceof Error ? e.message : "Error de conexión con la API.",
+        );
+      }
+    } finally {
+      setTodayLoading(false);
+    }
+  }, [auth]);
+
+  // Cuando hay usuario autenticado, cargar la vista Hoy.
+  useEffect(() => {
+    if (auth.user) {
+      void loadToday(auth.user.id);
+    } else {
+      setTodayView(null);
+    }
+  }, [auth.user, loadToday]);
+
+  const today = todayView?.date ?? new Date().toISOString().split("T")[0] ?? "";
+
+  // Sin token → login.
+  if (!auth.token) {
+    return (
+      <Shell
+        date={today}
+        badge={<ModeBadge label="Conectado a API" tone="api" />}
+      >
+        <PatientLoginForm
+          onSubmit={(email, password) => void auth.login(email, password)}
+          loading={auth.loading}
+          error={auth.error}
+        />
+      </Shell>
+    );
+  }
+
+  // Con token: barra de sesión + estado de carga / error / contenido.
+  const hasError = Boolean(todayError || blocked);
+  return (
+    <Shell
+      date={today}
+      badge={
+        <ModeBadge
+          label={hasError ? "Error de conexión" : "Sesión demo paciente"}
+          tone={hasError ? "error" : "api"}
+        />
+      }
+    >
+      {/* Barra de sesión */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "white",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          padding: "0.6rem 0.9rem",
+          marginBottom: "1rem",
+        }}
+      >
+        <span style={{ fontSize: "0.8rem", color: "#374151" }}>
+          {auth.user?.email ?? "Sesión activa"}
+        </span>
+        <button
+          type="button"
+          onClick={() => auth.logout()}
+          style={{
+            padding: "0.35rem 0.75rem",
+            border: "1px solid #d1d5db",
+            borderRadius: 8,
+            background: "white",
+            color: "#374151",
+            fontSize: "0.78rem",
+            cursor: "pointer",
+          }}
+        >
+          Cerrar sesión
+        </button>
+      </div>
+
+      <DemoBanner />
+
+      {blocked && (
+        <div
+          style={{
+            background: "#fff7ed",
+            border: "1px solid #fed7aa",
+            borderRadius: 10,
+            padding: "0.8rem 0.9rem",
+            fontSize: "0.82rem",
+            color: "#9a3412",
+          }}
+        >
+          ⚠️ {blocked}
+        </div>
+      )}
+
+      {todayError && !blocked && (
+        <div
+          style={{
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: 10,
+            padding: "0.8rem 0.9rem",
+            fontSize: "0.82rem",
+            color: "#b91c1c",
+          }}
+        >
+          No se pudo cargar tu información: {todayError}
+        </div>
+      )}
+
+      {todayLoading && (
+        <div style={{ padding: "2rem", textAlign: "center", color: "#9ca3af" }}>
+          Cargando tu día…
+        </div>
+      )}
+
+      {!todayLoading && !hasError && todayView && (
+        <TodayContent view={todayView} />
+      )}
+    </Shell>
+  );
+}
+
+export function HoyView() {
+  const mode = getDataConfig().mode;
+  if (mode === "api") return <HoyApiView />;
+  return <HoyMockView />;
 }
