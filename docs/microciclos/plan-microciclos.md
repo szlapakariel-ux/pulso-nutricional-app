@@ -430,6 +430,30 @@
 
 ---
 
+## MC-MIPULSO-RWY-0 — Mi Pulso: preflight para deploy controlado en Railway *(ciclo técnico)*
+
+- **Objetivo:** preparar el preflight documental para un deploy controlado de
+  Mi Pulso en Railway en modo API, sin deploy, sin tocar Railway, sin tocar
+  Postgres, sin dominio propio y sin avanzar a MC-11.
+- **Alcance permitido:**
+  - `docs/deploy/mi-pulso-railway-preflight.md` — build/start (verificados
+    contra `package.json`), variables (`NEXT_PUBLIC_PULSO_DATA_MODE=api`,
+    `NEXT_PUBLIC_PULSO_API_BASE_URL`), la dependencia crítica de **ampliar CORS**
+    de la API para el origen de Mi Pulso, checks post-deploy, "No ejecutar
+    todavía", orden recomendado, rollback, brechas y riesgos.
+  - ADR 0025 documentando la decisión y sus límites.
+  - Actualización de este plan.
+- **Qué NO tocar:** no deploy de Mi Pulso, no Railway, no variables del servicio
+  `api` (incluido CORS), no redeploy, no Postgres, no Prisma schema, no seed, no
+  package.json, no pnpm-lock.yaml, no dominio propio, no avanzar a MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - Documentación clara y accionable para un futuro deploy de Mi Pulso.
+  - Comandos derivados de scripts reales (no inventados).
+  - Documenta la dependencia CORS y la dependencia circular de orden.
+  - Sin secretos ni valores reales de variables.
+
+---
+
 ## MC-API-CORS-CODE — CORS mínimo en la API para la web profesional
 
 - **Objetivo:** habilitar CORS mínimo y explícito en la API Fastify para que
@@ -536,14 +560,15 @@
 | MC-MIPULSO-1 | ✅ Completado (mergeado en `main`) |
 | MC-PATIENT-ID-1 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-2 | ✅ Completado (mergeado en `main`) |
+| MC-MIPULSO-RWY-0 | 🚧 En curso (rama `claude/beautiful-wozniak-9gt40d`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-2 completado.** Mi Pulso ya tiene smoke test y playbook
-> operativo para verificar modo API antes de deploy.
-> Script: [`../../scripts/smoke-mi-pulso-railway.mjs`](../../scripts/smoke-mi-pulso-railway.mjs).
-> Docs: [`../deploy/mi-pulso-api-readonly-playbook.md`](../deploy/mi-pulso-api-readonly-playbook.md),
-> [`../decisiones/0024-mi-pulso-smoke-playbook.md`](../decisiones/0024-mi-pulso-smoke-playbook.md).
-> MC-MIPULSO-2 completado. Mi Pulso ya tiene smoke test y playbook operativo para verificar modo API antes de deploy. No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-MIPULSO-RWY-0 en curso.** Preflight documental para deploy controlado de
+> Mi Pulso en Railway en modo API: build/start, variables, dependencia CORS,
+> orden, rollback, brechas y riesgos. **No ejecuta deploy.**
+> Docs: [`../deploy/mi-pulso-railway-preflight.md`](../deploy/mi-pulso-railway-preflight.md),
+> [`../decisiones/0025-mi-pulso-railway-preflight.md`](../decisiones/0025-mi-pulso-railway-preflight.md).
+> No se avanza a deploy de Mi Pulso, ampliación de CORS, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
