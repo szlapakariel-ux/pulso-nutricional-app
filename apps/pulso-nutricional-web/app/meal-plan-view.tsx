@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type {
   PatientDetail,
   PatientPlanAssignment,
@@ -33,6 +34,8 @@ interface MealPlanViewProps {
 }
 
 export function MealPlanView({ patient }: MealPlanViewProps) {
+  const [pdfStatus, setPdfStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+
   const assignment: PatientPlanAssignment | null =
     MOCK_PLAN_ASSIGNMENTS[patient.id] ?? null;
   const agenda: PatientDailyAgenda | null =
@@ -62,8 +65,81 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
 
   const plan = assignment.mealPlan;
 
+  async function handleDownloadPdf() {
+    setPdfStatus("loading");
+    try {
+      const res = await fetch(
+        `http://localhost:3001/patients/${patient.id}/pdf/plan/download`,
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `plan-${patient.id}-demo.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setPdfStatus("done");
+      setTimeout(() => setPdfStatus("idle"), 3000);
+    } catch {
+      setPdfStatus("error");
+      setTimeout(() => setPdfStatus("idle"), 4000);
+    }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* PDF demo — MC-9 */}
+      {assignment && (
+        <section>
+          <div
+            style={{
+              padding: "1rem 1.25rem",
+              background: "#fffbe6",
+              border: "1px solid #ffe58f",
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>
+                PDF del plan (demo MC-9)
+              </p>
+              <p style={{ margin: "0.2rem 0 0", fontSize: "0.8rem", color: "#92400e" }}>
+                Datos ficticios · Solo incluye datos profesionales validados · Nunca incluye nota profesional ni registros del paciente
+              </p>
+            </div>
+            <button
+              onClick={handleDownloadPdf}
+              disabled={pdfStatus === "loading"}
+              style={{
+                padding: "0.5rem 1.1rem",
+                borderRadius: 8,
+                border: "1px solid #d97706",
+                background: pdfStatus === "loading" ? "#fef3c7" : "#f59e0b",
+                color: pdfStatus === "loading" ? "#92400e" : "white",
+                fontWeight: 600,
+                fontSize: "0.9rem",
+                cursor: pdfStatus === "loading" ? "wait" : "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {pdfStatus === "loading"
+                ? "Generando..."
+                : pdfStatus === "done"
+                  ? "Descargado"
+                  : pdfStatus === "error"
+                    ? "Error al descargar"
+                    : "Descargar PDF demo"}
+            </button>
+          </div>
+        </section>
+      )}
+
       {/* Plan alimentario */}
       <section>
         <h3 style={{ fontSize: "1.1rem", margin: "0 0 1rem" }}>
