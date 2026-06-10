@@ -31,6 +31,24 @@ export type {
   PatientVisibilityNote,
 } from "./types/patient.js";
 
+// Tipos de registros del paciente (MC-7 — datos mock, revisables)
+export type {
+  MealLogId,
+  WeightLogId,
+  PatientNoteId,
+  PatientMealLog,
+  PatientWeightLog,
+  PatientNote,
+  PatientMealLogDraft,
+  PatientWeightLogDraft,
+  PatientNoteDraft,
+  PatientMealLogReviewable,
+  PatientWeightLogReviewable,
+  PatientNoteReviewable,
+  PatientReviewableEntry,
+  PatientReviewableEntryType,
+} from "./types/patient-logs.js";
+
 // Tipos de Mi Pulso — vista del paciente (MC-6 — datos mock)
 export type {
   PatientVisibleMeal,
