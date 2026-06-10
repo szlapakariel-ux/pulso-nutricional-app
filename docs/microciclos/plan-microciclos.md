@@ -235,10 +235,10 @@
 | MC-8       | ✅ Completado (mergeado en `main`) |
 | MC-9       | ✅ Completado (mergeado en `main`) |
 | MC-10      | ✅ Completado (mergeado en `main`) |
-| MC-10.5A   | 🔄 En curso (branch `feat/mc-10-5a-prisma-persistencia-base`) |
+| MC-10.5A   | ✅ Completado (mergeado en `main`) |
+| MC-10.5B   | Pendiente |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5A en curso.** Capa técnica de Prisma sin conexión a producción.
+> **MC-10.5A completado.** No se avanza a MC-10.5B ni MC-11 sin una nueva indicación explícita.
 > Decisión documentada en
 > [`../decisiones/0012-prisma-persistencia-base.md`](../decisiones/0012-prisma-persistencia-base.md).
-> No se avanza a MC-10.5B ni MC-11 sin una nueva indicación explícita.
