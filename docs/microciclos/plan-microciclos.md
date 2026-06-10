@@ -310,9 +310,9 @@
 | MC-10.5A   | ✅ Completado (mergeado en `main`) |
 | MC-10.5B   | ✅ Completado (mergeado en `main`) |
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
-| MC-10.5D   | ✅ Completado (en rama — pendiente merge) |
+| MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5D completado.** No se avanza a MC-11 sin una nueva indicación explícita.
+> **MC-10.5D completado.** No se avanza a Railway, MC-11 ni MC-12 sin una nueva indicación explícita.
 > Decisión documentada en
 > [`../decisiones/0015-role-guards-key-endpoints.md`](../decisiones/0015-role-guards-key-endpoints.md).
