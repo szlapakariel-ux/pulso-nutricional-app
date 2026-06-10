@@ -30,3 +30,17 @@ export type {
   ProfessionalSummary,
   PatientVisibilityNote,
 } from "./types/patient.js";
+
+// Tipos de consultas y mediciones profesionales (MC-4 — datos mock)
+export type {
+  ConsultationId,
+  ConsultationStatus,
+  ConsultationSummary,
+  ConsultationDetail,
+  NewConsultationDraft,
+  ProfessionalMeasurement,
+  MeasurementUnit,
+  MeasurementSource,
+  MeasurementType,
+  ConsultationPreviewResponse,
+} from "./types/consultation.js";
