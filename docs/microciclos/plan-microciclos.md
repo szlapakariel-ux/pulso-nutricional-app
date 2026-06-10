@@ -281,10 +281,10 @@
 | MC-10      | ✅ Completado (mergeado en `main`) |
 | MC-10.5A   | ✅ Completado (mergeado en `main`) |
 | MC-10.5B   | ✅ Completado (mergeado en `main`) |
-| MC-10.5C   | 🔄 En curso (branch `feat/mc-10-5c-auth-roles-minimos`) |
+| MC-10.5C   | ✅ Completado (mergeado en `main`) |
+| MC-10.5D   | Pendiente |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5C en curso.** Auth y roles mínimos sin protección obligatoria.
+> **MC-10.5C completado.** No se avanza a MC-10.5D ni MC-11 sin una nueva indicación explícita.
 > Decisión documentada en
 > [`../decisiones/0014-auth-roles-minimos.md`](../decisiones/0014-auth-roles-minimos.md).
-> No se avanza a MC-10.5D ni MC-11 sin una nueva indicación explícita.
