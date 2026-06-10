@@ -338,10 +338,12 @@
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
+| MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-RWY-0 completado.** No se avanza a Railway setup, MC-11 ni MC-12 sin una nueva
-> indicación explícita.
-> Preflight: [`../deploy/railway-preflight.md`](../deploy/railway-preflight.md).
+> **MC-RWY-1 completado.** Servicio `api` vivo en Railway + Postgres demo.
+> Web apps (`pulso-nutricional-web`, `mi-pulso-web`) todavía usan mocks locales y NO están desplegadas.
+> No se avanza a web apps, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> Deploy: [`../deploy/railway-api-deploy.md`](../deploy/railway-api-deploy.md).
 > Decisión documentada en
-> [`../decisiones/0016-railway-preflight-readiness.md`](../decisiones/0016-railway-preflight-readiness.md).
+> [`../decisiones/0017-railway-api-deploy-controlado.md`](../decisiones/0017-railway-api-deploy-controlado.md).
