@@ -209,9 +209,9 @@
 | MC-3       | ✅ Completado (mergeado en `main`) |
 | MC-4       | ✅ Completado (mergeado en `main`) |
 | MC-5       | ✅ Completado (mergeado en `main`) |
-| MC-6       | 🔄 En curso (rama `feat/mc-6-mi-pulso-hoy-paciente`) |
+| MC-6       | ✅ Completado (mergeado en `main`) |
 | MC-7..MC-12| Pendientes |
 
-> **MC-6 en curso.** No se avanza a MC-7 sin cerrar MC-6 y recibir indicación
-> explícita. La decisión técnica de MC-5 quedó registrada en
-> [`../decisiones/0006-planes-agenda-profesional.md`](../decisiones/0006-planes-agenda-profesional.md).
+> **MC-6 completado.** No se avanza a MC-7 sin una nueva indicación explícita.
+> La decisión técnica de esta etapa quedó registrada en
+> [`../decisiones/0007-mi-pulso-hoy-paciente.md`](../decisiones/0007-mi-pulso-hoy-paciente.md).
