@@ -208,9 +208,9 @@
 | MC-2       | ✅ Completado (mergeado en `main`) |
 | MC-3       | ✅ Completado (mergeado en `main`) |
 | MC-4       | ✅ Completado (mergeado en `main`) |
-| MC-5       | **En curso** (Planes alimentarios y agenda profesional) |
+| MC-5       | ✅ Completado (mergeado en `main`) |
 | MC-6..MC-12| Pendientes |
 
-> **MC-5 en curso.** No se avanza a MC-6 sin una nueva indicación explícita.
+> **MC-5 completado.** No se avanza a MC-6 sin una nueva indicación explícita.
 > La decisión técnica de esta etapa quedó registrada en
 > [`../decisiones/0006-planes-agenda-profesional.md`](../decisiones/0006-planes-agenda-profesional.md).
