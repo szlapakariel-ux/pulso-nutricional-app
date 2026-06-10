@@ -1,0 +1,454 @@
+// Prisma schema — Pulso Nutricional MC-10.5A
+//
+// REGLA CENTRAL DEL DOMINIO:
+//   - datos revisables (paciente): origin = patient_reported, reviewStatus = pending al crear
+//   - datos validados (profesional): origin = professional_validated
+//   - La transición revisable → validado NUNCA ocurre automáticamente
+//   - professionalNote NUNCA se expone al paciente
+//
+// Estado MC-10.5A:
+//   - Schema preparado; servicios siguen usando mocks
+//   - db:push contra producción / Railway: PROHIBIDO en MC-10.5A
+//   - Conectar services a Prisma: diferido a MC-10.5B+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ──────────────────────────────────────────────────────────────────
+
+// Refleja DataOrigin de @pulso/shared/types/domain.ts
+enum DataOrigin {
+  patient_reported
+  professional_validated
+}
+
+// Refleja ReviewStatus de @pulso/shared/types/domain.ts
+enum ReviewStatus {
+  pending
+  reviewed
+  accepted
+  flagged
+}
+
+enum UserRole {
+  professional
+  patient
+}
+
+// Refleja PatientStatus de @pulso/shared/types/patient.ts
+enum PatientStatus {
+  active
+  inactive
+  pending
+}
+
+// Refleja ConsultationStatus de @pulso/shared/types/consultation.ts
+enum ConsultationStatus {
+  draft
+  completed
+  archived
+}
+
+// Refleja MealPlanStatus de @pulso/shared/types/meal-plan.ts
+enum MealPlanStatus {
+  draft
+  active
+  archived
+}
+
+// Refleja MeasurementType de @pulso/shared/types/consultation.ts
+enum MeasurementType {
+  weight
+  height
+  waist_circumference
+  body_fat_percentage
+  blood_pressure_systolic
+  blood_pressure_diastolic
+}
+
+// Refleja MeasurementUnit de @pulso/shared/types/consultation.ts
+enum MeasurementUnit {
+  kg
+  cm
+  percent
+  bpm
+  mmHg
+}
+
+// Refleja AgendaItemType de @pulso/shared/types/meal-plan.ts
+enum AgendaItemType {
+  meal
+  hydration
+  medication
+  activity
+  reminder
+}
+
+// Refleja DayMoment de @pulso/shared/types/meal-plan.ts
+enum DayMoment {
+  morning
+  breakfast
+  mid_morning
+  lunch
+  afternoon
+  snack
+  dinner
+  night
+}
+
+// Refleja ActivityType de @pulso/shared/types/activity.ts
+enum ActivityType {
+  walking
+  gym
+  bike
+  running
+  soccer
+  mobility
+  other
+}
+
+// Refleja ActivityIntensity de @pulso/shared/types/activity.ts
+enum ActivityIntensity {
+  low
+  moderate
+  high
+}
+
+// Refleja ActivityModuleStatus de @pulso/shared/types/activity.ts
+enum ActivityModuleStatus {
+  active
+  inactive
+}
+
+enum NoteType {
+  question
+  observation
+  concern
+}
+
+// Refleja ReviewActionType de @pulso/shared/types/review-inbox.ts
+enum ReviewActionType {
+  mark_reviewed
+  accept
+  flag
+  comment
+}
+
+// ─── USUARIOS Y ROLES ───────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  professional Professional?
+  patient      Patient?
+}
+
+// ─── DATOS PROFESIONALES / VALIDADOS ────────────────────────────────────────
+
+model Professional {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  fullName   String
+  specialty  String?
+  isDemoData Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  patients              ProfessionalPatientLink[]
+  consultations         Consultation[]
+  mealPlans             MealPlan[]
+  exercisePrescriptions ExercisePrescription[]
+}
+
+model Patient {
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  user             User          @relation(fields: [userId], references: [id])
+  fullName         String
+  age              Int?
+  goal             String?
+  lastControl      String?       // ISO date string
+  status           PatientStatus @default(active)
+  // REGLA: professionalNote NUNCA se expone al paciente (filtro obligatorio en servicios)
+  professionalNote String?
+  isDemoData       Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  professionals    ProfessionalPatientLink[]
+  consultations    Consultation[]
+  planAssignments  PatientPlanAssignment[]
+  agendaItems      PatientAgendaItem[]
+  mealLogs         MealLog[]
+  weightLogs       WeightLog[]
+  patientNotes     PatientNote[]
+  exerciseLogs     ExerciseLog[]
+  activitySettings ActivitySettings?
+}
+
+model ProfessionalPatientLink {
+  id             String       @id @default(uuid())
+  professionalId String
+  patientId      String
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  patient        Patient      @relation(fields: [patientId], references: [id])
+  linkedAt       DateTime     @default(now())
+
+  @@unique([professionalId, patientId])
+}
+
+model Consultation {
+  id               String             @id @default(uuid())
+  patientId        String
+  professionalId   String
+  patient          Patient            @relation(fields: [patientId], references: [id])
+  professional     Professional       @relation(fields: [professionalId], references: [id])
+  date             String             // ISO date
+  status           ConsultationStatus @default(draft)
+  objective        String?
+  observations     String?
+  // REGLA: professionalNote NUNCA se expone al paciente
+  professionalNote String?
+  isDemoData       Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  measurements Measurement[]
+}
+
+model Measurement {
+  id             String          @id @default(uuid())
+  consultationId String
+  consultation   Consultation    @relation(fields: [consultationId], references: [id])
+  type           MeasurementType
+  value          Float
+  unit           MeasurementUnit
+  // "professional" = tomada por profesional | future: otros orígenes
+  source         String          @default("professional")
+  isDemoData     Boolean         @default(false)
+  takenAt        String          // ISO datetime
+  createdAt      DateTime        @default(now())
+}
+
+model MealPlan {
+  id                 String         @id @default(uuid())
+  professionalId     String
+  professional       Professional   @relation(fields: [professionalId], references: [id])
+  name               String
+  description        String?
+  // generalIndications: visible al paciente por diseño de dominio
+  generalIndications String?
+  // REGLA: professionalNote NUNCA se expone al paciente
+  professionalNote   String?
+  status             MealPlanStatus @default(draft)
+  isDemoData         Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  meals       MealPlanItem[]
+  assignments PatientPlanAssignment[]
+}
+
+model MealPlanItem {
+  id          String    @id @default(uuid())
+  mealPlanId  String
+  mealPlan    MealPlan  @relation(fields: [mealPlanId], references: [id])
+  name        String
+  description String?
+  moment      DayMoment
+  timeHint    String    // "08:00"
+  portionHint String?
+  order       Int       @default(0)
+  isDemoData  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model PatientPlanAssignment {
+  id         String   @id @default(uuid())
+  patientId  String
+  mealPlanId String
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id])
+  startDate  String   // ISO date
+  endDate    String?  // ISO date, null = aún activa
+  isDemoData Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PatientAgendaItem {
+  id               String         @id @default(uuid())
+  patientId        String
+  patient          Patient        @relation(fields: [patientId], references: [id])
+  title            String
+  description      String?
+  type             AgendaItemType
+  moment           DayMoment
+  timeHint         String         // "08:00"
+  // date: para qué día está agendado este ítem
+  date             String         // ISO date
+  order            Int            @default(0)
+  // REGLA: professionalNote NUNCA se expone al paciente
+  professionalNote String?
+  isDemoData       Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+}
+
+// ─── MÓDULO DE ACTIVIDAD FÍSICA OPCIONAL ────────────────────────────────────
+
+model ActivitySettings {
+  id           String               @id @default(uuid())
+  patientId    String               @unique
+  patient      Patient              @relation(fields: [patientId], references: [id])
+  moduleStatus ActivityModuleStatus @default(inactive)
+  activatedAt  String?              // ISO date
+  isDemoData   Boolean              @default(false)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  prescriptions ExercisePrescription[]
+}
+
+model ExercisePrescription {
+  id                 String            @id @default(uuid())
+  professionalId     String
+  professional       Professional      @relation(fields: [professionalId], references: [id])
+  activitySettingsId String
+  activitySettings   ActivitySettings  @relation(fields: [activitySettingsId], references: [id])
+  activityType       ActivityType
+  durationMinutes    Int
+  intensity          ActivityIntensity
+  frequency          String
+  // generalNotes: visible al paciente por diseño de dominio
+  generalNotes       String?
+  startDate          String            // ISO date
+  isDemoData         Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+// ─── DATOS REVISABLES (patient_reported) ────────────────────────────────────
+//
+// INVARIANTE CRÍTICA para todos los modelos de esta sección:
+//   - origin  = DataOrigin.patient_reported  (siempre, por defecto)
+//   - reviewStatus = ReviewStatus.pending    (al crear, siempre)
+//   - La profesional puede cambiar reviewStatus vía ReviewAction
+//   - NUNCA se convierte en ValidatedData automáticamente
+//   - NUNCA cambia el campo origin
+
+model MealLog {
+  id              String       @id @default(uuid())
+  patientId       String
+  patient         Patient      @relation(fields: [patientId], references: [id])
+  date            String       // ISO date
+  // "breakfast" | "mid_morning" | "lunch" | "afternoon" | "snack" | "dinner" | "night"
+  timeOfDay       String
+  foodDescription String
+  portion         String?
+  notes           String?
+  // Separación de dominio: datos revisables del paciente
+  origin          DataOrigin   @default(patient_reported)
+  reviewStatus    ReviewStatus @default(pending)
+  isDemoData      Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  reviewActions ReviewAction[]
+}
+
+model WeightLog {
+  id           String       @id @default(uuid())
+  patientId    String
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  date         String       // ISO date
+  weightKg     Float        // en kg
+  unit         String       @default("kg")
+  notes        String?
+  // Separación de dominio: datos revisables del paciente
+  origin       DataOrigin   @default(patient_reported)
+  reviewStatus ReviewStatus @default(pending)
+  isDemoData   Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  reviewActions ReviewAction[]
+}
+
+model PatientNote {
+  id           String       @id @default(uuid())
+  patientId    String
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  type         NoteType
+  subject      String
+  body         String
+  // Separación de dominio: datos revisables del paciente
+  origin       DataOrigin   @default(patient_reported)
+  reviewStatus ReviewStatus @default(pending)
+  isDemoData   Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  reviewActions ReviewAction[]
+}
+
+model ExerciseLog {
+  id              String            @id @default(uuid())
+  patientId       String
+  patient         Patient           @relation(fields: [patientId], references: [id])
+  date            String            // ISO date
+  activityType    ActivityType
+  durationMinutes Int
+  intensity       ActivityIntensity
+  notes           String?
+  // Separación de dominio: datos revisables del paciente
+  origin          DataOrigin        @default(patient_reported)
+  reviewStatus    ReviewStatus      @default(pending)
+  isDemoData      Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  reviewActions ReviewAction[]
+}
+
+// ─── BANDEJA DE REVISIÓN ─────────────────────────────────────────────────────
+//
+// ReviewAction registra acciones explícitas de la profesional sobre datos revisables.
+// Una acción puede cambiar reviewStatus del registro correspondiente.
+//
+// INVARIANTE CRÍTICA:
+//   - Una ReviewAction NUNCA convierte un registro en ValidatedData
+//   - NUNCA cambia el campo origin del registro
+//   - La acción es un evento de auditoría — no una mutación de dominio
+
+model ReviewAction {
+  id             String           @id @default(uuid())
+  // "meal_log" | "weight_log" | "patient_note" | "exercise_log"
+  entryType      String
+  actionType     ReviewActionType
+  comment        String?
+  professionalId String           // ID del profesional que realizó la acción
+
+  // FKs opcionales — exactamente una se activa según entryType
+  mealLogId     String?
+  weightLogId   String?
+  patientNoteId String?
+  exerciseLogId String?
+
+  mealLog     MealLog?     @relation(fields: [mealLogId], references: [id])
+  weightLog   WeightLog?   @relation(fields: [weightLogId], references: [id])
+  patientNote PatientNote? @relation(fields: [patientNoteId], references: [id])
+  exerciseLog ExerciseLog? @relation(fields: [exerciseLogId], references: [id])
+
+  createdAt DateTime @default(now())
+}

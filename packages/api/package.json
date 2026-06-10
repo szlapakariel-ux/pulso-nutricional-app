@@ -14,12 +14,20 @@
   },
   "scripts": {
     "dev": "node --watch --experimental-transform-types src/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "prisma generate && tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
-    "lint": "echo \"[api] lint placeholder — ESLint se configurará en un microciclo posterior\""
+    "lint": "echo \"[api] lint placeholder — ESLint se configurará en un microciclo posterior\"",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "node --experimental-transform-types prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "node --experimental-transform-types prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.0.0",
     "@pulso/shared": "workspace:*",
     "@sinclair/typebox": "^0.34.49",
     "fastify": "^5.8.5",
@@ -29,6 +37,7 @@
     "@pulso/config": "workspace:*",
     "@types/node": "^22.10.2",
     "@types/pdfkit": "^0.17.6",
+    "prisma": "^6.0.0",
     "typescript": "^5.7.2"
   }
 }
