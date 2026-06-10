@@ -171,6 +171,27 @@
 
 ---
 
+## MC-10.5A — Prisma: base técnica de persistencia *(ciclo técnico insertado)*
+
+- **Objetivo:** preparar la capa de persistencia (Prisma + PostgreSQL) sin
+  conectar producción ni reemplazar los mocks existentes.
+- **Alcance permitido:**
+  - Schema Prisma con todos los modelos del dominio.
+  - Seed idempotente con datos ficticios demo.
+  - Singleton del cliente (`src/lib/prisma.ts`) — no importado aún por servicios.
+  - Scripts `db:generate`, `db:push`, `db:seed`, `db:studio` en `packages/api`.
+  - ADR 0012 documentando la decisión.
+- **Qué NO tocar:** no conectar Railway, no Postgres de producción, no credenciales
+  reales, no reemplazar mocks, no auth, no login, no proteger endpoints, no conectar
+  apps web a la API real, no avanzar a MC-10.5B ni MC-11 sin autorización.
+- **Criterios de aceptación:**
+  - `pnpm --filter @pulso/api db:generate` corre sin error (no requiere DB).
+  - `pnpm type-check` y `pnpm build` pasan sin error.
+  - Todos los endpoints existentes siguen respondiendo igual (mocks intactos).
+  - El schema es válido y consistente con el modelo de datos documentado.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -214,8 +235,10 @@
 | MC-8       | ✅ Completado (mergeado en `main`) |
 | MC-9       | ✅ Completado (mergeado en `main`) |
 | MC-10      | ✅ Completado (mergeado en `main`) |
+| MC-10.5A   | 🔄 En curso (branch `feat/mc-10-5a-prisma-persistencia-base`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10 completado.** No se avanza a MC-11 sin una nueva indicación explícita.
-> La decisión técnica de esta etapa quedó registrada en
-> [`../decisiones/0011-actividad-fisica-opcional.md`](../decisiones/0011-actividad-fisica-opcional.md).
+> **MC-10.5A en curso.** Capa técnica de Prisma sin conexión a producción.
+> Decisión documentada en
+> [`../decisiones/0012-prisma-persistencia-base.md`](../decisiones/0012-prisma-persistencia-base.md).
+> No se avanza a MC-10.5B ni MC-11 sin una nueva indicación explícita.
