@@ -31,6 +31,20 @@ export type {
   PatientVisibilityNote,
 } from "./types/patient.js";
 
+// Tipos del módulo de actividad física opcional (MC-10 — datos mock)
+export type {
+  ActivityType,
+  ActivityIntensity,
+  ActivityModuleStatus,
+  ExercisePrescriptionId,
+  ExerciseLogId,
+  ExercisePrescription,
+  ActivitySettings,
+  PatientExerciseLog,
+  PatientExerciseLogDraft,
+  PatientExerciseLogReviewable,
+} from "./types/activity.js";
+
 // Tipos de PDF con datos profesionales/validados (MC-9 — datos mock)
 export type {
   PdfDocumentType,

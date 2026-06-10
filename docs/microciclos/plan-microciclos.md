@@ -213,8 +213,9 @@
 | MC-7       | ✅ Completado (mergeado en `main`) |
 | MC-8       | ✅ Completado (mergeado en `main`) |
 | MC-9       | ✅ Completado (mergeado en `main`) |
-| MC-10..MC-12| Pendientes |
+| MC-10      | 🔄 En curso (`feat/mc-10-actividad-fisica-opcional`) |
+| MC-11..MC-12| Pendientes |
 
-> **MC-9 completado.** No se avanza a MC-10 sin una nueva indicación explícita.
+> **MC-10 en curso.** Módulo de actividad física opcional con doble candado.
 > La decisión técnica de esta etapa quedó registrada en
-> [`../decisiones/0010-pdf-simple-datos-validados.md`](../decisiones/0010-pdf-simple-datos-validados.md).
+> [`../decisiones/0011-actividad-fisica-opcional.md`](../decisiones/0011-actividad-fisica-opcional.md).

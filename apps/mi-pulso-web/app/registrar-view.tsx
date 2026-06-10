@@ -5,15 +5,19 @@ import type {
   PatientMealLogDraft,
   PatientWeightLogDraft,
   PatientNoteDraft,
+  PatientExerciseLogDraft,
+  ActivityType,
+  ActivityIntensity,
 } from "@pulso/shared";
+import { DEMO_ACTIVITY_MODULE_ACTIVE } from "./activity.mock";
 
 interface RegistroEnviado {
-  tipo: "comida" | "peso" | "nota";
+  tipo: "comida" | "peso" | "nota" | "actividad";
   timestamp: string;
 }
 
 export function RegistrarView() {
-  const [activeTab, setActiveTab] = useState<"comida" | "peso" | "nota">(
+  const [activeTab, setActiveTab] = useState<"comida" | "peso" | "nota" | "actividad">(
     "comida"
   );
   const [registrosEnviados, setRegistrosEnviados] = useState<RegistroEnviado[]>(
@@ -42,6 +46,15 @@ export function RegistrarView() {
   );
   const [noteSubject, setNoteSubject] = useState("");
   const [noteBody, setNoteBody] = useState("");
+
+  // Actividad
+  const [actDate, setActDate] = useState(
+    new Date().toISOString().split("T")[0] ?? ""
+  );
+  const [actType, setActType] = useState<ActivityType>("walking");
+  const [actDuration, setActDuration] = useState("");
+  const [actIntensity, setActIntensity] = useState<ActivityIntensity>("low");
+  const [actNotes, setActNotes] = useState("");
 
   const handleSubmitMeal = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +99,28 @@ export function RegistrarView() {
     // Limpiar formulario
     setWeight("");
     setWeightNotes("");
+  };
+
+  const handleSubmitActivity = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!actDuration.trim() || isNaN(Number(actDuration)) || Number(actDuration) <= 0) return;
+
+    const draft: PatientExerciseLogDraft = {
+      date: actDate,
+      activityType: actType,
+      durationMinutes: Number(actDuration),
+      intensity: actIntensity,
+      notes: actNotes || undefined,
+    };
+
+    console.log("Actividad enviada (demo):", draft);
+    setRegistrosEnviados((prev) => [
+      ...prev,
+      { tipo: "actividad", timestamp: new Date().toISOString() },
+    ]);
+
+    setActDuration("");
+    setActNotes("");
   };
 
   const handleSubmitNote = (e: React.FormEvent) => {
@@ -175,6 +210,7 @@ export function RegistrarView() {
             gap: "0.5rem",
             marginBottom: "1.25rem",
             borderBottom: "1px solid #e5e7eb",
+            flexWrap: "wrap",
           }}
         >
           {(["comida", "peso", "nota"] as const).map((tab) => (
@@ -197,6 +233,23 @@ export function RegistrarView() {
               {tab === "nota" && "💬 Nota"}
             </button>
           ))}
+          {DEMO_ACTIVITY_MODULE_ACTIVE && (
+            <button
+              onClick={() => setActiveTab("actividad")}
+              style={{
+                padding: "0.75rem 1rem",
+                border: "none",
+                background: "transparent",
+                borderBottom: activeTab === "actividad" ? "2px solid #2563eb" : "none",
+                color: activeTab === "actividad" ? "#2563eb" : "#6b7280",
+                fontWeight: activeTab === "actividad" ? 600 : 400,
+                cursor: "pointer",
+                fontSize: "0.9rem",
+              }}
+            >
+              🏃 Actividad
+            </button>
+          )}
         </div>
 
         {/* Comida */}
@@ -593,6 +646,134 @@ export function RegistrarView() {
           </form>
         )}
 
+        {/* Actividad */}
+        {activeTab === "actividad" && DEMO_ACTIVITY_MODULE_ACTIVE && (
+          <form
+            onSubmit={handleSubmitActivity}
+            style={{
+              background: "white",
+              border: "1px solid #e5e7eb",
+              borderRadius: 12,
+              padding: "1.25rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem", color: "#111827" }}>
+              Registrar actividad física
+            </h3>
+            <p style={{ margin: "0 0 1rem", fontSize: "0.8rem", color: "#6b7280" }}>
+              Módulo opcional habilitado por tu profesional.
+            </p>
+
+            <div style={{ marginBottom: "0.9rem" }}>
+              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
+                Fecha
+              </label>
+              <input
+                type="date"
+                value={actDate}
+                onChange={(e) => setActDate(e.target.value)}
+                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "0.9rem" }}>
+              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
+                Tipo de actividad
+              </label>
+              <select
+                value={actType}
+                onChange={(e) => setActType(e.target.value as ActivityType)}
+                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+              >
+                <option value="walking">Caminata</option>
+                <option value="gym">Gimnasio / fuerza</option>
+                <option value="bike">Bicicleta</option>
+                <option value="running">Trote / carrera</option>
+                <option value="soccer">Fútbol / deporte de equipo</option>
+                <option value="mobility">Movilidad / elongación</option>
+                <option value="other">Otra</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "0.9rem" }}>
+              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
+                Duración (minutos)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="480"
+                value={actDuration}
+                onChange={(e) => setActDuration(e.target.value)}
+                placeholder="Ej: 30"
+                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "0.9rem" }}>
+              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
+                Intensidad percibida
+              </label>
+              <select
+                value={actIntensity}
+                onChange={(e) => setActIntensity(e.target.value as ActivityIntensity)}
+                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+              >
+                <option value="low">Baja — me costó poco</option>
+                <option value="moderate">Moderada — me costó algo</option>
+                <option value="high">Alta — me esforcé mucho</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
+                Notas (opcional)
+              </label>
+              <input
+                type="text"
+                value={actNotes}
+                onChange={(e) => setActNotes(e.target.value)}
+                placeholder="Cómo te sentiste, dónde lo hiciste, etc."
+                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div
+              style={{
+                background: "#eff6ff",
+                border: "1px solid #dbeafe",
+                borderRadius: 8,
+                padding: "0.75rem",
+                marginBottom: "1rem",
+                fontSize: "0.8rem",
+                color: "#1e3a8a",
+              }}
+            >
+              ✓ Tu actividad se enviará a revisión de tu profesional. Estado: pendiente.
+              Sin persistencia real — demo MC-10.
+            </div>
+
+            <button
+              type="submit"
+              disabled={!actDuration.trim() || Number(actDuration) <= 0}
+              style={{
+                width: "100%",
+                padding: "0.7rem",
+                background: actDuration.trim() && Number(actDuration) > 0 ? "#2563eb" : "#d1d5db",
+                color: "white",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 600,
+                cursor: actDuration.trim() && Number(actDuration) > 0 ? "pointer" : "not-allowed",
+                fontSize: "0.9rem",
+              }}
+            >
+              Enviar actividad
+            </button>
+          </form>
+        )}
+
         {/* Histórico de registros enviados (demo) */}
         {registrosEnviados.length > 0 && (
           <section style={{ marginTop: "2rem" }}>
@@ -636,6 +817,7 @@ export function RegistrarView() {
                         {r.tipo === "comida" && "🍽 Comida"}
                         {r.tipo === "peso" && "⚖️ Peso"}
                         {r.tipo === "nota" && "💬 Nota"}
+                        {r.tipo === "actividad" && "🏃 Actividad"}
                       </strong>
                       <p style={{ margin: "0.1rem 0 0", fontSize: "0.75rem", color: "#6b7280" }}>
                         {new Date(r.timestamp).toLocaleTimeString()}
