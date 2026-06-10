@@ -339,11 +339,11 @@
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
+| MC-RWY-2   | 🚧 En curso (rama `chore/mc-rwy-2-api-smoke-test`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-RWY-1 completado.** Servicio `api` vivo en Railway + Postgres demo.
-> Web apps (`pulso-nutricional-web`, `mi-pulso-web`) todavía usan mocks locales y NO están desplegadas.
+> **MC-RWY-2 en curso.** Smoke test operativo para API Railway.
+> No toca Railway, Postgres, web apps ni dominio.
+> Script: [`../../scripts/smoke-api-railway.mjs`](../../scripts/smoke-api-railway.mjs).
+> Docs: [`../deploy/railway-api-smoke-test.md`](../deploy/railway-api-smoke-test.md).
 > No se avanza a web apps, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
-> Deploy: [`../deploy/railway-api-deploy.md`](../deploy/railway-api-deploy.md).
-> Decisión documentada en
-> [`../decisiones/0017-railway-api-deploy-controlado.md`](../decisiones/0017-railway-api-deploy-controlado.md).
