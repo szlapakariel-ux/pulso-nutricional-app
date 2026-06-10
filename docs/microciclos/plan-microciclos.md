@@ -430,6 +430,34 @@
 
 ---
 
+## MC-MIPULSO-FE-1 — Mi Pulso: fix frontend patientId desde /auth/me *(ciclo técnico)*
+
+- **Objetivo:** corregir el bug por el cual Mi Pulso queda atascado en
+  "Cargando tu día..." tras el login porque `POST /auth/login` no devuelve
+  `patientId` en `response.user`. La fuente de verdad es `GET /auth/me`.
+- **Alcance permitido:**
+  - `apps/mi-pulso-web/lib/use-patient-auth.ts` — en el callback `login`,
+    después de `client.login()`, llamar `client.getMe()` y usar ese resultado
+    para `setUser()` en lugar de `response.user`.
+  - ADR 0026 documentando la decisión.
+  - Actualización de este plan.
+- **Qué NO tocar:** no código de API, no Railway, no Postgres, no Prisma schema,
+  no seed, no web profesional, no dominio, no deploy, no variables de entorno,
+  no CORS, no avanzar a MC-11 ni MC-12.
+- **Invariantes a mantener:**
+  - Modo mock sigue funcionando sin cambios.
+  - No se imprime el token completo en consola.
+  - No se mezclan datos mock/API.
+  - La fuente de verdad para `patientId` es siempre `/auth/me`, nunca
+    `POST /auth/login`.
+- **Criterios de aceptación:**
+  - `pnpm type-check`, `pnpm build`, `pnpm lint` sin error.
+  - Después del login demo, `auth.user.patientId` es `"demo-1"`.
+  - La vista Hoy carga desde `GET /patients/demo-1/today` sin error.
+  - No aparece "La API no devolvió el patientId del paciente autenticado."
+
+---
+
 ## MC-MIPULSO-RWY-0 — Mi Pulso: preflight para deploy controlado en Railway *(ciclo técnico)*
 
 - **Objetivo:** preparar el preflight documental para un deploy controlado de
@@ -561,13 +589,13 @@
 | MC-PATIENT-ID-1 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-2 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-RWY-0 | ✅ Completado (mergeado en `main`) |
+| MC-MIPULSO-FE-1  | 🔄 En curso |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-RWY-0 completado.** El preflight documental para deploy
-> controlado de Mi Pulso en Railway está listo.
-> Docs: [`../deploy/mi-pulso-railway-preflight.md`](../deploy/mi-pulso-railway-preflight.md),
-> [`../decisiones/0025-mi-pulso-railway-preflight.md`](../decisiones/0025-mi-pulso-railway-preflight.md).
-> MC-MIPULSO-RWY-0 completado. El preflight documental para deploy controlado de Mi Pulso en Railway está listo. No se avanza a deploy real de Mi Pulso, ampliación CORS, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-MIPULSO-FE-1 en curso.** Fix frontend: `usePatientAuth.login()` ahora
+> llama `client.getMe()` después del login para obtener `patientId` desde
+> `/auth/me`. No se avanza a deploy real de Mi Pulso, ampliación CORS, dominio,
+> MC-11 ni MC-12 sin una nueva indicación explícita.
