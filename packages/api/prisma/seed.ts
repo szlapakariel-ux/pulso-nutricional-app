@@ -10,7 +10,22 @@
  * Idempotente: usa upsert con IDs fijos para que pueda ejecutarse múltiples veces.
  */
 
-import {
+import path from "node:path";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const prismaClientPackageJsonPath = require.resolve("@prisma/client/package.json");
+const generatedPrismaClientPath = path.join(
+  path.dirname(prismaClientPackageJsonPath),
+  "..",
+  "..",
+  ".prisma",
+  "client",
+  "index.js",
+);
+const pkg = require(generatedPrismaClientPath);
+
+const {
   PrismaClient,
   UserRole,
   PatientStatus,
@@ -26,7 +41,7 @@ import {
   NoteType,
   DataOrigin,
   ReviewStatus,
-} from "@prisma/client";
+} = pkg;
 
 const prisma = new PrismaClient();
 
