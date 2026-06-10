@@ -192,6 +192,27 @@
 
 ---
 
+## MC-10.5B — API leyendo desde DB en endpoints clave *(ciclo técnico insertado)*
+
+- **Objetivo:** permitir que endpoints clave lean desde Prisma cuando
+  `PULSO_DATA_SOURCE=prisma`, manteniendo mocks como comportamiento default.
+- **Alcance permitido:**
+  - `packages/api/src/config/data-source.ts` — selector de fuente de datos.
+  - `packages/api/src/repositories/` — queries Prisma para pacientes, planes y agenda.
+  - Servicios `patients.service.ts` y `meal-plans.service.ts` ahora async con rama mock|prisma.
+  - Controllers actualizados para `await` los servicios.
+  - `.env.example` con `PULSO_DATA_SOURCE=mock`.
+  - ADR 0013 documentando la decisión.
+- **Qué NO tocar:** no Railway, no auth, no login, no proteger endpoints, no conectar
+  apps web a la API real, no reemplazar mocks en apps web, no avanzar a MC-11 sin
+  autorización.
+- **Criterios de aceptación:**
+  - Sin `PULSO_DATA_SOURCE`, la API funciona igual que antes (mocks).
+  - Con `PULSO_DATA_SOURCE=prisma` y DB local/demo: los 4 endpoints clave leen desde Prisma.
+  - `pnpm type-check`, `pnpm build` y `pnpm lint` pasan sin error.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -236,9 +257,12 @@
 | MC-9       | ✅ Completado (mergeado en `main`) |
 | MC-10      | ✅ Completado (mergeado en `main`) |
 | MC-10.5A   | ✅ Completado (mergeado en `main`) |
-| MC-10.5B   | Pendiente |
+| MC-10.5B   | 🔄 En curso (branch `feat/mc-10-5b-api-db-read-key-endpoints`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5A completado.** No se avanza a MC-10.5B ni MC-11 sin una nueva indicación explícita.
+> **MC-10.5B en curso.** Endpoints clave con lectura Prisma opcional.
+> Decisión documentada en
+> [`../decisiones/0013-api-db-read-key-endpoints.md`](../decisiones/0013-api-db-read-key-endpoints.md).
+> No se avanza a MC-10.5C ni MC-11 sin una nueva indicación explícita.
 > Decisión documentada en
 > [`../decisiones/0012-prisma-persistencia-base.md`](../decisiones/0012-prisma-persistencia-base.md).

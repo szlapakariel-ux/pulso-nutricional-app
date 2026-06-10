@@ -12,7 +12,7 @@ export async function getPatientMealPlanController(
   request: FastifyRequest<{ Params: { patientId: string } }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const assignment = getPatientMealPlan(request.params.patientId);
+  const assignment = await getPatientMealPlan(request.params.patientId);
 
   if (assignment === null) {
     await reply.code(404).send({
@@ -30,13 +30,13 @@ export async function getPatientMealPlanController(
 
 /**
  * GET /patients/:patientId/agenda
- * Agenda diaria de un paciente (hoy demo).
+ * Agenda diaria de un paciente (hoy).
  */
 export async function getPatientAgendaController(
   request: FastifyRequest<{ Params: { patientId: string } }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const agenda = getPatientDailyAgenda(request.params.patientId);
+  const agenda = await getPatientDailyAgenda(request.params.patientId);
 
   if (agenda === null) {
     await reply.code(404).send({
