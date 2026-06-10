@@ -257,12 +257,12 @@
 | MC-9       | ✅ Completado (mergeado en `main`) |
 | MC-10      | ✅ Completado (mergeado en `main`) |
 | MC-10.5A   | ✅ Completado (mergeado en `main`) |
-| MC-10.5B   | 🔄 En curso (branch `feat/mc-10-5b-api-db-read-key-endpoints`) |
+| MC-10.5B   | ✅ Completado (mergeado en `main`) |
+| MC-10.5C   | Pendiente |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5B en curso.** Endpoints clave con lectura Prisma opcional.
+> **MC-10.5B completado.** No se avanza a MC-10.5C ni MC-11 sin una nueva indicación explícita.
 > Decisión documentada en
 > [`../decisiones/0013-api-db-read-key-endpoints.md`](../decisiones/0013-api-db-read-key-endpoints.md).
-> No se avanza a MC-10.5C ni MC-11 sin una nueva indicación explícita.
 > Decisión documentada en
 > [`../decisiones/0012-prisma-persistencia-base.md`](../decisiones/0012-prisma-persistencia-base.md).
