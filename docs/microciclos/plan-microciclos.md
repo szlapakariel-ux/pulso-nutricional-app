@@ -480,14 +480,16 @@
 | MC-WEB-2   | ✅ Completado (desplegado en Railway) |
 | MC-WEB-3   | ✅ Completado (mergeado en `main`) |
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
-| MC-MIPULSO-1 | 🚧 En curso (rama `feat/mc-mipulso-1-api-readonly`) |
+| MC-MIPULSO-1 | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-WEB-3 completado.** Web profesional Railway tiene smoke test y playbook operativo.
-> Script: [`../../scripts/smoke-web-profesional-railway.mjs`](../../scripts/smoke-web-profesional-railway.mjs).
-> Docs: [`../deploy/web-profesional-railway-playbook.md`](../deploy/web-profesional-railway-playbook.md),
-> [`../decisiones/0021-web-profesional-smoke-playbook.md`](../decisiones/0021-web-profesional-smoke-playbook.md).
-> No se avanza a Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-MIPULSO-1 completado.** Mi Pulso ya tiene conexión API en modo lectura inicial con fallback mock.
+> Riesgo conocido: `/auth/me` devuelve userId y no patientId; existe mapping demo temporal en frontend
+> (`apps/mi-pulso-web/lib/patient-mapping.ts`). Próximo ciclo recomendado: exponer patientId del paciente
+> autenticado desde la API (`/auth/me` con `patientId` o endpoint `/patients/me`).
+> Docs: [`../decisiones/0022-mi-pulso-api-readonly.md`](../decisiones/0022-mi-pulso-api-readonly.md),
+> [`../deploy/mi-pulso-api-readonly.md`](../deploy/mi-pulso-api-readonly.md).
+> MC-MIPULSO-1 completado. Mi Pulso ya tiene conexión API en modo lectura inicial con fallback mock. No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
