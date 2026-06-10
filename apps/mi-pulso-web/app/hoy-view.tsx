@@ -7,7 +7,6 @@ import { TodayContent } from "./today-content";
 import { getDataConfig } from "../lib/data-config";
 import { ApiError, getApiClient } from "../lib/api-client";
 import { usePatientAuth } from "../lib/use-patient-auth";
-import { resolveDemoPatientId } from "../lib/patient-mapping";
 
 const DEMO_PATIENT_IDS = ["demo-1", "demo-2", "demo-3"];
 
@@ -285,19 +284,9 @@ function HoyApiView() {
   const [todayError, setTodayError] = useState<string | null>(null);
   const [blocked, setBlocked] = useState<string | null>(null);
 
-  const loadToday = useCallback(async (userId: string) => {
+  const loadToday = useCallback(async (patientId: string) => {
     setTodayError(null);
     setBlocked(null);
-
-    const patientId = resolveDemoPatientId(userId);
-    if (!patientId) {
-      setBlocked(
-        "No se pudo determinar el paciente para este usuario. La API no " +
-          "expone el patientId del paciente autenticado (bloqueo conocido).",
-      );
-      return;
-    }
-
     setTodayLoading(true);
     try {
       const view = await getApiClient().getToday(patientId);
@@ -309,7 +298,6 @@ function HoyApiView() {
       }
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) {
-        // token expirado/ inválido → limpiar sesión y pedir login
         auth.logout();
         setTodayView(null);
       } else {
@@ -324,8 +312,11 @@ function HoyApiView() {
 
   // Cuando hay usuario autenticado, cargar la vista Hoy.
   useEffect(() => {
-    if (auth.user) {
-      void loadToday(auth.user.id);
+    if (auth.user?.patientId) {
+      void loadToday(auth.user.patientId);
+    } else if (auth.user) {
+      setBlocked("La API no devolvió el patientId del paciente autenticado.");
+      setTodayView(null);
     } else {
       setTodayView(null);
     }

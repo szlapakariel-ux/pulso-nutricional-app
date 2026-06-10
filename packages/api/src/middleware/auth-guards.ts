@@ -16,7 +16,7 @@ import type { AuthSession } from "@pulso/shared";
 import { isEnforcementActive } from "../config/enforcement.js";
 
 // Demo mapping: userId (JWT) → patientId (mock / DB)
-const DEMO_USER_TO_PATIENT_ID: Record<string, string> = {
+export const DEMO_USER_TO_PATIENT_ID: Record<string, string> = {
   "d0000000-0000-0000-0000-000000000011": "demo-1",
   "d0000000-0000-0000-0000-000000000012": "demo-2",
   "d0000000-0000-0000-0000-000000000013": "demo-3",

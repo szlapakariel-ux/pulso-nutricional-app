@@ -19,6 +19,8 @@ export interface AuthUser {
   id: string;
   email: string;
   role: AuthRole;
+  /** Solo presente cuando role === "patient". Expuesto por GET /auth/me. */
+  patientId?: string;
 }
 
 /** Cuerpo del request de login. */

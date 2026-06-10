@@ -10,9 +10,10 @@
  */
 
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { LoginRequest, AuthSession } from "@pulso/shared";
+import type { LoginRequest, AuthSession, AuthUser } from "@pulso/shared";
 import { isAuthEnabled } from "../config/auth.js";
 import { verifyDemoCredentials } from "../services/auth.service.js";
+import { DEMO_USER_TO_PATIENT_ID } from "../middleware/auth-guards.js";
 
 const AUTH_MODE_OFF_ERROR = {
   error: {
@@ -71,8 +72,18 @@ export async function meController(
 
   try {
     await request.jwtVerify();
-    const user = request.user as AuthSession;
-    await reply.code(200).send({ data: user, meta: { demo: true } });
+    const session = request.user as AuthSession;
+    const patientId: string | undefined =
+      session.role === "patient"
+        ? (DEMO_USER_TO_PATIENT_ID[session.id] ?? undefined)
+        : undefined;
+    const responseUser: AuthUser = {
+      id: session.id,
+      email: session.email,
+      role: session.role,
+      ...(patientId !== undefined ? { patientId } : {}),
+    };
+    await reply.code(200).send({ data: responseUser, meta: { demo: true } });
   } catch {
     await reply.code(401).send({
       error: {
