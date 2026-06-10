@@ -1,1 +1,1 @@
-export const SHARED_PACKAGE_VERSION = "0.0.0-mc8";
+export const SHARED_PACKAGE_VERSION = "0.0.0-mc9";

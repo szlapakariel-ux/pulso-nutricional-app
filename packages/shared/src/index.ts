@@ -31,6 +31,15 @@ export type {
   PatientVisibilityNote,
 } from "./types/patient.js";
 
+// Tipos de PDF con datos profesionales/validados (MC-9 — datos mock)
+export type {
+  PdfDocumentType,
+  PdfPreviewMetadata,
+  PdfMealItem,
+  PdfAgendaItem,
+  PatientPlanPdfData,
+} from "./types/pdf.js";
+
 // Tipos de la bandeja de revisión profesional (MC-8 — datos mock)
 export type {
   ReviewActionType,

@@ -212,8 +212,9 @@
 | MC-6       | ✅ Completado (mergeado en `main`) |
 | MC-7       | ✅ Completado (mergeado en `main`) |
 | MC-8       | ✅ Completado (mergeado en `main`) |
-| MC-9..MC-12| Pendientes |
+| MC-9       | 🔄 En curso (`feat/mc-9-pdf-simple-datos-validados`) |
+| MC-10..MC-12| Pendientes |
 
-> **MC-8 completado.** No se avanza a MC-9 sin una nueva indicación explícita.
+> **MC-9 en curso.** PDF simple con datos profesionales/validados.
 > La decisión técnica de esta etapa quedó registrada en
-> [`../decisiones/0009-bandeja-revision-profesional.md`](../decisiones/0009-bandeja-revision-profesional.md).
+> [`../decisiones/0010-pdf-simple-datos-validados.md`](../decisiones/0010-pdf-simple-datos-validados.md).
