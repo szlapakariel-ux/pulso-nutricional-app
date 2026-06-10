@@ -4,12 +4,13 @@ import {
   getPatientReviewInboxController,
   previewReviewActionController,
 } from "../controllers/review-inbox.controller.js";
+import { requireProfessional } from "../middleware/auth-guards.js";
 
 /**
  * Rutas de bandeja de revisión profesional — MC-8.
  *
  * Endpoints provisionales, read-only + preview simulado, sin persistencia.
- * Muestran registros del paciente como ReviewableData.
+ * Guard requireProfessional activo cuando PULSO_AUTH_ENFORCEMENT=demo (MC-10.5D).
  * Las acciones de revisión cambian reviewStatus pero NO crean ValidatedData.
  */
 export async function reviewInboxRoutes(app: FastifyInstance): Promise<void> {
@@ -38,13 +39,14 @@ export async function reviewInboxRoutes(app: FastifyInstance): Promise<void> {
   // GET /professionals/demo/review-inbox
   app.get(
     "/professionals/demo/review-inbox",
+    { preHandler: requireProfessional as any },
     getAllReviewInboxController,
   );
 
   // GET /patients/:patientId/review-inbox
   app.get(
     "/patients/:patientId/review-inbox",
-    { schema: { params: patientIdSchema } },
+    { preHandler: requireProfessional as any, schema: { params: patientIdSchema } },
     getPatientReviewInboxController,
   );
 
@@ -52,6 +54,7 @@ export async function reviewInboxRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     "/review-inbox/:entryId/action/preview",
     {
+      preHandler: requireProfessional as any,
       schema: {
         params: entryIdSchema,
         body: reviewActionSchema,

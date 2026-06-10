@@ -4,12 +4,13 @@ import {
   getConsultationController,
   previewConsultationController,
 } from "../controllers/consultations.controller.js";
+import { requireProfessional } from "../middleware/auth-guards.js";
 
 /**
  * Rutas de consultas — MC-4.
  *
  * Endpoints provisionales, read-only + preview simulado.
- * Datos mock ficticios. No usan base de datos, Prisma, Railway ni autenticación.
+ * Guard requireProfessional activo cuando PULSO_AUTH_ENFORCEMENT=demo (MC-10.5D).
  */
 export async function consultationsRoutes(
   app: FastifyInstance,
@@ -18,6 +19,7 @@ export async function consultationsRoutes(
   app.get(
     "/patients/:patientId/consultations",
     {
+      preHandler: requireProfessional as any,
       schema: {
         params: {
           type: "object",
@@ -33,6 +35,7 @@ export async function consultationsRoutes(
   app.get(
     "/patients/:patientId/consultations/:consultationId",
     {
+      preHandler: requireProfessional as any,
       schema: {
         params: {
           type: "object",
@@ -51,6 +54,7 @@ export async function consultationsRoutes(
   app.post(
     "/patients/:patientId/consultations/preview",
     {
+      preHandler: requireProfessional as any,
       schema: {
         params: {
           type: "object",
