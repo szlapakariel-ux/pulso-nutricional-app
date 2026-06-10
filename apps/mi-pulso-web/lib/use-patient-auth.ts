@@ -72,9 +72,12 @@ export function usePatientAuth(): PatientAuthState & {
 
       const client = initializeApiClient(config.apiBaseUrl);
       const response = await client.login(email, password);
+      // login() stores the token in ApiClient internally; getMe() uses it.
+      // /auth/login response.user lacks patientId — only /auth/me includes it.
+      const me = await client.getMe();
 
       setToken(response.token);
-      setUser(response.user);
+      setUser(me);
       if (typeof window !== "undefined") {
         window.localStorage.setItem(TOKEN_STORAGE_KEY, response.token);
       }
