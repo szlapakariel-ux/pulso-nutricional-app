@@ -211,9 +211,9 @@
 | MC-5       | ✅ Completado (mergeado en `main`) |
 | MC-6       | ✅ Completado (mergeado en `main`) |
 | MC-7       | ✅ Completado (mergeado en `main`) |
-| MC-8       | 🔄 En curso (rama `feat/mc-8-bandeja-revision-profesional`) |
+| MC-8       | ✅ Completado (mergeado en `main`) |
 | MC-9..MC-12| Pendientes |
 
-> **MC-8 en curso.** No se avanza a MC-9 sin cerrar MC-8 y recibir indicación
-> explícita. La decisión técnica de MC-7 quedó registrada en
-> [`../decisiones/0008-registros-paciente-revisables.md`](../decisiones/0008-registros-paciente-revisables.md).
+> **MC-8 completado.** No se avanza a MC-9 sin una nueva indicación explícita.
+> La decisión técnica de esta etapa quedó registrada en
+> [`../decisiones/0009-bandeja-revision-profesional.md`](../decisiones/0009-bandeja-revision-profesional.md).
