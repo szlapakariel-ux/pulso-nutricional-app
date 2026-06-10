@@ -337,11 +337,10 @@
 | MC-10.5B   | ✅ Completado (mergeado en `main`) |
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
-| MC-RWY-0   | 🚧 En curso (rama `docs/mc-rwy-0-railway-deploy-prep`) |
+| MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-RWY-0 en curso (preparación documental).** No se ejecuta deploy ni se
-> toca Railway. No se avanza a Railway setup, MC-11 ni MC-12 sin una nueva
+> **MC-RWY-0 completado.** No se avanza a Railway setup, MC-11 ni MC-12 sin una nueva
 > indicación explícita.
 > Preflight: [`../deploy/railway-preflight.md`](../deploy/railway-preflight.md).
 > Decisión documentada en
