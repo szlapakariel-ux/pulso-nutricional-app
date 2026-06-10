@@ -293,6 +293,31 @@
 
 ---
 
+## MC-WEB-2 — Web profesional: deploy Railway y operabilidad
+
+- **Objetivo:** desplegar la web profesional en Railway y verificar que
+  funciona en modo API lectura contra la API Railway (MC-WEB-1 + MC-API-CORS-CODE
+  operativos).
+- **Alcance permitido:**
+  - Deploy del servicio `pulso-nutricional-web` en Railway (acción externa).
+  - Configuración de variables: `NEXT_PUBLIC_PULSO_DATA_MODE=api`,
+    `NEXT_PUBLIC_PULSO_API_BASE_URL=...`, etc.
+  - Redeploy del servicio `api` si es necesario para que CORS tenga efecto.
+  - Verificación operativa: login demo funciona, lista de pacientes carga,
+    ficha/plan/agenda abren sin error, no hay CORS bloqueados.
+- **Qué NO tocar:** no código web, no código API, no Postgres, no seed, no
+  dominio propio, no Mi Pulso, no avanzar a MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - Web profesional accesible en `https://pulso-nutricional-web-production.up.railway.app`.
+  - `NEXT_PUBLIC_PULSO_DATA_MODE=api` en producción.
+  - Login demo responde 200, token se genera, UI recibe el token.
+  - `GET /patients` desde navegador responde 200, lista carga en UI.
+  - `GET /patients/:id`, `/meal-plan`, `/agenda` cargan sin error.
+  - No hay error CORS en consola del navegador.
+  - Fallback a mock sigue funcionando en desarrollo.
+
+---
+
 ## MC-API-CORS-CODE — CORS mínimo en la API para la web profesional
 
 - **Objetivo:** habilitar CORS mínimo y explícito en la API Fastify para que
@@ -393,14 +418,17 @@
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-WEB-1   | ✅ Completado (mergeado en `main`) |
-| MC-API-CORS-CODE | 🚧 En curso (rama `fix/mc-api-cors-code-fastify`) |
+| MC-WEB-2   | ✅ Completado (desplegado en Railway) |
+| MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
-| MC-11, MC-12 | Pendientes |
+| Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-WEB-1 completado.** Web profesional conectada a API Railway en modo lectura.
-> No toca Mi Pulso, dominio, Postgres ni avanza a MC-11 ni MC-12.
-> Código: panel integrado con login, carga desde API, fallback a mock, modo indicador.
-> Docs: [`../decisiones/adr-0019-web-profesional-api-readonly.md`](../decisiones/adr-0019-web-profesional-api-readonly.md).
-> No se avanza a deploy web, Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-WEB-2 completado.** Web profesional desplegada en Railway y operativa contra
+> la API Railway en modo lectura. Login demo funciona, pacientes cargan, ficha/plan/agenda
+> responden sin error CORS. No toca Mi Pulso, dominio, Postgres.
+> Servicios: `pulso-nutricional-web` (Railway), `api` (Railway) con CORS.
+> Docs: [`../decisiones/adr-0019-web-profesional-api-readonly.md`](../decisiones/adr-0019-web-profesional-api-readonly.md),
+> [`../decisiones/adr-0020-api-cors-fastify-web-profesional.md`](../decisiones/adr-0020-api-cors-fastify-web-profesional.md).
+> No se avanza a Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
