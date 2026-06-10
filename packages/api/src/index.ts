@@ -9,4 +9,4 @@
  */
 
 export { buildApp } from "./app.js";
-export const API_PACKAGE_VERSION = "0.0.0-mc4";
+export const API_PACKAGE_VERSION = "0.0.0-mc5";
