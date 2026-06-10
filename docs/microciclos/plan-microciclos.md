@@ -277,6 +277,32 @@
 
 ---
 
+## MC-RWY-0 — Preparación repo-side para deploy Railway *(ciclo técnico)*
+
+- **Objetivo:** dejar documentado y ordenado todo lo necesario para que un
+  futuro agente Railway pueda conectar y desplegar de forma controlada, sin
+  improvisar comandos. **No** ejecuta deploy ni toca Railway.
+- **Alcance permitido:**
+  - `docs/deploy/railway-preflight.md` — guía por servicio (`api`,
+    `pulso-nutricional-web`, `mi-pulso-web`, `Postgres`): root directory,
+    build/start recomendados (verificados contra `package.json`), variables
+    requeridas/opcionales, checks post-deploy, "No ejecutar todavía", orden
+    recomendado, rollback, brechas y riesgos.
+  - ADR 0016 documentando la decisión y sus límites.
+  - Actualización de este plan.
+- **Qué NO tocar:** no Railway, no agente Railway, no conectar GitHub a Railway,
+  no variables reales, no secretos, no deploy/redeploy/restart, no Postgres
+  (`db:push`/`db:seed`), no conectar UI con API, no cambiar runtime, no crear
+  dominio, no config de Railway en código, no avanzar a MC-11.
+- **Criterios de aceptación:**
+  - Documentación clara y accionable para un futuro agente Railway.
+  - Comandos derivados de scripts reales (no inventados).
+  - Sin secretos ni valores reales de variables.
+  - Runtime sin cambios; `type-check`/`build` solo si algo lo requiere (no lo
+    requiere: solo documentación).
+
+---
+
 ## MC-12 — PWA/TWA futura
 
 - **Objetivo:** preparar la distribución como PWA instalable y, a futuro, TWA
@@ -311,8 +337,12 @@
 | MC-10.5B   | ✅ Completado (mergeado en `main`) |
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
+| MC-RWY-0   | 🚧 En curso (rama `docs/mc-rwy-0-railway-deploy-prep`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5D completado.** No se avanza a Railway, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-RWY-0 en curso (preparación documental).** No se ejecuta deploy ni se
+> toca Railway. No se avanza a Railway setup, MC-11 ni MC-12 sin una nueva
+> indicación explícita.
+> Preflight: [`../deploy/railway-preflight.md`](../deploy/railway-preflight.md).
 > Decisión documentada en
-> [`../decisiones/0015-role-guards-key-endpoints.md`](../decisiones/0015-role-guards-key-endpoints.md).
+> [`../decisiones/0016-railway-preflight-readiness.md`](../decisiones/0016-railway-preflight-readiness.md).
