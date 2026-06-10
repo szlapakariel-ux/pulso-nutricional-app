@@ -508,14 +508,15 @@
 | MC-WEB-3   | ✅ Completado (mergeado en `main`) |
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-1 | ✅ Completado (mergeado en `main`) |
-| MC-PATIENT-ID-1 | 🚧 En curso (rama `claude/beautiful-wozniak-9gt40d`) |
+| MC-PATIENT-ID-1 | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-PATIENT-ID-1 en curso.** `GET /auth/me` expone `patientId` para pacientes;
-> `patient-mapping.ts` eliminado del frontend. Pendiente de merge.
+> **MC-PATIENT-ID-1 completado.** El bloqueo userId/patientId quedó resuelto:
+> `GET /auth/me` expone `patientId` para el paciente autenticado y Mi Pulso ya
+> no depende del mapping demo temporal en frontend (`patient-mapping.ts` eliminado).
 > Docs: [`../decisiones/0023-patient-id-en-auth-me.md`](../decisiones/0023-patient-id-en-auth-me.md),
 > [`../deploy/mi-pulso-api-readonly.md`](../deploy/mi-pulso-api-readonly.md).
-> No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> MC-PATIENT-ID-1 completado. La API expone patientId para el paciente autenticado y Mi Pulso ya no depende del mapping demo temporal. No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
