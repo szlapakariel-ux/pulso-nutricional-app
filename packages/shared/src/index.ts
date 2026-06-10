@@ -31,6 +31,14 @@ export type {
   PatientVisibilityNote,
 } from "./types/patient.js";
 
+// Tipos de Mi Pulso — vista del paciente (MC-6 — datos mock)
+export type {
+  PatientVisibleMeal,
+  PatientVisibleMealPlan,
+  PatientVisibleAgendaItem,
+  PatientTodayView,
+} from "./types/patient-today.js";
+
 // Tipos de planes alimentarios y agenda profesional (MC-5 — datos mock)
 export type {
   MealPlanId,
