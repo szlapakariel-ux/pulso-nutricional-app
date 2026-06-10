@@ -318,6 +318,31 @@
 
 ---
 
+## MC-WEB-3 — Smoke test y playbook de la web profesional
+
+- **Objetivo:** dejar una verificación repetible (smoke test) y un playbook
+  operativo de la web profesional desplegada en Railway, sin tocar código de
+  aplicación, Railway, Postgres, Mi Pulso ni dominio propio.
+- **Alcance permitido:**
+  - `scripts/smoke-web-profesional-railway.mjs` — verifica que la web se sirve
+    (`GET /` 200, marcadores HTML) y la cadena de datos de la API (health,
+    login demo, pacientes, ficha, plan, agenda). Sin dependencias externas.
+  - `docs/deploy/web-profesional-railway-playbook.md` — smoke test automatizado
+    + checklist manual de navegador (CORS, login UI) + tabla de diagnóstico.
+  - Script `smoke:web:railway` en el `package.json` raíz (igual que
+    `smoke:api:railway`).
+  - ADR 0021 documentando la decisión y sus límites.
+- **Qué NO tocar:** no código de web ni de API, no Railway, no Postgres, no
+  Prisma schema, no seed, no Mi Pulso, no dominio propio, no datos reales, no
+  deploy, no avanzar a MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - El smoke test corre sin dependencias y sale con exit code semántico (0/1).
+  - Configurable por `PULSO_WEB_BASE_URL` y `PULSO_API_BASE_URL`.
+  - El playbook cubre lo que el script no puede automatizar (CORS, UI).
+  - Documenta el límite de red del entorno Claude Code (egress proxy).
+
+---
+
 ## MC-API-CORS-CODE — CORS mínimo en la API para la web profesional
 
 - **Objetivo:** habilitar CORS mínimo y explícito en la API Fastify para que
@@ -419,6 +444,7 @@
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-WEB-1   | ✅ Completado (mergeado en `main`) |
 | MC-WEB-2   | ✅ Completado (desplegado en Railway) |
+| MC-WEB-3   | 🚧 En curso (rama `feat/mc-web-3-web-smoke-playbook`) |
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
