@@ -560,15 +560,14 @@
 | MC-MIPULSO-1 | ✅ Completado (mergeado en `main`) |
 | MC-PATIENT-ID-1 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-2 | ✅ Completado (mergeado en `main`) |
-| MC-MIPULSO-RWY-0 | 🚧 En curso (rama `claude/beautiful-wozniak-9gt40d`) |
+| MC-MIPULSO-RWY-0 | ✅ Completado (mergeado en `main`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-RWY-0 en curso.** Preflight documental para deploy controlado de
-> Mi Pulso en Railway en modo API: build/start, variables, dependencia CORS,
-> orden, rollback, brechas y riesgos. **No ejecuta deploy.**
+> **MC-MIPULSO-RWY-0 completado.** El preflight documental para deploy
+> controlado de Mi Pulso en Railway está listo.
 > Docs: [`../deploy/mi-pulso-railway-preflight.md`](../deploy/mi-pulso-railway-preflight.md),
 > [`../decisiones/0025-mi-pulso-railway-preflight.md`](../decisiones/0025-mi-pulso-railway-preflight.md).
-> No se avanza a deploy de Mi Pulso, ampliación de CORS, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> MC-MIPULSO-RWY-0 completado. El preflight documental para deploy controlado de Mi Pulso en Railway está listo. No se avanza a deploy real de Mi Pulso, ampliación CORS, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
