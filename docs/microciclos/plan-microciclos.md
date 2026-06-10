@@ -213,6 +213,29 @@
 
 ---
 
+## MC-10.5C — Auth y roles mínimos *(ciclo técnico insertado)*
+
+- **Objetivo:** base mínima de autenticación y roles sin romper el comportamiento
+  actual. `PULSO_AUTH_MODE=off` (default) mantiene todo sin cambio.
+- **Alcance permitido:**
+  - `packages/shared/src/types/auth.ts` — AuthRole, AuthUser, LoginRequest, LoginResponse, AuthSession.
+  - `packages/api/src/config/auth.ts` — selector + resolveJwtSecret() + augmentación de tipos JWT.
+  - `packages/api/src/mock-data/auth.mock.ts` — credenciales demo en memoria.
+  - `packages/api/src/services/auth.service.ts` — verifyDemoCredentials().
+  - `packages/api/src/controllers/auth.controller.ts` y `routes/auth.routes.ts`.
+  - `POST /auth/login`, `GET /auth/me`, `GET /auth/protected-demo`.
+  - Dependencia `@fastify/jwt` en `packages/api`.
+  - ADR 0014 documentando la decisión.
+- **Qué NO tocar:** no proteger endpoints existentes masivamente, no Railway, no UI,
+  no OAuth, no SSO, no datos reales, no avanzar a MC-11 sin autorización.
+- **Criterios de aceptación:**
+  - Con `PULSO_AUTH_MODE=off`: todos los endpoints existentes funcionan sin token.
+  - Con `PULSO_AUTH_MODE=demo`: login devuelve JWT, `/auth/me` verifica token, token
+    inválido/ausente devuelve 401, `/auth/protected-demo` requiere JWT.
+  - `pnpm type-check`, `pnpm build` y `pnpm lint` pasan sin error.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -258,11 +281,10 @@
 | MC-10      | ✅ Completado (mergeado en `main`) |
 | MC-10.5A   | ✅ Completado (mergeado en `main`) |
 | MC-10.5B   | ✅ Completado (mergeado en `main`) |
-| MC-10.5C   | Pendiente |
+| MC-10.5C   | 🔄 En curso (branch `feat/mc-10-5c-auth-roles-minimos`) |
 | MC-11..MC-12| Pendientes |
 
-> **MC-10.5B completado.** No se avanza a MC-10.5C ni MC-11 sin una nueva indicación explícita.
+> **MC-10.5C en curso.** Auth y roles mínimos sin protección obligatoria.
 > Decisión documentada en
-> [`../decisiones/0013-api-db-read-key-endpoints.md`](../decisiones/0013-api-db-read-key-endpoints.md).
-> Decisión documentada en
-> [`../decisiones/0012-prisma-persistencia-base.md`](../decisiones/0012-prisma-persistencia-base.md).
+> [`../decisiones/0014-auth-roles-minimos.md`](../decisiones/0014-auth-roles-minimos.md).
+> No se avanza a MC-10.5D ni MC-11 sin una nueva indicación explícita.
