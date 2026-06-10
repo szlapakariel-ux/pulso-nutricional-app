@@ -14,7 +14,8 @@
     "lint": "turbo run lint",
     "dev": "turbo run dev",
     "smoke:api:railway": "node scripts/smoke-api-railway.mjs",
-    "smoke:web:railway": "node scripts/smoke-web-profesional-railway.mjs"
+    "smoke:web:railway": "node scripts/smoke-web-profesional-railway.mjs",
+    "smoke:mi-pulso:railway": "node scripts/smoke-mi-pulso-railway.mjs"
   },
   "devDependencies": {
     "turbo": "^2.3.3",

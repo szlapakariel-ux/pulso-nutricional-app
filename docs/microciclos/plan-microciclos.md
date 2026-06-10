@@ -404,6 +404,32 @@
 
 ---
 
+## MC-MIPULSO-2 — Mi Pulso: smoke test y playbook de verificación API *(ciclo técnico)*
+
+- **Objetivo:** verificación end-to-end de Mi Pulso en modo API contra la API
+  Railway, sin deploy, sin tocar Railway, sin tocar Postgres, sin dominio propio
+  y sin avanzar a MC-11.
+- **Alcance permitido:**
+  - `scripts/smoke-mi-pulso-railway.mjs` — verifica la cadena API del paciente
+    demo: `/health`, login, `/auth/me` con `patientId` (MC-PATIENT-ID-1),
+    `/patients/:id/today` con plan y agenda. Sin dependencias externas.
+  - `docs/deploy/mi-pulso-api-readonly-playbook.md` — smoke test automatizado
+    + checklist manual para correr Mi Pulso local en modo api y verificar en
+    el navegador (CORS, login UI, vista Hoy).
+  - Script `smoke:mi-pulso:railway` en el `package.json` raíz.
+  - ADR 0024 documentando la decisión y sus límites.
+- **Qué NO tocar:** no código de Mi Pulso ni de la API, no Railway, no Postgres,
+  no Prisma schema, no seed, no deploy de Mi Pulso, no dominio propio, no avanzar
+  a MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - El smoke test corre sin dependencias y sale con exit code semántico (0/1).
+  - Configurable por `PULSO_API_BASE_URL`.
+  - Verifica `patientId` en la respuesta de `/auth/me` (MC-PATIENT-ID-1).
+  - El playbook cubre lo que el script no puede automatizar (CORS, UI).
+  - Documenta el límite de red del entorno Claude Code (egress proxy).
+
+---
+
 ## MC-API-CORS-CODE — CORS mínimo en la API para la web profesional
 
 - **Objetivo:** habilitar CORS mínimo y explícito en la API Fastify para que
@@ -509,14 +535,15 @@
 | MC-API-CORS-CODE | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-1 | ✅ Completado (mergeado en `main`) |
 | MC-PATIENT-ID-1 | ✅ Completado (mergeado en `main`) |
+| MC-MIPULSO-2 | 🚧 En curso (rama `claude/beautiful-wozniak-9gt40d`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-PATIENT-ID-1 completado.** El bloqueo userId/patientId quedó resuelto:
-> `GET /auth/me` expone `patientId` para el paciente autenticado y Mi Pulso ya
-> no depende del mapping demo temporal en frontend (`patient-mapping.ts` eliminado).
-> Docs: [`../decisiones/0023-patient-id-en-auth-me.md`](../decisiones/0023-patient-id-en-auth-me.md),
-> [`../deploy/mi-pulso-api-readonly.md`](../deploy/mi-pulso-api-readonly.md).
-> MC-PATIENT-ID-1 completado. La API expone patientId para el paciente autenticado y Mi Pulso ya no depende del mapping demo temporal. No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-MIPULSO-2 en curso.** Smoke test de la cadena API del paciente demo
+> (`smoke:mi-pulso:railway`) y playbook de verificación manual en el navegador.
+> Script: [`../../scripts/smoke-mi-pulso-railway.mjs`](../../scripts/smoke-mi-pulso-railway.mjs).
+> Docs: [`../deploy/mi-pulso-api-readonly-playbook.md`](../deploy/mi-pulso-api-readonly-playbook.md),
+> [`../decisiones/0024-mi-pulso-smoke-playbook.md`](../decisiones/0024-mi-pulso-smoke-playbook.md).
+> No se avanza a deploy de Mi Pulso, dominio, MC-11 ni MC-12 sin una nueva indicación explícita.
