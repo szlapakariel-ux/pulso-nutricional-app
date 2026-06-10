@@ -1,6 +1,12 @@
 import Fastify from "fastify";
 import jwt from "@fastify/jwt";
+import cors from "@fastify/cors";
 import { resolveJwtSecret } from "./config/auth.js";
+import {
+  buildCorsOriginValidator,
+  CORS_METHODS,
+  CORS_ALLOWED_HEADERS,
+} from "./config/cors.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { healthRoutes } from "./routes/health.routes.js";
 import { patientsRoutes } from "./routes/patients.routes.js";
@@ -22,6 +28,16 @@ export function buildApp() {
     logger: {
       level: process.env["LOG_LEVEL"] ?? "info",
     },
+  });
+
+  // CORS mínimo para la web profesional Railway — MC-API-CORS-CODE.
+  // Registrado antes de las rutas para que @fastify/cors responda el
+  // preflight OPTIONS. Bearer token (no cookies) → credentials=false.
+  app.register(cors, {
+    origin: buildCorsOriginValidator(),
+    methods: CORS_METHODS,
+    allowedHeaders: CORS_ALLOWED_HEADERS,
+    credentials: false,
   });
 
   // JWT plugin — registrado siempre; en modo off usa secret placeholder

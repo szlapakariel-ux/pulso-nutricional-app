@@ -293,6 +293,32 @@
 
 ---
 
+## MC-API-CORS-CODE — CORS mínimo en la API para la web profesional
+
+- **Objetivo:** habilitar CORS mínimo y explícito en la API Fastify para que
+  la web profesional Railway pueda llamar a `/auth/login`, `/auth/me`,
+  `/patients`, `/patients/:id`, `/patients/:id/meal-plan` y
+  `/patients/:id/agenda` desde el navegador.
+- **Alcance permitido:**
+  - Dependencia `@fastify/cors` en `packages/api`.
+  - `packages/api/src/config/cors.ts` — allowlist desde `CORS_ORIGIN` y
+    `PULSO_ALLOWED_ORIGINS`, + localhost de desarrollo.
+  - Registro de `@fastify/cors` en `packages/api/src/app.ts` antes de las rutas.
+  - `.env.example` documentando `CORS_ORIGIN` y `PULSO_ALLOWED_ORIGINS`.
+  - ADR 0020 y doc `docs/deploy/api-cors-web-profesional.md`.
+- **Qué NO tocar:** no Mi Pulso, no Postgres, no Prisma schema, no seed, no
+  datos, no dominio propio, no lógica de auth/pacientes/planes/agenda, no
+  relajar guards, no wildcard `*`, no Express ni paquete `cors`, no deploy,
+  no Railway desde el repo, no avanzar a MC-11.
+- **Criterios de aceptación:**
+  - API compila (`type-check`, `build`, `lint` sin error).
+  - CORS configurado con `@fastify/cors` (Fastify, no Express).
+  - Origen Railway web profesional y localhost permitidos; sin wildcard.
+  - Preflight `OPTIONS /auth/login` ya no cae en "route not found".
+  - Auth y guards no se relajan (`/patients` sin token sigue 401).
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -367,6 +393,7 @@
 | MC-10.5C   | ✅ Completado (mergeado en `main`) |
 | MC-10.5D   | ✅ Completado (mergeado en `main`) |
 | MC-WEB-1   | ✅ Completado (mergeado en `main`) |
+| MC-API-CORS-CODE | 🚧 En curso (rama `fix/mc-api-cors-code-fastify`) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
