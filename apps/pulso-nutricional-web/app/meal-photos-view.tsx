@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { MealPhotoLog, MealPhotoType, PatientDetail } from "@pulso/shared";
 import { isApiMode } from "../lib/data-config";
 import { getApiClient, ApiError } from "../lib/api-client";
+import { colors, fonts, radius, shadow } from "../lib/design-tokens";
 
 // ─── mock data ────────────────────────────────────────────────────────────────
 
@@ -46,28 +47,14 @@ const MEAL_TYPE_LABELS: Record<MealPhotoType, string> = {
   other: "Otro",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: "#fef3c7",
-  reviewed: "#dbeafe",
-  accepted: "#dcfce7",
-  flagged: "#fecaca",
+const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
+  pending: { bg: colors.pendingBg, text: colors.pendingText, label: "Pendiente" },
+  reviewed: { bg: colors.reviewedBg, text: colors.reviewedText, label: "Revisado" },
+  accepted: { bg: colors.acceptedBg, text: colors.acceptedText, label: "Aceptado" },
+  flagged: { bg: colors.flaggedBg, text: colors.flaggedText, label: "Seguimiento" },
 };
 
-const STATUS_TEXT_COLORS: Record<string, string> = {
-  pending: "#92400e",
-  reviewed: "#1e40af",
-  accepted: "#166534",
-  flagged: "#991b1b",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "⏳ Pendiente",
-  reviewed: "👁️ Revisado",
-  accepted: "✅ Aceptado",
-  flagged: "🚩 Seguimiento",
-};
-
-// ─── placeholder SVG ──────────────────────────────────────────────────────────
+// ─── placeholder ──────────────────────────────────────────────────────────────
 
 function PhotoPlaceholder({ mealType }: { mealType: MealPhotoType }) {
   const icon =
@@ -88,22 +75,22 @@ function PhotoPlaceholder({ mealType }: { mealType: MealPhotoType }) {
       style={{
         width: "100%",
         aspectRatio: "4/3",
-        background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
-        borderRadius: 8,
+        background: colors.bgMuted,
+        borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "0.5rem",
-        border: "1px dashed #d1d5db",
+        gap: "0.4rem",
+        border: `1px dashed ${colors.borderDefault}`,
+        borderBottom: "none",
       }}
     >
-      <span style={{ fontSize: "2.5rem" }}>{icon}</span>
+      <span style={{ fontSize: "2.25rem" }}>{icon}</span>
       <span
         style={{
-          fontSize: "0.75rem",
-          color: "#9ca3af",
-          fontStyle: "italic",
+          fontSize: "0.7rem",
+          color: colors.textSecondary,
           textAlign: "center",
           padding: "0 0.5rem",
         }}
@@ -141,9 +128,7 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
         .listMealPhotos(patient.id)
         .then((data) => setPhotos(data))
         .catch((err) => {
-          setLoadError(
-            err instanceof ApiError ? err.message : "Error al cargar fotos",
-          );
+          setLoadError(err instanceof ApiError ? err.message : "Error al cargar fotos");
           setPhotos([]);
         })
         .finally(() => setLoading(false));
@@ -167,19 +152,14 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
           photoId,
           { reviewStatus, professionalComment: comment || undefined },
         );
-        setPhotos((prev) =>
-          prev.map((p) => (p.id === photoId ? updated : p)),
-        );
+        setPhotos((prev) => prev.map((p) => (p.id === photoId ? updated : p)));
         setSelectedPhoto((prev) => (prev?.id === photoId ? updated : prev));
       } catch (err) {
-        setActionError(
-          err instanceof ApiError ? err.message : "Error al revisar foto",
-        );
+        setActionError(err instanceof ApiError ? err.message : "Error al revisar foto");
       } finally {
         setActionInProgress(null);
       }
     } else {
-      // mock mode: update locally
       setTimeout(() => {
         const now = new Date().toISOString();
         setPhotos((prev) =>
@@ -213,7 +193,7 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
 
   if (loading) {
     return (
-      <div style={{ padding: "2rem", textAlign: "center", color: "#9ca3af" }}>
+      <div style={{ padding: "2rem", textAlign: "center", color: colors.textSecondary }}>
         Cargando fotos…
       </div>
     );
@@ -224,29 +204,29 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
       <div
         style={{
           padding: "1rem",
-          background: "#fef2f2",
-          border: "1px solid #fecaca",
-          borderRadius: 10,
-          color: "#b91c1c",
+          background: colors.errorBg,
+          border: `1px solid ${colors.errorBorder}`,
+          borderRadius: radius.md,
+          color: colors.errorText,
           fontSize: "0.85rem",
         }}
       >
-        ❌ No se pudieron cargar las fotos: {loadError}
+        No se pudieron cargar las fotos: {loadError}
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* Banner modo */}
       <div
         style={{
-          background: useApi ? "#f0fdf4" : "#fffbe6",
-          border: `1px solid ${useApi ? "#bbf7d0" : "#ffe58f"}`,
-          borderRadius: 10,
-          padding: "0.75rem 1rem",
-          fontSize: "0.85rem",
-          color: useApi ? "#166534" : "#614700",
+          background: useApi ? colors.successBg : colors.warningBg,
+          border: `1px solid ${useApi ? colors.successBorder : colors.warningBorder}`,
+          borderRadius: radius.md,
+          padding: "0.65rem 1rem",
+          fontSize: "0.82rem",
+          color: useApi ? colors.successText : colors.warningText,
         }}
       >
         {useApi
@@ -258,32 +238,33 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
       {actionError && (
         <div
           style={{
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: 8,
+            background: colors.errorBg,
+            border: `1px solid ${colors.errorBorder}`,
+            borderRadius: radius.sm,
             padding: "0.65rem 0.9rem",
             fontSize: "0.82rem",
-            color: "#b91c1c",
+            color: colors.errorText,
           }}
         >
-          ❌ {actionError}
+          {actionError}
         </div>
       )}
 
       {photos.length === 0 ? (
         <div
           style={{
-            padding: "2rem",
+            padding: "2.5rem 2rem",
             textAlign: "center",
-            color: "#888",
-            border: "1px dashed #d9d9d9",
-            borderRadius: 12,
+            color: colors.textSecondary,
+            border: `1px dashed ${colors.borderDefault}`,
+            borderRadius: radius.lg,
+            background: colors.bgSurface,
           }}
         >
-          <p style={{ fontSize: "1.1rem", margin: "0 0 0.5rem" }}>
+          <p style={{ fontSize: "1rem", margin: "0 0 0.5rem", fontWeight: 500, color: colors.textPrimary }}>
             Sin fotos registradas
           </p>
-          <p style={{ margin: 0, fontSize: "0.9rem" }}>
+          <p style={{ margin: 0, fontSize: "0.875rem" }}>
             {useApi
               ? "Cuando el paciente suba fotos desde Mi Pulso, aparecerán aquí."
               : "No hay fotos ficticias para este paciente."}
@@ -296,8 +277,11 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
             <h3
               style={{
                 margin: "0 0 0.75rem",
-                fontSize: "0.95rem",
-                color: "#111",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.07em",
+                color: colors.textSecondary,
               }}
             >
               Fotos de comidas ({photos.length})
@@ -306,12 +290,13 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "1rem",
+                gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))",
+                gap: "0.85rem",
               }}
             >
               {photos.map((photo) => {
                 const isSelected = selectedPhoto?.id === photo.id;
+                const st = STATUS_STYLE[photo.reviewStatus] ?? STATUS_STYLE.pending;
                 return (
                   <div
                     key={photo.id}
@@ -321,55 +306,45 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                     }}
                     style={{
                       border: isSelected
-                        ? "2px solid #1677ff"
-                        : "1px solid #e5e5e5",
-                      borderRadius: 12,
+                        ? `2px solid ${colors.greenPrimary}`
+                        : `1px solid ${colors.borderDefault}`,
+                      borderRadius: radius.lg,
                       overflow: "hidden",
-                      background: "white",
+                      background: colors.bgSurface,
                       cursor: "pointer",
+                      boxShadow: isSelected ? shadow.elevated : shadow.card,
                       transition: "box-shadow 0.15s",
-                      boxShadow: isSelected
-                        ? "0 0 0 3px rgba(22,119,255,0.15)"
-                        : "none",
                     }}
                   >
-                    {/* Placeholder imagen */}
                     <PhotoPlaceholder mealType={photo.mealType} />
 
-                    {/* Metadata */}
-                    <div style={{ padding: "0.75rem" }}>
+                    <div style={{ padding: "0.7rem 0.85rem" }}>
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
-                          marginBottom: "0.4rem",
+                          marginBottom: "0.3rem",
                         }}
                       >
-                        <strong style={{ fontSize: "0.9rem", color: "#111" }}>
+                        <strong style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
                           {MEAL_TYPE_LABELS[photo.mealType]}
                         </strong>
                         <span
                           style={{
-                            fontSize: "0.7rem",
-                            background: STATUS_COLORS[photo.reviewStatus],
-                            color: STATUS_TEXT_COLORS[photo.reviewStatus],
+                            fontSize: "0.68rem",
+                            background: st.bg,
+                            color: st.text,
                             padding: "0.2rem 0.5rem",
-                            borderRadius: 4,
+                            borderRadius: radius.pill,
                             fontWeight: 600,
                           }}
                         >
-                          {STATUS_LABELS[photo.reviewStatus]}
+                          {st.label}
                         </span>
                       </div>
 
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "0.78rem",
-                          color: "#666",
-                        }}
-                      >
+                      <p style={{ margin: 0, fontSize: "0.75rem", color: colors.textSecondary, fontFamily: fonts.mono }}>
                         {new Date(photo.createdAt).toLocaleDateString("es-AR", {
                           day: "2-digit",
                           month: "short",
@@ -380,10 +355,9 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                       {photo.patientComment && (
                         <p
                           style={{
-                            margin: "0.35rem 0 0",
-                            fontSize: "0.78rem",
-                            color: "#444",
-                            fontStyle: "italic",
+                            margin: "0.3rem 0 0",
+                            fontSize: "0.75rem",
+                            color: colors.textSecondary,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -403,66 +377,73 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
           {selectedPhoto && (
             <section
               style={{
-                border: "1px solid #e5e5e5",
-                borderRadius: 12,
+                border: `1px solid ${colors.borderDefault}`,
+                borderRadius: radius.lg,
                 padding: "1.25rem",
-                background: "#fafafa",
+                background: colors.bgSurface,
+                boxShadow: shadow.card,
               }}
             >
-              <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem" }}>
-                Revisión —{" "}
-                {MEAL_TYPE_LABELS[selectedPhoto.mealType]}{" "}
-                ·{" "}
-                {new Date(selectedPhoto.createdAt).toLocaleDateString("es-AR", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })}
+              <h3
+                style={{
+                  margin: "0 0 1rem",
+                  fontFamily: fonts.heading,
+                  fontWeight: 600,
+                  fontSize: "0.95rem",
+                  color: colors.textPrimary,
+                }}
+              >
+                {MEAL_TYPE_LABELS[selectedPhoto.mealType]}
+                {" · "}
+                <span style={{ fontFamily: fonts.mono, fontWeight: 400, fontSize: "0.82rem", color: colors.textSecondary }}>
+                  {new Date(selectedPhoto.createdAt).toLocaleDateString("es-AR", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
               </h3>
 
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "200px 1fr",
+                  gridTemplateColumns: "190px 1fr",
                   gap: "1.25rem",
                   marginBottom: "1rem",
                 }}
               >
-                {/* Placeholder grande */}
                 <PhotoPlaceholder mealType={selectedPhoto.mealType} />
 
-                {/* Detalles */}
-                <div style={{ fontSize: "0.875rem", color: "#444" }}>
-                  <div style={{ marginBottom: "0.6rem" }}>
-                    <span style={{ color: "#888", fontWeight: 500 }}>
-                      Estado actual:
-                    </span>{" "}
-                    <span
-                      style={{
-                        background: STATUS_COLORS[selectedPhoto.reviewStatus],
-                        color: STATUS_TEXT_COLORS[selectedPhoto.reviewStatus],
-                        padding: "0.2rem 0.5rem",
-                        borderRadius: 4,
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {STATUS_LABELS[selectedPhoto.reviewStatus]}
+                <div style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
+                  <div style={{ marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{ color: colors.textSecondary, fontWeight: 500, fontSize: "0.82rem" }}>
+                      Estado:
                     </span>
+                    {(() => {
+                      const st = STATUS_STYLE[selectedPhoto.reviewStatus] ?? STATUS_STYLE.pending;
+                      return (
+                        <span
+                          style={{
+                            background: st.bg,
+                            color: st.text,
+                            padding: "0.2rem 0.55rem",
+                            borderRadius: radius.pill,
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          {st.label}
+                        </span>
+                      );
+                    })()}
                   </div>
 
                   {selectedPhoto.patientComment && (
                     <div style={{ marginBottom: "0.6rem" }}>
-                      <span style={{ color: "#888", fontWeight: 500 }}>
-                        Comentario del paciente:
-                      </span>
-                      <p
-                        style={{
-                          margin: "0.25rem 0 0",
-                          fontStyle: "italic",
-                          color: "#555",
-                        }}
-                      >
+                      <p style={{ margin: "0 0 0.2rem", color: colors.textSecondary, fontWeight: 500, fontSize: "0.78rem" }}>
+                        Comentario del paciente
+                      </p>
+                      <p style={{ margin: 0, color: colors.textPrimary }}>
                         "{selectedPhoto.patientComment}"
                       </p>
                     </div>
@@ -470,43 +451,34 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
 
                   {selectedPhoto.professionalComment && (
                     <div style={{ marginBottom: "0.6rem" }}>
-                      <span style={{ color: "#888", fontWeight: 500 }}>
-                        Tu comentario previo:
-                      </span>
-                      <p
-                        style={{
-                          margin: "0.25rem 0 0",
-                          color: "#1e40af",
-                          fontStyle: "italic",
-                        }}
-                      >
+                      <p style={{ margin: "0 0 0.2rem", color: colors.textSecondary, fontWeight: 500, fontSize: "0.78rem" }}>
+                        Tu comentario previo
+                      </p>
+                      <p style={{ margin: 0, color: colors.reviewedText }}>
                         "{selectedPhoto.professionalComment}"
                       </p>
                     </div>
                   )}
 
                   {selectedPhoto.reviewedAt && (
-                    <div style={{ marginBottom: "0.6rem", color: "#888", fontSize: "0.8rem" }}>
+                    <p style={{ margin: "0 0 0.6rem", color: colors.textSecondary, fontSize: "0.75rem", fontFamily: fonts.mono }}>
                       Revisado:{" "}
-                      {new Date(selectedPhoto.reviewedAt).toLocaleString(
-                        "es-AR",
-                      )}
-                    </div>
+                      {new Date(selectedPhoto.reviewedAt).toLocaleString("es-AR")}
+                    </p>
                   )}
 
-                  {/* storageKey — solo como metadata interna discreta */}
                   <div
                     style={{
-                      marginTop: "0.75rem",
-                      padding: "0.35rem 0.6rem",
-                      background: "#f3f4f6",
-                      borderRadius: 4,
-                      fontSize: "0.7rem",
-                      color: "#9ca3af",
-                      fontFamily: "monospace",
+                      padding: "0.3rem 0.6rem",
+                      background: colors.bgMuted,
+                      borderRadius: radius.sm,
+                      fontSize: "0.68rem",
+                      color: colors.textSecondary,
+                      fontFamily: fonts.mono,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
+                      border: `1px solid ${colors.borderDefault}`,
                     }}
                     title={selectedPhoto.storageKey}
                   >
@@ -515,19 +487,19 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                 </div>
               </div>
 
-              {/* Nota ReviewableData */}
+              {/* Nota revisable */}
               <div
                 style={{
-                  background: "white",
-                  border: "1px solid #dbeafe",
-                  borderRadius: 8,
+                  background: colors.infoBg,
+                  border: `1px solid ${colors.infoBorder}`,
+                  borderRadius: radius.sm,
                   padding: "0.65rem 0.9rem",
                   marginBottom: "1rem",
                   fontSize: "0.82rem",
-                  color: "#1e3a8a",
+                  color: colors.infoText,
                 }}
               >
-                ✓ Registro del paciente pendiente de tu revisión.
+                Registro del paciente pendiente de tu revisión.
               </div>
 
               {/* Comentario profesional */}
@@ -535,10 +507,12 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "0.85rem",
-                    fontWeight: 500,
-                    marginBottom: "0.4rem",
-                    color: "#374151",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    marginBottom: "0.35rem",
+                    color: colors.textSecondary,
                   }}
                 >
                   Comentario profesional (opcional)
@@ -550,13 +524,16 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                   rows={3}
                   style={{
                     width: "100%",
-                    padding: "0.6rem 0.75rem",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 6,
-                    fontSize: "0.85rem",
+                    padding: "0.55rem 0.75rem",
+                    border: `1px solid ${colors.borderDefault}`,
+                    borderRadius: radius.sm,
+                    fontSize: "0.875rem",
                     resize: "vertical",
                     boxSizing: "border-box",
-                    fontFamily: "inherit",
+                    fontFamily: fonts.body,
+                    color: colors.textPrimary,
+                    background: colors.bgSurface,
+                    outline: "none",
                   }}
                 />
               </div>
@@ -564,95 +541,64 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
               {/* Botones de acción */}
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 <button
-                  onClick={() =>
-                    void handleReview(
-                      selectedPhoto.id,
-                      "reviewed",
-                      commentDraft || undefined,
-                    )
-                  }
+                  onClick={() => void handleReview(selectedPhoto.id, "reviewed", commentDraft || undefined)}
                   disabled={actionInProgress === selectedPhoto.id}
                   style={{
-                    padding: "0.6rem 1rem",
-                    background: "#dbeafe",
-                    border: "1px solid #91d5ff",
-                    borderRadius: 6,
-                    color: "#0c63e4",
+                    padding: "0.55rem 1rem",
+                    background: colors.reviewedBg,
+                    border: `1px solid ${colors.reviewedText}22`,
+                    borderRadius: radius.sm,
+                    color: colors.reviewedText,
                     fontWeight: 600,
-                    fontSize: "0.85rem",
-                    cursor:
-                      actionInProgress === selectedPhoto.id
-                        ? "wait"
-                        : "pointer",
+                    fontSize: "0.82rem",
+                    fontFamily: fonts.body,
+                    cursor: actionInProgress === selectedPhoto.id ? "wait" : "pointer",
                     opacity: actionInProgress === selectedPhoto.id ? 0.6 : 1,
                   }}
                 >
-                  👁️ Marcar revisado
+                  Marcar revisado
                 </button>
 
                 <button
-                  onClick={() =>
-                    void handleReview(
-                      selectedPhoto.id,
-                      "accepted",
-                      commentDraft || undefined,
-                    )
-                  }
+                  onClick={() => void handleReview(selectedPhoto.id, "accepted", commentDraft || undefined)}
                   disabled={actionInProgress === selectedPhoto.id}
                   style={{
-                    padding: "0.6rem 1rem",
-                    background: "#dcfce7",
-                    border: "1px solid #86efac",
-                    borderRadius: 6,
-                    color: "#166534",
+                    padding: "0.55rem 1rem",
+                    background: colors.acceptedBg,
+                    border: `1px solid ${colors.acceptedText}22`,
+                    borderRadius: radius.sm,
+                    color: colors.acceptedText,
                     fontWeight: 600,
-                    fontSize: "0.85rem",
-                    cursor:
-                      actionInProgress === selectedPhoto.id
-                        ? "wait"
-                        : "pointer",
+                    fontSize: "0.82rem",
+                    fontFamily: fonts.body,
+                    cursor: actionInProgress === selectedPhoto.id ? "wait" : "pointer",
                     opacity: actionInProgress === selectedPhoto.id ? 0.6 : 1,
                   }}
                 >
-                  ✅ Aceptar
+                  Aceptar
                 </button>
 
                 <button
-                  onClick={() =>
-                    void handleReview(
-                      selectedPhoto.id,
-                      "flagged",
-                      commentDraft || undefined,
-                    )
-                  }
+                  onClick={() => void handleReview(selectedPhoto.id, "flagged", commentDraft || undefined)}
                   disabled={actionInProgress === selectedPhoto.id}
                   style={{
-                    padding: "0.6rem 1rem",
-                    background: "#fecaca",
-                    border: "1px solid #fca5a5",
-                    borderRadius: 6,
-                    color: "#992211",
+                    padding: "0.55rem 1rem",
+                    background: colors.flaggedBg,
+                    border: `1px solid ${colors.flaggedText}22`,
+                    borderRadius: radius.sm,
+                    color: colors.flaggedText,
                     fontWeight: 600,
-                    fontSize: "0.85rem",
-                    cursor:
-                      actionInProgress === selectedPhoto.id
-                        ? "wait"
-                        : "pointer",
+                    fontSize: "0.82rem",
+                    fontFamily: fonts.body,
+                    cursor: actionInProgress === selectedPhoto.id ? "wait" : "pointer",
                     opacity: actionInProgress === selectedPhoto.id ? 0.6 : 1,
                   }}
                 >
-                  🚩 Marcar seguimiento
+                  Marcar seguimiento
                 </button>
               </div>
 
-              <p
-                style={{
-                  margin: "0.75rem 0 0",
-                  fontSize: "0.75rem",
-                  color: "#666",
-                  fontStyle: "italic",
-                }}
-              >
+              <p style={{ margin: "0.75rem 0 0", fontSize: "0.72rem", color: colors.textSecondary }}>
                 Ambiente de demostración · Datos ficticios
               </p>
             </section>

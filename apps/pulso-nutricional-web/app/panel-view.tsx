@@ -12,6 +12,7 @@ import { MealPhotosView } from "./meal-photos-view";
 import { useApiAuth } from "../lib/use-api-auth";
 import { isApiMode } from "../lib/data-config";
 import { getApiClient } from "../lib/api-client";
+import { colors, fonts, radius, shadow } from "../lib/design-tokens";
 
 const STATUS_LABEL: Record<PatientStatus, string> = {
   active: "Activo",
@@ -19,13 +20,30 @@ const STATUS_LABEL: Record<PatientStatus, string> = {
   pending: "Pendiente",
 };
 
+const STATUS_DOT: Record<PatientStatus, string> = {
+  active: colors.greenPrimary,
+  inactive: colors.bgSubtle,
+  pending: colors.accentOrange,
+};
+
 const DEMO_PROF_EMAIL = "profesional-demo@pulsonutricional.demo";
 const DEMO_PROF_PASSWORD = "demo-profesional-2026";
+
+const TABS = [
+  { key: "ficha", label: "Ficha" },
+  { key: "consultas", label: "Consultas" },
+  { key: "plan", label: "Plan y agenda" },
+  { key: "revision", label: "Revisión" },
+  { key: "actividad", label: "Actividad" },
+  { key: "fotos", label: "Fotos" },
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
 
 export function PanelView() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"ficha" | "consultas" | "plan" | "revision" | "actividad" | "fotos">("ficha");
+  const [activeTab, setActiveTab] = useState<TabKey>("ficha");
   const [patientSummaries, setPatientSummaries] = useState<(PatientSummary | PatientDetail)[]>([...DEMO_PATIENTS]);
   const [selectedDetail, setSelectedDetail] = useState<PatientDetail | null>(null);
   const [loadingPatients, setLoadingPatients] = useState(false);
@@ -83,9 +101,7 @@ export function PanelView() {
           }
         });
     } else if (!useApi && selectedId) {
-      const detail = patientSummaries.find(
-        (p) => p.id === selectedId,
-      );
+      const detail = patientSummaries.find((p) => p.id === selectedId);
       if (detail && "professionalNote" in detail) {
         setSelectedDetail(detail as PatientDetail);
       }
@@ -121,27 +137,40 @@ export function PanelView() {
     return (
       <div style={{ maxWidth: "400px", margin: "3rem auto" }}>
         <div style={{ marginBottom: "2rem", textAlign: "center" }}>
-          <h2 style={{ margin: "0 0 0.5rem" }}>Pulso Nutricional</h2>
-          <p style={{ color: "#666", fontSize: "0.9rem", margin: 0 }}>Panel profesional</p>
+          <h2
+            style={{
+              margin: "0 0 0.4rem",
+              fontFamily: fonts.heading,
+              fontWeight: 700,
+              color: colors.greenDark,
+              fontSize: "1.5rem",
+            }}
+          >
+            Pulso Nutricional
+          </h2>
+          <p style={{ color: colors.textSecondary, fontSize: "0.9rem", margin: 0 }}>
+            Panel profesional
+          </p>
         </div>
 
         <div
           style={{
-            border: "1px solid #e5e5e5",
-            borderRadius: 8,
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.lg,
             padding: "2rem",
-            backgroundColor: "#fafafa",
+            backgroundColor: colors.bgSurface,
+            boxShadow: shadow.elevated,
           }}
         >
           {loginError && (
             <div
               style={{
                 marginBottom: "1.5rem",
-                padding: "0.75rem",
-                backgroundColor: "#fff2f0",
-                border: "1px solid #ffccc7",
-                borderRadius: 4,
-                color: "#d4380d",
+                padding: "0.75rem 1rem",
+                backgroundColor: colors.errorBg,
+                border: `1px solid ${colors.errorBorder}`,
+                borderRadius: radius.sm,
+                color: colors.errorText,
                 fontSize: "0.85rem",
               }}
             >
@@ -155,21 +184,31 @@ export function PanelView() {
             disabled={authState.loading}
             style={{
               width: "100%",
-              padding: "0.85rem",
-              backgroundColor: authState.loading ? "#d9d9d9" : "#1677ff",
+              padding: "0.9rem",
+              backgroundColor: authState.loading ? colors.bgMuted : colors.greenPrimary,
               color: "white",
               border: "none",
-              borderRadius: 6,
+              borderRadius: radius.md,
               fontSize: "1rem",
               fontWeight: 600,
+              fontFamily: fonts.body,
               cursor: authState.loading ? "not-allowed" : "pointer",
+              letterSpacing: "0.01em",
             }}
           >
             {authState.loading ? "Ingresando…" : "Ingresar a la demo profesional"}
           </button>
         </div>
 
-        <p style={{ marginTop: "1.5rem", color: "#aaa", fontSize: "0.82rem", textAlign: "center" }}>
+        <p
+          style={{
+            marginTop: "1.5rem",
+            color: colors.textSecondary,
+            fontSize: "0.78rem",
+            textAlign: "center",
+            opacity: 0.8,
+          }}
+        >
           Ambiente de demostración · Datos ficticios
         </p>
       </div>
@@ -177,17 +216,25 @@ export function PanelView() {
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "250px 1fr", gap: "2rem" }}>
-      {/* Demo banner and logout */}
-      <div style={{ gridColumn: "1 / -1", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: "2rem" }}>
+      {/* Top bar */}
+      <div
+        style={{
+          gridColumn: "1 / -1",
+          marginBottom: "0.5rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <div
           style={{
-            fontSize: "0.78rem",
-            color: "#888",
-            background: "#f5f5f5",
-            padding: "0.3rem 0.7rem",
-            borderRadius: 99,
-            border: "1px solid #e5e5e5",
+            fontSize: "0.75rem",
+            color: colors.textSecondary,
+            background: colors.bgMuted,
+            padding: "0.3rem 0.8rem",
+            borderRadius: radius.pill,
+            border: `1px solid ${colors.borderDefault}`,
           }}
         >
           Ambiente de demostración · Datos ficticios
@@ -197,12 +244,14 @@ export function PanelView() {
             type="button"
             onClick={handleLogout}
             style={{
-              padding: "0.5rem 1rem",
+              padding: "0.4rem 0.9rem",
               backgroundColor: "transparent",
-              border: "1px solid #d9d9d9",
-              borderRadius: 4,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.sm,
               cursor: "pointer",
-              fontSize: "0.85rem",
+              fontSize: "0.82rem",
+              color: colors.textSecondary,
+              fontFamily: fonts.body,
             }}
           >
             Cerrar sesión
@@ -213,27 +262,41 @@ export function PanelView() {
       {/* Sidebar: lista de pacientes */}
       <aside
         style={{
-          borderRight: "1px solid #e5e5e5",
+          borderRight: `1px solid ${colors.borderDefault}`,
           paddingRight: "1.5rem",
         }}
       >
-        <h3 style={{ fontSize: "1rem", marginBottom: "1rem", margin: 0 }}>
-          Pacientes {loadingPatients && "(cargando...)"}
+        <h3
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            letterSpacing: "0.07em",
+            textTransform: "uppercase",
+            color: colors.textSecondary,
+            margin: "0 0 0.85rem",
+          }}
+        >
+          Pacientes {loadingPatients && <span style={{ fontWeight: 400, opacity: 0.7 }}>(cargando…)</span>}
         </h3>
 
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar…"
+          placeholder="Buscar paciente…"
           aria-label="Buscar paciente"
           style={{
             width: "100%",
             padding: "0.5rem 0.75rem",
-            border: "1px solid #d9d9d9",
-            borderRadius: 8,
-            marginBottom: "1rem",
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.md,
+            marginBottom: "0.75rem",
             boxSizing: "border-box",
+            fontSize: "0.875rem",
+            fontFamily: fonts.body,
+            color: colors.textPrimary,
+            background: colors.bgSurface,
+            outline: "none",
           }}
         />
 
@@ -241,7 +304,7 @@ export function PanelView() {
           {filtered.map((p) => {
             const isSelected = p.id === selectedId;
             return (
-              <li key={p.id} style={{ marginBottom: "0.5rem" }}>
+              <li key={p.id} style={{ marginBottom: "0.35rem" }}>
                 <button
                   type="button"
                   onClick={() => {
@@ -251,16 +314,46 @@ export function PanelView() {
                   style={{
                     width: "100%",
                     textAlign: "left",
-                    padding: "0.75rem",
-                    border: isSelected ? "1px solid #1677ff" : "1px solid #e5e5e5",
-                    background: isSelected ? "#e6f4ff" : "#fff",
-                    borderRadius: 8,
+                    padding: "0.7rem 0.85rem",
+                    border: isSelected
+                      ? `1.5px solid ${colors.greenPrimary}`
+                      : `1px solid ${colors.borderDefault}`,
+                    background: isSelected ? "#EBF5EF" : colors.bgSurface,
+                    borderRadius: radius.md,
                     cursor: "pointer",
-                    fontSize: "0.9rem",
+                    fontFamily: fonts.body,
                   }}
                 >
-                  <strong>{p.fullName}</strong>
-                  <span style={{ display: "block", color: "#888", fontSize: "0.75rem", marginTop: "0.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: "50%",
+                        background: STATUS_DOT[p.status],
+                        flexShrink: 0,
+                        display: "inline-block",
+                      }}
+                    />
+                    <strong
+                      style={{
+                        fontSize: "0.875rem",
+                        color: isSelected ? colors.greenDark : colors.textPrimary,
+                        fontWeight: isSelected ? 600 : 500,
+                      }}
+                    >
+                      {p.fullName}
+                    </strong>
+                  </div>
+                  <span
+                    style={{
+                      display: "block",
+                      color: colors.textSecondary,
+                      fontSize: "0.72rem",
+                      marginTop: "0.2rem",
+                      marginLeft: "1.1rem",
+                    }}
+                  >
                     {STATUS_LABEL[p.status]}
                   </span>
                 </button>
@@ -268,128 +361,79 @@ export function PanelView() {
             );
           })}
           {filtered.length === 0 && (
-            <li style={{ color: "#888", fontSize: "0.9rem" }}>Sin resultados.</li>
+            <li style={{ color: colors.textSecondary, fontSize: "0.875rem", padding: "0.5rem 0" }}>
+              Sin resultados.
+            </li>
           )}
         </ul>
       </aside>
 
-      {/* Main: ficha y consultas */}
+      {/* Main content */}
       <main>
         {selected ? (
           <>
+            {/* Patient name header */}
+            <div style={{ marginBottom: "1.25rem" }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: fonts.heading,
+                  fontWeight: 700,
+                  fontSize: "1.3rem",
+                  color: colors.textPrimary,
+                  letterSpacing: "-0.2px",
+                }}
+              >
+                {selected.fullName}
+              </h2>
+            </div>
+
             {/* Tabs */}
             <div
               style={{
                 display: "flex",
-                gap: "1rem",
-                borderBottom: "1px solid #e5e5e5",
+                gap: "0",
+                borderBottom: `1px solid ${colors.borderDefault}`,
                 marginBottom: "1.5rem",
               }}
             >
-              <button
-                onClick={() => setActiveTab("ficha")}
-                style={{
-                  padding: "0.75rem 1rem",
-                  border: "none",
-                  borderBottom:
-                    activeTab === "ficha" ? "2px solid #1677ff" : "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: activeTab === "ficha" ? 600 : 400,
-                  color: activeTab === "ficha" ? "#1677ff" : "#666",
-                }}
-              >
-                Ficha
-              </button>
-              <button
-                onClick={() => setActiveTab("consultas")}
-                style={{
-                  padding: "0.75rem 1rem",
-                  border: "none",
-                  borderBottom:
-                    activeTab === "consultas" ? "2px solid #1677ff" : "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: activeTab === "consultas" ? 600 : 400,
-                  color: activeTab === "consultas" ? "#1677ff" : "#666",
-                }}
-              >
-                Consultas
-              </button>
-              <button
-                onClick={() => setActiveTab("plan")}
-                style={{
-                  padding: "0.75rem 1rem",
-                  border: "none",
-                  borderBottom:
-                    activeTab === "plan" ? "2px solid #1677ff" : "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: activeTab === "plan" ? 600 : 400,
-                  color: activeTab === "plan" ? "#1677ff" : "#666",
-                }}
-              >
-                Plan y agenda
-              </button>
-              <button
-                onClick={() => setActiveTab("revision")}
-                style={{
-                  padding: "0.75rem 1rem",
-                  border: "none",
-                  borderBottom:
-                    activeTab === "revision" ? "2px solid #1677ff" : "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: activeTab === "revision" ? 600 : 400,
-                  color: activeTab === "revision" ? "#1677ff" : "#666",
-                }}
-              >
-                Revisión
-              </button>
-              <button
-                onClick={() => setActiveTab("actividad")}
-                style={{
-                  padding: "0.75rem 1rem",
-                  border: "none",
-                  borderBottom:
-                    activeTab === "actividad" ? "2px solid #1677ff" : "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: activeTab === "actividad" ? 600 : 400,
-                  color: activeTab === "actividad" ? "#1677ff" : "#666",
-                }}
-              >
-                Actividad
-              </button>
-              <button
-                onClick={() => setActiveTab("fotos")}
-                style={{
-                  padding: "0.75rem 1rem",
-                  border: "none",
-                  borderBottom:
-                    activeTab === "fotos" ? "2px solid #1677ff" : "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: activeTab === "fotos" ? 600 : 400,
-                  color: activeTab === "fotos" ? "#1677ff" : "#666",
-                }}
-              >
-                Fotos
-              </button>
+              {TABS.map((tab) => {
+                const active = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    style={{
+                      padding: "0.65rem 1rem",
+                      border: "none",
+                      borderBottom: active
+                        ? `2px solid ${colors.greenPrimary}`
+                        : "2px solid transparent",
+                      background: "transparent",
+                      cursor: "pointer",
+                      fontWeight: active ? 600 : 400,
+                      fontSize: "0.875rem",
+                      color: active ? colors.greenDark : colors.textSecondary,
+                      fontFamily: fonts.body,
+                      transition: "color 0.15s",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Tab content */}
             {activeTab === "ficha" && <PatientsView patient={selected} />}
-            {activeTab === "consultas" && (
-              <ConsultationsView patient={selected} />
-            )}
+            {activeTab === "consultas" && <ConsultationsView patient={selected} />}
             {activeTab === "plan" && <MealPlanView patient={selected} />}
             {activeTab === "revision" && <ReviewInboxView patient={selected} />}
             {activeTab === "actividad" && <ActivityView patient={selected} />}
             {activeTab === "fotos" && <MealPhotosView patient={selected} />}
           </>
         ) : (
-          <p style={{ color: "#888" }}>Seleccioná un paciente para comenzar.</p>
+          <p style={{ color: colors.textSecondary }}>Seleccioná un paciente para comenzar.</p>
         )}
       </main>
     </div>

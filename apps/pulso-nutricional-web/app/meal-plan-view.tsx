@@ -9,6 +9,7 @@ import type {
   DayMoment,
 } from "@pulso/shared";
 import { MOCK_PLAN_ASSIGNMENTS, MOCK_DAILY_AGENDAS } from "./meal-plans.mock";
+import { colors, fonts, radius, shadow } from "../lib/design-tokens";
 
 const MOMENT_LABEL: Record<DayMoment, string> = {
   morning: "Mañana",
@@ -45,17 +46,25 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
     return (
       <div
         style={{
-          padding: "2rem",
+          padding: "2.5rem 2rem",
           textAlign: "center",
-          color: "#888",
-          border: "1px dashed #d9d9d9",
-          borderRadius: 12,
+          color: colors.textSecondary,
+          border: `1px dashed ${colors.borderDefault}`,
+          borderRadius: radius.lg,
+          background: colors.bgSurface,
         }}
       >
-        <p style={{ fontSize: "1.1rem", margin: "0 0 0.5rem" }}>
+        <p
+          style={{
+            fontSize: "1rem",
+            margin: "0 0 0.5rem",
+            fontWeight: 500,
+            color: colors.textPrimary,
+          }}
+        >
           Sin plan asignado
         </p>
-        <p style={{ margin: 0, fontSize: "0.9rem" }}>
+        <p style={{ margin: 0, fontSize: "0.875rem" }}>
           Este paciente todavía no tiene un plan alimentario asignado.
           Podrás asignar un plan alimentario próximamente.
         </p>
@@ -88,69 +97,80 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* PDF del plan */}
-      {assignment && (
-        <section>
-          <div
+      <section>
+        <div
+          style={{
+            padding: "1rem 1.25rem",
+            background: colors.warningBg,
+            border: `1px solid ${colors.warningBorder}`,
+            borderRadius: radius.lg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "1rem",
+            flexWrap: "wrap",
+            boxShadow: shadow.card,
+          }}
+        >
+          <div>
+            <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem", color: colors.textPrimary }}>
+              PDF del plan
+            </p>
+            <p style={{ margin: "0.15rem 0 0", fontSize: "0.78rem", color: colors.warningText }}>
+              Datos de demostración
+            </p>
+          </div>
+          <button
+            onClick={handleDownloadPdf}
+            disabled={pdfStatus === "loading"}
             style={{
-              padding: "1rem 1.25rem",
-              background: "#fffbe6",
-              border: "1px solid #ffe58f",
-              borderRadius: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "1rem",
-              flexWrap: "wrap",
+              padding: "0.5rem 1.1rem",
+              borderRadius: radius.sm,
+              border: `1px solid ${colors.accentBrown}`,
+              background: pdfStatus === "loading" ? colors.warningBg : colors.accentOrange,
+              color: pdfStatus === "loading" ? colors.accentBrown : "white",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              fontFamily: fonts.body,
+              cursor: pdfStatus === "loading" ? "wait" : "pointer",
+              whiteSpace: "nowrap",
             }}
           >
-            <div>
-              <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>
-                PDF del plan
-              </p>
-              <p style={{ margin: "0.2rem 0 0", fontSize: "0.8rem", color: "#92400e" }}>
-                Datos de demostración
-              </p>
-            </div>
-            <button
-              onClick={handleDownloadPdf}
-              disabled={pdfStatus === "loading"}
-              style={{
-                padding: "0.5rem 1.1rem",
-                borderRadius: 8,
-                border: "1px solid #d97706",
-                background: pdfStatus === "loading" ? "#fef3c7" : "#f59e0b",
-                color: pdfStatus === "loading" ? "#92400e" : "white",
-                fontWeight: 600,
-                fontSize: "0.9rem",
-                cursor: pdfStatus === "loading" ? "wait" : "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {pdfStatus === "loading"
-                ? "Generando..."
-                : pdfStatus === "done"
-                  ? "Descargado"
-                  : pdfStatus === "error"
-                    ? "Error al descargar"
-                    : "Descargar PDF"}
-            </button>
-          </div>
-        </section>
-      )}
+            {pdfStatus === "loading"
+              ? "Generando..."
+              : pdfStatus === "done"
+                ? "Descargado"
+                : pdfStatus === "error"
+                  ? "Error al descargar"
+                  : "Descargar PDF"}
+          </button>
+        </div>
+      </section>
 
       {/* Plan alimentario */}
       <section>
-        <h3 style={{ fontSize: "1.1rem", margin: "0 0 1rem" }}>
+        <h3
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.07em",
+            color: colors.textSecondary,
+            margin: "0 0 0.75rem",
+          }}
+        >
           Plan alimentario
         </h3>
 
         <div
           style={{
-            border: "1px solid #e5e5e5",
-            borderRadius: 12,
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.lg,
             padding: "1.25rem",
+            background: colors.bgSurface,
+            boxShadow: shadow.card,
           }}
         >
           <div
@@ -158,49 +178,86 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              marginBottom: "0.75rem",
+              marginBottom: "0.85rem",
             }}
           >
             <div>
-              <h4 style={{ margin: 0 }}>{plan.name}</h4>
-              <p style={{ margin: "0.25rem 0 0", color: "#888", fontSize: "0.85rem" }}>
-                Estado: {plan.status} · Desde: {assignment.startDate}
+              <h4
+                style={{
+                  margin: 0,
+                  fontFamily: fonts.heading,
+                  fontWeight: 700,
+                  fontSize: "1.05rem",
+                  color: colors.textPrimary,
+                }}
+              >
+                {plan.name}
+              </h4>
+              <p
+                style={{
+                  margin: "0.2rem 0 0",
+                  color: colors.textSecondary,
+                  fontSize: "0.78rem",
+                  fontFamily: fonts.mono,
+                }}
+              >
+                {plan.status} · Desde: {assignment.startDate}
               </p>
             </div>
           </div>
 
-          <p style={{ margin: "0 0 1rem", fontSize: "0.9rem", color: "#444" }}>
+          <p style={{ margin: "0 0 1rem", fontSize: "0.875rem", color: colors.textPrimary }}>
             {plan.description}
           </p>
 
-          {/* Indicaciones generales — visible al paciente */}
+          {/* Indicaciones generales */}
           <div
             style={{
               padding: "0.75rem 1rem",
-              background: "#e6f7ff",
-              border: "1px solid #91d5ff",
-              borderRadius: 8,
+              background: colors.infoBg,
+              border: `1px solid ${colors.infoBorder}`,
+              borderRadius: radius.sm,
               marginBottom: "1rem",
             }}
           >
-            <p style={{ margin: "0 0 0.25rem", fontWeight: 600, fontSize: "0.85rem" }}>
+            <p
+              style={{
+                margin: "0 0 0.25rem",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                color: colors.infoText,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
               Indicaciones generales
             </p>
-            <p style={{ margin: 0, fontSize: "0.9rem" }}>{plan.generalIndications}</p>
-            <p style={{ margin: "0.5rem 0 0", fontSize: "0.75rem", color: "#666" }}>
+            <p style={{ margin: 0, fontSize: "0.875rem", color: colors.textPrimary }}>
+              {plan.generalIndications}
+            </p>
+            <p style={{ margin: "0.4rem 0 0", fontSize: "0.72rem", color: colors.textSecondary }}>
               Visible al paciente en Mi Pulso.
             </p>
           </div>
 
           {/* Comidas del plan */}
-          <h5 style={{ margin: "0 0 0.75rem", fontSize: "0.95rem" }}>
+          <p
+            style={{
+              margin: "0 0 0.65rem",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: colors.textSecondary,
+            }}
+          >
             Comidas del plan
-          </h5>
+          </p>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "0.75rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+              gap: "0.65rem",
             }}
           >
             {[...plan.meals]
@@ -209,41 +266,49 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                 <div
                   key={meal.id}
                   style={{
-                    padding: "0.75rem",
-                    background: "#fafafa",
-                    border: "1px solid #e5e5e5",
-                    borderRadius: 8,
+                    padding: "0.75rem 0.85rem",
+                    background: colors.bgBase,
+                    border: `1px solid ${colors.borderDefault}`,
+                    borderRadius: radius.md,
                   }}
                 >
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
-                      marginBottom: "0.25rem",
+                      marginBottom: "0.2rem",
                     }}
                   >
-                    <strong style={{ fontSize: "0.9rem" }}>{meal.name}</strong>
-                    <span style={{ color: "#888", fontSize: "0.8rem" }}>
+                    <strong style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
+                      {meal.name}
+                    </strong>
+                    <span
+                      style={{
+                        color: colors.textSecondary,
+                        fontSize: "0.75rem",
+                        fontFamily: fonts.mono,
+                      }}
+                    >
                       {meal.timeHint}
                     </span>
                   </div>
-                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#555" }}>
+                  <p style={{ margin: "0 0 0.4rem", fontSize: "0.82rem", color: colors.textSecondary }}>
                     {meal.description}
                   </p>
                   {meal.portionHint && (
-                    <p style={{ margin: "0.25rem 0 0", fontSize: "0.75rem", color: "#aaa" }}>
+                    <p style={{ margin: "0 0 0.4rem", fontSize: "0.72rem", color: colors.textSecondary }}>
                       {meal.portionHint}
                     </p>
                   )}
                   <span
                     style={{
                       display: "inline-block",
-                      marginTop: "0.5rem",
-                      fontSize: "0.75rem",
-                      background: "#f0f0f0",
-                      padding: "0.1rem 0.4rem",
-                      borderRadius: 4,
-                      color: "#666",
+                      fontSize: "0.7rem",
+                      background: colors.bgMuted,
+                      padding: "0.15rem 0.45rem",
+                      borderRadius: radius.pill,
+                      color: colors.textSecondary,
+                      border: `1px solid ${colors.borderDefault}`,
                     }}
                   >
                     {MOMENT_LABEL[meal.moment]}
@@ -255,18 +320,29 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
           {/* Nota profesional interna */}
           <div
             style={{
-              marginTop: "1.25rem",
+              marginTop: "1.1rem",
               padding: "0.75rem 1rem",
-              background: "#f6ffed",
-              border: "1px solid #b7eb8f",
-              borderRadius: 8,
+              background: colors.successBg,
+              border: `1px solid ${colors.successBorder}`,
+              borderRadius: radius.sm,
             }}
           >
-            <p style={{ margin: "0 0 0.25rem", fontWeight: 600, fontSize: "0.85rem" }}>
+            <p
+              style={{
+                margin: "0 0 0.25rem",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                color: colors.greenDark,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
               Nota profesional
             </p>
-            <p style={{ margin: 0, fontSize: "0.9rem" }}>{plan.professionalNote}</p>
-            <p style={{ margin: "0.5rem 0 0", fontSize: "0.75rem", color: "#888" }}>
+            <p style={{ margin: 0, fontSize: "0.875rem", color: colors.textPrimary }}>
+              {plan.professionalNote}
+            </p>
+            <p style={{ margin: "0.4rem 0 0", fontSize: "0.72rem", color: colors.textSecondary }}>
               Visible solo para la profesional · nunca se muestra al paciente.
             </p>
           </div>
@@ -275,10 +351,29 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
 
       {/* Agenda diaria */}
       <section>
-        <h3 style={{ fontSize: "1.1rem", margin: "0 0 1rem" }}>
+        <h3
+          style={{
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.07em",
+            color: colors.textSecondary,
+            margin: "0 0 0.75rem",
+          }}
+        >
           Agenda del día
           {agenda && (
-            <span style={{ fontWeight: 400, color: "#888", fontSize: "0.85rem", marginLeft: "0.5rem" }}>
+            <span
+              style={{
+                fontWeight: 400,
+                color: colors.textSecondary,
+                fontFamily: fonts.mono,
+                fontSize: "0.72rem",
+                marginLeft: "0.5rem",
+                textTransform: "none",
+                letterSpacing: 0,
+              }}
+            >
               ({agenda.date})
             </span>
           )}
@@ -287,9 +382,11 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
         {agenda ? (
           <div
             style={{
-              border: "1px solid #e5e5e5",
-              borderRadius: 12,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.lg,
               overflow: "hidden",
+              background: colors.bgSurface,
+              boxShadow: shadow.card,
             }}
           >
             <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
@@ -301,16 +398,16 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                     style={{
                       display: "flex",
                       alignItems: "flex-start",
-                      gap: "1rem",
-                      padding: "0.9rem 1.25rem",
+                      gap: "0.85rem",
+                      padding: "0.85rem 1.1rem",
                       borderBottom:
                         idx < agenda.items.length - 1
-                          ? "1px solid #f0f0f0"
+                          ? `1px solid ${colors.bgMuted}`
                           : "none",
-                      background: "white",
+                      background: colors.bgSurface,
                     }}
                   >
-                    <span style={{ fontSize: "1.4rem", lineHeight: 1.2 }}>
+                    <span style={{ fontSize: "1.25rem", lineHeight: 1.2, flexShrink: 0 }}>
                       {ITEM_TYPE_ICON[item.type]}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -319,14 +416,18 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                           display: "flex",
                           justifyContent: "space-between",
                           gap: "0.5rem",
+                          marginBottom: "0.15rem",
                         }}
                       >
-                        <strong style={{ fontSize: "0.95rem" }}>{item.title}</strong>
+                        <strong style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
+                          {item.title}
+                        </strong>
                         <span
                           style={{
-                            color: "#888",
-                            fontSize: "0.85rem",
+                            color: colors.textSecondary,
+                            fontSize: "0.78rem",
                             whiteSpace: "nowrap",
+                            fontFamily: fonts.mono,
                           }}
                         >
                           {item.timeHint}
@@ -335,9 +436,9 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                       {item.description && (
                         <p
                           style={{
-                            margin: "0.2rem 0 0",
-                            fontSize: "0.85rem",
-                            color: "#555",
+                            margin: "0 0 0.3rem",
+                            fontSize: "0.82rem",
+                            color: colors.textSecondary,
                           }}
                         >
                           {item.description}
@@ -346,12 +447,12 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                       <span
                         style={{
                           display: "inline-block",
-                          marginTop: "0.35rem",
-                          fontSize: "0.75rem",
-                          background: "#f5f5f5",
-                          padding: "0.1rem 0.4rem",
-                          borderRadius: 4,
-                          color: "#888",
+                          fontSize: "0.7rem",
+                          background: colors.bgMuted,
+                          padding: "0.15rem 0.45rem",
+                          borderRadius: radius.pill,
+                          color: colors.textSecondary,
+                          border: `1px solid ${colors.borderDefault}`,
                         }}
                       >
                         {MOMENT_LABEL[item.moment]}
@@ -361,36 +462,37 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                 ))}
             </ul>
 
-            {/* Nota profesional de la agenda */}
             {agenda.professionalNote && (
               <div
                 style={{
-                  padding: "0.75rem 1.25rem",
-                  background: "#f6ffed",
-                  borderTop: "1px solid #b7eb8f",
+                  padding: "0.75rem 1.1rem",
+                  background: colors.successBg,
+                  borderTop: `1px solid ${colors.successBorder}`,
                 }}
               >
                 <p
                   style={{
-                    margin: "0 0 0.25rem",
+                    margin: "0 0 0.2rem",
                     fontWeight: 600,
-                    fontSize: "0.85rem",
+                    fontSize: "0.75rem",
+                    color: colors.greenDark,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
                   }}
                 >
                   Nota profesional de la agenda
                 </p>
-                <p style={{ margin: 0, fontSize: "0.9rem" }}>
+                <p style={{ margin: 0, fontSize: "0.875rem", color: colors.textPrimary }}>
                   {agenda.professionalNote}
                 </p>
                 <p
                   style={{
-                    margin: "0.5rem 0 0",
-                    fontSize: "0.75rem",
-                    color: "#888",
+                    margin: "0.4rem 0 0",
+                    fontSize: "0.72rem",
+                    color: colors.textSecondary,
                   }}
                 >
-                  Visible solo para la profesional · nunca se muestra al
-                  paciente.
+                  Visible solo para la profesional · nunca se muestra al paciente.
                 </p>
               </div>
             )}
@@ -398,11 +500,12 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
         ) : (
           <div
             style={{
-              padding: "1.5rem",
+              padding: "1.5rem 2rem",
               textAlign: "center",
-              color: "#888",
-              border: "1px dashed #d9d9d9",
-              borderRadius: 12,
+              color: colors.textSecondary,
+              border: `1px dashed ${colors.borderDefault}`,
+              borderRadius: radius.lg,
+              background: colors.bgSurface,
             }}
           >
             Sin agenda generada para hoy.

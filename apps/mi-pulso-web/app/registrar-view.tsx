@@ -13,12 +13,35 @@ import { DEMO_ACTIVITY_MODULE_ACTIVE } from "./activity.mock";
 import { getDataConfig } from "../lib/data-config";
 import { ApiError, getApiClient } from "../lib/api-client";
 import { usePatientAuth } from "../lib/use-patient-auth";
+import { colors, fonts, radius } from "../lib/design-tokens";
 
 interface RegistroEnviado {
   tipo: "comida" | "peso" | "nota" | "actividad";
   timestamp: string;
   apiSent?: boolean;
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: "0.5rem 0.65rem",
+  border: `1px solid ${colors.borderDefault}`,
+  borderRadius: radius.sm,
+  fontSize: "0.875rem",
+  boxSizing: "border-box" as const,
+  fontFamily: fonts.body,
+  color: colors.textPrimary,
+  background: colors.bgSurface,
+};
+
+const labelStyle = {
+  display: "block",
+  fontSize: "0.75rem",
+  fontWeight: 600,
+  marginBottom: "0.35rem",
+  color: colors.textSecondary,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.04em",
+};
 
 export function RegistrarView() {
   const auth = usePatientAuth();
@@ -28,39 +51,25 @@ export function RegistrarView() {
   const [activeTab, setActiveTab] = useState<"comida" | "peso" | "nota" | "actividad">(
     "comida"
   );
-  const [registrosEnviados, setRegistrosEnviados] = useState<RegistroEnviado[]>(
-    []
-  );
+  const [registrosEnviados, setRegistrosEnviados] = useState<RegistroEnviado[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Comida
-  const [mealDate, setMealDate] = useState(
-    new Date().toISOString().split("T")[0] ?? ""
-  );
+  const [mealDate, setMealDate] = useState(new Date().toISOString().split("T")[0] ?? "");
   const [mealTime, setMealTime] = useState("breakfast");
   const [mealDescription, setMealDescription] = useState("");
   const [mealPortion, setMealPortion] = useState("");
   const [mealNotes, setMealNotes] = useState("");
 
-  // Peso
-  const [weightDate, setWeightDate] = useState(
-    new Date().toISOString().split("T")[0] ?? ""
-  );
+  const [weightDate, setWeightDate] = useState(new Date().toISOString().split("T")[0] ?? "");
   const [weight, setWeight] = useState("");
   const [weightNotes, setWeightNotes] = useState("");
 
-  // Nota
-  const [noteType, setNoteType] = useState<"question" | "observation" | "concern">(
-    "question"
-  );
+  const [noteType, setNoteType] = useState<"question" | "observation" | "concern">("question");
   const [noteSubject, setNoteSubject] = useState("");
   const [noteBody, setNoteBody] = useState("");
 
-  // Actividad
-  const [actDate, setActDate] = useState(
-    new Date().toISOString().split("T")[0] ?? ""
-  );
+  const [actDate, setActDate] = useState(new Date().toISOString().split("T")[0] ?? "");
   const [actType, setActType] = useState<ActivityType>("walking");
   const [actDuration, setActDuration] = useState("");
   const [actIntensity, setActIntensity] = useState<ActivityIntensity>("low");
@@ -91,9 +100,7 @@ export function RegistrarView() {
         setMealPortion("");
         setMealNotes("");
       } catch (err) {
-        setSubmitError(
-          err instanceof ApiError ? err.message : "Error al enviar comida",
-        );
+        setSubmitError(err instanceof ApiError ? err.message : "Error al enviar comida");
       } finally {
         setSubmitting(false);
       }
@@ -131,9 +138,7 @@ export function RegistrarView() {
         setWeight("");
         setWeightNotes("");
       } catch (err) {
-        setSubmitError(
-          err instanceof ApiError ? err.message : "Error al enviar peso",
-        );
+        setSubmitError(err instanceof ApiError ? err.message : "Error al enviar peso");
       } finally {
         setSubmitting(false);
       }
@@ -165,7 +170,6 @@ export function RegistrarView() {
       ...prev,
       { tipo: "actividad", timestamp: new Date().toISOString(), apiSent: false },
     ]);
-
     setActDuration("");
     setActNotes("");
   };
@@ -192,9 +196,7 @@ export function RegistrarView() {
         setNoteSubject("");
         setNoteBody("");
       } catch (err) {
-        setSubmitError(
-          err instanceof ApiError ? err.message : "Error al enviar nota",
-        );
+        setSubmitError(err instanceof ApiError ? err.message : "Error al enviar nota");
       } finally {
         setSubmitting(false);
       }
@@ -215,38 +217,36 @@ export function RegistrarView() {
         maxWidth: 430,
         margin: "0 auto",
         minHeight: "100dvh",
-        background: "#f9fafb",
-        fontFamily: "system-ui, -apple-system, sans-serif",
+        background: colors.bgBase,
+        fontFamily: fonts.body,
       }}
     >
-      {/* Header */}
       <header
         style={{
-          background: "#2563eb",
+          background: colors.greenDark,
           color: "white",
-          padding: "1rem 1.25rem 1.25rem",
+          padding: "1rem 1.25rem 1.2rem",
           position: "sticky",
           top: 0,
           zIndex: 10,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.15rem" }}>
-          <span style={{ fontSize: "1.35rem", fontWeight: 700, letterSpacing: "-0.5px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.1rem" }}>
+          <span style={{ fontSize: "1.3rem", fontWeight: 700, letterSpacing: "-0.3px", fontFamily: fonts.heading }}>
             Mi Pulso
           </span>
           <span
             style={{
-              fontSize: "0.7rem",
-              background: "rgba(255,255,255,0.25)",
-              padding: "0.1rem 0.45rem",
+              fontSize: "0.68rem",
+              background: "rgba(255,255,255,0.22)",
+              padding: "0.1rem 0.5rem",
               borderRadius: 99,
-              marginLeft: "0.25rem",
             }}
           >
             demo
           </span>
         </div>
-        <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>
+        <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.8 }}>
           Registrar
         </p>
       </header>
@@ -256,28 +256,27 @@ export function RegistrarView() {
         {useApi && auth.user?.patientId ? (
           <div
             style={{
-              background: "#f0fdf4",
-              border: "1px solid #bbf7d0",
-              borderRadius: 10,
+              background: colors.successBg,
+              border: `1px solid ${colors.successBorder}`,
+              borderRadius: radius.md,
               padding: "0.6rem 0.9rem",
               marginBottom: "1rem",
-              fontSize: "0.8rem",
-              color: "#166534",
+              fontSize: "0.78rem",
+              color: colors.successText,
             }}
           >
-            ✓ Sesión activa ({auth.user.email ?? "paciente"}). Tus registros se
-            envían a la API y quedan pendientes de revisión profesional.
+            Sesión activa ({auth.user.email ?? "paciente"}). Tus registros se envían a tu profesional y quedan pendientes de revisión.
           </div>
         ) : useApi ? (
           <div
             style={{
-              background: "#fff7ed",
-              border: "1px solid #fed7aa",
-              borderRadius: 10,
+              background: colors.warningBg,
+              border: `1px solid ${colors.warningBorder}`,
+              borderRadius: radius.md,
               padding: "0.6rem 0.9rem",
               marginBottom: "1rem",
-              fontSize: "0.8rem",
-              color: "#9a3412",
+              fontSize: "0.78rem",
+              color: colors.warningText,
             }}
           >
             Iniciá sesión en la vista Hoy para enviar tus registros a tu profesional.
@@ -285,17 +284,16 @@ export function RegistrarView() {
         ) : (
           <div
             style={{
-              background: "#fffbe6",
-              border: "1px solid #ffe58f",
-              borderRadius: 10,
+              background: colors.warningBg,
+              border: `1px solid ${colors.warningBorder}`,
+              borderRadius: radius.md,
               padding: "0.6rem 0.9rem",
               marginBottom: "1rem",
-              fontSize: "0.8rem",
-              color: "#614700",
+              fontSize: "0.78rem",
+              color: colors.warningText,
             }}
           >
-            ⚠️ Datos ficticios de demostración. Tus registros quedarán
-            pendientes de revisión por tu profesional.
+            Datos ficticios de demostración. Tus registros quedarán pendientes de revisión por tu profesional.
           </div>
         )}
 
@@ -303,16 +301,16 @@ export function RegistrarView() {
         {submitError && (
           <div
             style={{
-              background: "#fef2f2",
-              border: "1px solid #fecaca",
-              borderRadius: 10,
+              background: colors.errorBg,
+              border: `1px solid ${colors.errorBorder}`,
+              borderRadius: radius.md,
               padding: "0.6rem 0.9rem",
               marginBottom: "1rem",
-              fontSize: "0.8rem",
-              color: "#b91c1c",
+              fontSize: "0.78rem",
+              color: colors.errorText,
             }}
           >
-            ❌ {submitError}
+            {submitError}
           </div>
         )}
 
@@ -320,10 +318,9 @@ export function RegistrarView() {
         <div
           style={{
             display: "flex",
-            gap: "0.5rem",
+            gap: "0",
             marginBottom: "1.25rem",
-            borderBottom: "1px solid #e5e7eb",
-            flexWrap: "wrap",
+            borderBottom: `1px solid ${colors.borderDefault}`,
           }}
         >
           {(["comida", "peso", "nota"] as const).map((tab) => (
@@ -331,36 +328,38 @@ export function RegistrarView() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: "0.75rem 1rem",
+                padding: "0.65rem 0.9rem",
                 border: "none",
                 background: "transparent",
-                borderBottom: activeTab === tab ? "2px solid #2563eb" : "none",
-                color: activeTab === tab ? "#2563eb" : "#6b7280",
+                borderBottom: activeTab === tab ? `2px solid ${colors.greenPrimary}` : "2px solid transparent",
+                color: activeTab === tab ? colors.greenDark : colors.textSecondary,
                 fontWeight: activeTab === tab ? 600 : 400,
                 cursor: "pointer",
-                fontSize: "0.9rem",
+                fontSize: "0.875rem",
+                fontFamily: fonts.body,
               }}
             >
-              {tab === "comida" && "🍽 Comida"}
-              {tab === "peso" && "⚖️ Peso"}
-              {tab === "nota" && "💬 Nota"}
+              {tab === "comida" && "Comida"}
+              {tab === "peso" && "Peso"}
+              {tab === "nota" && "Nota"}
             </button>
           ))}
           {DEMO_ACTIVITY_MODULE_ACTIVE && (
             <button
               onClick={() => setActiveTab("actividad")}
               style={{
-                padding: "0.75rem 1rem",
+                padding: "0.65rem 0.9rem",
                 border: "none",
                 background: "transparent",
-                borderBottom: activeTab === "actividad" ? "2px solid #2563eb" : "none",
-                color: activeTab === "actividad" ? "#2563eb" : "#6b7280",
+                borderBottom: activeTab === "actividad" ? `2px solid ${colors.greenPrimary}` : "2px solid transparent",
+                color: activeTab === "actividad" ? colors.greenDark : colors.textSecondary,
                 fontWeight: activeTab === "actividad" ? 600 : 400,
                 cursor: "pointer",
-                fontSize: "0.9rem",
+                fontSize: "0.875rem",
+                fontFamily: fonts.body,
               }}
             >
-              🏃 Actividad
+              Actividad
             </button>
           )}
         </div>
@@ -370,58 +369,25 @@ export function RegistrarView() {
           <form
             onSubmit={handleSubmitMeal}
             style={{
-              background: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
+              background: colors.bgSurface,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.lg,
               padding: "1.25rem",
               marginBottom: "1.5rem",
             }}
           >
-            <h3
-              style={{
-                margin: "0 0 1rem",
-                fontSize: "1rem",
-                color: "#111827",
-              }}
-            >
+            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
               Registrar comida
             </h3>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Fecha
-              </label>
-              <input
-                type="date"
-                value={mealDate}
-                onChange={(e) => setMealDate(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
-              />
+              <label style={labelStyle}>Fecha</label>
+              <input type="date" value={mealDate} onChange={(e) => setMealDate(e.target.value)} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Momento del día
-              </label>
-              <select
-                value={mealTime}
-                onChange={(e) => setMealTime(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
-              >
+              <label style={labelStyle}>Momento del día</label>
+              <select value={mealTime} onChange={(e) => setMealTime(e.target.value)} style={inputStyle}>
                 <option value="breakfast">Desayuno</option>
                 <option value="mid_morning">Media mañana</option>
                 <option value="lunch">Almuerzo</option>
@@ -433,80 +399,49 @@ export function RegistrarView() {
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                ¿Qué comiste?
-              </label>
+              <label style={labelStyle}>¿Qué comiste?</label>
               <textarea
                 value={mealDescription}
                 onChange={(e) => setMealDescription(e.target.value)}
                 placeholder="Ej: café, tostadas con mermelada, jugo"
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  minHeight: "80px",
-                  fontFamily: "inherit",
-                  boxSizing: "border-box",
-                  resize: "vertical",
-                }}
+                style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
               />
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Porción (opcional)
-              </label>
+              <label style={labelStyle}>Porción (opcional)</label>
               <input
                 type="text"
                 value={mealPortion}
                 onChange={(e) => setMealPortion(e.target.value)}
                 placeholder="Ej: 1 taza, 2 rebanadas, medianas"
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
+                style={inputStyle}
               />
             </div>
 
             <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Notas (opcional)
-              </label>
+              <label style={labelStyle}>Notas (opcional)</label>
               <input
                 type="text"
                 value={mealNotes}
                 onChange={(e) => setMealNotes(e.target.value)}
                 placeholder="Cómo te sentiste, si faltaban ingredientes, etc."
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
+                style={inputStyle}
               />
             </div>
 
             <div
               style={{
-                background: "#eff6ff",
-                border: "1px solid #dbeafe",
-                borderRadius: 8,
-                padding: "0.75rem",
+                background: colors.infoBg,
+                border: `1px solid ${colors.infoBorder}`,
+                borderRadius: radius.sm,
+                padding: "0.65rem 0.75rem",
                 marginBottom: "1rem",
-                fontSize: "0.8rem",
-                color: "#1e3a8a",
+                fontSize: "0.78rem",
+                color: colors.infoText,
               }}
             >
-              ✓ Tu comida se enviará a revisión de tu profesional. Estado:
-              pendiente.
+              Tu comida se enviará a revisión de tu profesional. Estado: pendiente.
             </div>
 
             <button
@@ -515,12 +450,12 @@ export function RegistrarView() {
               style={{
                 width: "100%",
                 padding: "0.7rem",
-                background:
-                  mealDescription.trim() && !submitting ? "#2563eb" : "#d1d5db",
-                color: "white",
+                background: mealDescription.trim() && !submitting ? colors.greenPrimary : colors.bgMuted,
+                color: mealDescription.trim() && !submitting ? "white" : colors.textSecondary,
                 border: "none",
-                borderRadius: 8,
+                borderRadius: radius.md,
                 fontWeight: 600,
+                fontFamily: fonts.body,
                 cursor: mealDescription.trim() && !submitting ? "pointer" : "not-allowed",
                 fontSize: "0.9rem",
               }}
@@ -535,90 +470,57 @@ export function RegistrarView() {
           <form
             onSubmit={handleSubmitWeight}
             style={{
-              background: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
+              background: colors.bgSurface,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.lg,
               padding: "1.25rem",
               marginBottom: "1.5rem",
             }}
           >
-            <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#111827" }}>
+            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
               Registrar peso
             </h3>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Fecha
-              </label>
-              <input
-                type="date"
-                value={weightDate}
-                onChange={(e) => setWeightDate(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
-              />
+              <label style={labelStyle}>Fecha</label>
+              <input type="date" value={weightDate} onChange={(e) => setWeightDate(e.target.value)} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Peso (kg)
-              </label>
+              <label style={labelStyle}>Peso (kg)</label>
               <input
                 type="number"
                 step="0.1"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
                 placeholder="Ej: 72.5"
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
+                style={{ ...inputStyle, fontFamily: fonts.mono }}
               />
             </div>
 
             <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Notas (opcional)
-              </label>
+              <label style={labelStyle}>Notas (opcional)</label>
               <input
                 type="text"
                 value={weightNotes}
                 onChange={(e) => setWeightNotes(e.target.value)}
                 placeholder="Hora, circunstancias, cómo te sientes"
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
+                style={inputStyle}
               />
             </div>
 
             <div
               style={{
-                background: "#eff6ff",
-                border: "1px solid #dbeafe",
-                borderRadius: 8,
-                padding: "0.75rem",
+                background: colors.infoBg,
+                border: `1px solid ${colors.infoBorder}`,
+                borderRadius: radius.sm,
+                padding: "0.65rem 0.75rem",
                 marginBottom: "1rem",
-                fontSize: "0.8rem",
-                color: "#1e3a8a",
+                fontSize: "0.78rem",
+                color: colors.infoText,
               }}
             >
-              ✓ Tu peso se enviará a revisión de tu profesional. Estado:
-              pendiente.
+              Tu peso se enviará a revisión de tu profesional. Estado: pendiente.
             </div>
 
             <button
@@ -627,11 +529,12 @@ export function RegistrarView() {
               style={{
                 width: "100%",
                 padding: "0.7rem",
-                background: weight.trim() && !submitting ? "#2563eb" : "#d1d5db",
-                color: "white",
+                background: weight.trim() && !submitting ? colors.greenPrimary : colors.bgMuted,
+                color: weight.trim() && !submitting ? "white" : colors.textSecondary,
                 border: "none",
-                borderRadius: 8,
+                borderRadius: radius.md,
                 fontWeight: 600,
+                fontFamily: fonts.body,
                 cursor: weight.trim() && !submitting ? "pointer" : "not-allowed",
                 fontSize: "0.9rem",
               }}
@@ -646,33 +549,20 @@ export function RegistrarView() {
           <form
             onSubmit={handleSubmitNote}
             style={{
-              background: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
+              background: colors.bgSurface,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.lg,
               padding: "1.25rem",
               marginBottom: "1.5rem",
             }}
           >
-            <h3 style={{ margin: "0 0 1rem", fontSize: "1rem", color: "#111827" }}>
+            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
               Enviar nota o pregunta
             </h3>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Tipo
-              </label>
-              <select
-                value={noteType}
-                onChange={(e) => setNoteType(e.target.value as any)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
-              >
+              <label style={labelStyle}>Tipo</label>
+              <select value={noteType} onChange={(e) => setNoteType(e.target.value as any)} style={inputStyle}>
                 <option value="question">Pregunta</option>
                 <option value="observation">Observación</option>
                 <option value="concern">Preocupación</option>
@@ -680,59 +570,38 @@ export function RegistrarView() {
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Asunto
-              </label>
+              <label style={labelStyle}>Asunto</label>
               <input
                 type="text"
                 value={noteSubject}
                 onChange={(e) => setNoteSubject(e.target.value)}
                 placeholder="Ej: Dudas sobre el plan"
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  boxSizing: "border-box",
-                }}
+                style={inputStyle}
               />
             </div>
 
             <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Detalle
-              </label>
+              <label style={labelStyle}>Detalle</label>
               <textarea
                 value={noteBody}
                 onChange={(e) => setNoteBody(e.target.value)}
                 placeholder="Cuéntanos más..."
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 6,
-                  fontSize: "0.9rem",
-                  minHeight: "100px",
-                  fontFamily: "inherit",
-                  boxSizing: "border-box",
-                  resize: "vertical",
-                }}
+                style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }}
               />
             </div>
 
             <div
               style={{
-                background: "#eff6ff",
-                border: "1px solid #dbeafe",
-                borderRadius: 8,
-                padding: "0.75rem",
+                background: colors.infoBg,
+                border: `1px solid ${colors.infoBorder}`,
+                borderRadius: radius.sm,
+                padding: "0.65rem 0.75rem",
                 marginBottom: "1rem",
-                fontSize: "0.8rem",
-                color: "#1e3a8a",
+                fontSize: "0.78rem",
+                color: colors.infoText,
               }}
             >
-              ✓ Tu nota se enviará a tu profesional. Estado: pendiente.
+              Tu nota se enviará a tu profesional. Estado: pendiente.
             </div>
 
             <button
@@ -741,16 +610,13 @@ export function RegistrarView() {
               style={{
                 width: "100%",
                 padding: "0.7rem",
-                background:
-                  noteSubject.trim() && noteBody.trim() && !submitting ? "#2563eb" : "#d1d5db",
-                color: "white",
+                background: noteSubject.trim() && noteBody.trim() && !submitting ? colors.greenPrimary : colors.bgMuted,
+                color: noteSubject.trim() && noteBody.trim() && !submitting ? "white" : colors.textSecondary,
                 border: "none",
-                borderRadius: 8,
+                borderRadius: radius.md,
                 fontWeight: 600,
-                cursor:
-                  noteSubject.trim() && noteBody.trim() && !submitting
-                    ? "pointer"
-                    : "not-allowed",
+                fontFamily: fonts.body,
+                cursor: noteSubject.trim() && noteBody.trim() && !submitting ? "pointer" : "not-allowed",
                 fontSize: "0.9rem",
               }}
             >
@@ -764,41 +630,28 @@ export function RegistrarView() {
           <form
             onSubmit={handleSubmitActivity}
             style={{
-              background: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
+              background: colors.bgSurface,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.lg,
               padding: "1.25rem",
               marginBottom: "1.5rem",
             }}
           >
-            <h3 style={{ margin: "0 0 0.25rem", fontSize: "1rem", color: "#111827" }}>
+            <h3 style={{ margin: "0 0 0.25rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
               Registrar actividad física
             </h3>
-            <p style={{ margin: "0 0 1rem", fontSize: "0.8rem", color: "#6b7280" }}>
+            <p style={{ margin: "0 0 1rem", fontSize: "0.78rem", color: colors.textSecondary }}>
               Módulo opcional habilitado por tu profesional.
             </p>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Fecha
-              </label>
-              <input
-                type="date"
-                value={actDate}
-                onChange={(e) => setActDate(e.target.value)}
-                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
-              />
+              <label style={labelStyle}>Fecha</label>
+              <input type="date" value={actDate} onChange={(e) => setActDate(e.target.value)} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Tipo de actividad
-              </label>
-              <select
-                value={actType}
-                onChange={(e) => setActType(e.target.value as ActivityType)}
-                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
-              >
+              <label style={labelStyle}>Tipo de actividad</label>
+              <select value={actType} onChange={(e) => setActType(e.target.value as ActivityType)} style={inputStyle}>
                 <option value="walking">Caminata</option>
                 <option value="gym">Gimnasio / fuerza</option>
                 <option value="bike">Bicicleta</option>
@@ -810,9 +663,7 @@ export function RegistrarView() {
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Duración (minutos)
-              </label>
+              <label style={labelStyle}>Duración (minutos)</label>
               <input
                 type="number"
                 min="1"
@@ -820,18 +671,16 @@ export function RegistrarView() {
                 value={actDuration}
                 onChange={(e) => setActDuration(e.target.value)}
                 placeholder="Ej: 30"
-                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+                style={{ ...inputStyle, fontFamily: fonts.mono }}
               />
             </div>
 
             <div style={{ marginBottom: "0.9rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Intensidad percibida
-              </label>
+              <label style={labelStyle}>Intensidad percibida</label>
               <select
                 value={actIntensity}
                 onChange={(e) => setActIntensity(e.target.value as ActivityIntensity)}
-                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+                style={inputStyle}
               >
                 <option value="low">Baja — me costó poco</option>
                 <option value="moderate">Moderada — me costó algo</option>
@@ -840,30 +689,28 @@ export function RegistrarView() {
             </div>
 
             <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem", color: "#374151" }}>
-                Notas (opcional)
-              </label>
+              <label style={labelStyle}>Notas (opcional)</label>
               <input
                 type="text"
                 value={actNotes}
                 onChange={(e) => setActNotes(e.target.value)}
                 placeholder="Cómo te sentiste, dónde lo hiciste, etc."
-                style={{ width: "100%", padding: "0.5rem", border: "1px solid #d1d5db", borderRadius: 6, fontSize: "0.9rem", boxSizing: "border-box" }}
+                style={inputStyle}
               />
             </div>
 
             <div
               style={{
-                background: "#eff6ff",
-                border: "1px solid #dbeafe",
-                borderRadius: 8,
-                padding: "0.75rem",
+                background: colors.infoBg,
+                border: `1px solid ${colors.infoBorder}`,
+                borderRadius: radius.sm,
+                padding: "0.65rem 0.75rem",
                 marginBottom: "1rem",
-                fontSize: "0.8rem",
-                color: "#1e3a8a",
+                fontSize: "0.78rem",
+                color: colors.infoText,
               }}
             >
-              ✓ Tu actividad se enviará a revisión de tu profesional.
+              Tu actividad se enviará a revisión de tu profesional.
             </div>
 
             <button
@@ -872,11 +719,12 @@ export function RegistrarView() {
               style={{
                 width: "100%",
                 padding: "0.7rem",
-                background: actDuration.trim() && Number(actDuration) > 0 ? "#2563eb" : "#d1d5db",
-                color: "white",
+                background: actDuration.trim() && Number(actDuration) > 0 ? colors.greenPrimary : colors.bgMuted,
+                color: actDuration.trim() && Number(actDuration) > 0 ? "white" : colors.textSecondary,
                 border: "none",
-                borderRadius: 8,
+                borderRadius: radius.md,
                 fontWeight: 600,
+                fontFamily: fonts.body,
                 cursor: actDuration.trim() && Number(actDuration) > 0 ? "pointer" : "not-allowed",
                 fontSize: "0.9rem",
               }}
@@ -892,20 +740,20 @@ export function RegistrarView() {
             <h3
               style={{
                 margin: "0 0 0.75rem",
-                fontSize: "0.9rem",
+                fontSize: "0.7rem",
                 fontWeight: 700,
-                color: "#374151",
+                color: colors.textSecondary,
                 textTransform: "uppercase",
-                letterSpacing: "0.05em",
+                letterSpacing: "0.07em",
               }}
             >
               Registros enviados esta sesión
             </h3>
             <div
               style={{
-                background: "white",
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
+                background: colors.bgSurface,
+                border: `1px solid ${colors.borderDefault}`,
+                borderRadius: radius.lg,
                 overflow: "hidden",
               }}
             >
@@ -914,10 +762,10 @@ export function RegistrarView() {
                   <li
                     key={idx}
                     style={{
-                      padding: "0.85rem 1rem",
+                      padding: "0.8rem 1rem",
                       borderBottom:
                         idx < registrosEnviados.length - 1
-                          ? "1px solid #f3f4f6"
+                          ? `1px solid ${colors.bgMuted}`
                           : "none",
                       display: "flex",
                       justifyContent: "space-between",
@@ -925,27 +773,27 @@ export function RegistrarView() {
                     }}
                   >
                     <div>
-                      <strong style={{ fontSize: "0.9rem", color: "#111827" }}>
-                        {r.tipo === "comida" && "🍽 Comida"}
-                        {r.tipo === "peso" && "⚖️ Peso"}
-                        {r.tipo === "nota" && "💬 Nota"}
-                        {r.tipo === "actividad" && "🏃 Actividad"}
+                      <strong style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
+                        {r.tipo === "comida" && "Comida"}
+                        {r.tipo === "peso" && "Peso"}
+                        {r.tipo === "nota" && "Nota"}
+                        {r.tipo === "actividad" && "Actividad"}
                       </strong>
-                      <p style={{ margin: "0.1rem 0 0", fontSize: "0.75rem", color: "#6b7280" }}>
+                      <p style={{ margin: "0.1rem 0 0", fontSize: "0.72rem", color: colors.textSecondary, fontFamily: fonts.mono }}>
                         {new Date(r.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
                     <span
                       style={{
-                        fontSize: "0.75rem",
-                        background: r.apiSent ? "#dcfce7" : "#fef3c7",
-                        color: r.apiSent ? "#166534" : "#92400e",
-                        padding: "0.2rem 0.5rem",
-                        borderRadius: 4,
+                        fontSize: "0.72rem",
+                        background: r.apiSent ? colors.acceptedBg : colors.pendingBg,
+                        color: r.apiSent ? colors.acceptedText : colors.pendingText,
+                        padding: "0.2rem 0.55rem",
+                        borderRadius: radius.pill,
                         fontWeight: 600,
                       }}
                     >
-                      {r.apiSent ? "Enviado ✓" : "Pendiente"}
+                      {r.apiSent ? "Enviado" : "Pendiente"}
                     </span>
                   </li>
                 ))}

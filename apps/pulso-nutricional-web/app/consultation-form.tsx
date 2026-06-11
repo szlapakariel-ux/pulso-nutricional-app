@@ -2,12 +2,36 @@
 
 import { useState } from "react";
 import type { NewConsultationDraft, MeasurementType } from "@pulso/shared";
+import { colors, fonts, radius } from "../lib/design-tokens";
 
 interface ConsultationFormProps {
   patientId: string;
   onSubmit: (draft: NewConsultationDraft) => void;
   isLoading?: boolean;
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: "0.55rem 0.75rem",
+  border: `1px solid ${colors.borderDefault}`,
+  borderRadius: radius.sm,
+  boxSizing: "border-box" as const,
+  fontFamily: fonts.body,
+  fontSize: "0.875rem",
+  color: colors.textPrimary,
+  background: colors.bgSurface,
+  outline: "none",
+};
+
+const labelStyle = {
+  display: "block",
+  marginBottom: "0.3rem",
+  fontWeight: 600,
+  fontSize: "0.82rem",
+  color: colors.textSecondary,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.04em",
+};
 
 export function ConsultationForm({
   patientId,
@@ -29,10 +53,7 @@ export function ConsultationForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleMeasurementChange = (
@@ -73,29 +94,19 @@ export function ConsultationForm({
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <div>
-        <label style={{ display: "block", marginBottom: "0.25rem", fontWeight: 600 }}>
-          Fecha de consulta
-        </label>
+        <label style={labelStyle}>Fecha de consulta</label>
         <input
           type="date"
           name="date"
           value={formData.date}
           onChange={handleChange}
           required
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            border: "1px solid #d9d9d9",
-            borderRadius: 4,
-            boxSizing: "border-box",
-          }}
+          style={inputStyle}
         />
       </div>
 
       <div>
-        <label style={{ display: "block", marginBottom: "0.25rem", fontWeight: 600 }}>
-          Motivo / razón
-        </label>
+        <label style={labelStyle}>Motivo / razón</label>
         <input
           type="text"
           name="reason"
@@ -103,70 +114,44 @@ export function ConsultationForm({
           onChange={handleChange}
           placeholder="Ej: Seguimiento mensual"
           required
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            border: "1px solid #d9d9d9",
-            borderRadius: 4,
-            boxSizing: "border-box",
-          }}
+          style={inputStyle}
         />
       </div>
 
       <div>
-        <label style={{ display: "block", marginBottom: "0.25rem", fontWeight: 600 }}>
-          Objetivo
-        </label>
+        <label style={labelStyle}>Objetivo</label>
         <textarea
           name="objective"
           value={formData.objective}
           onChange={handleChange}
           placeholder="Objetivo de esta consulta"
           required
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            border: "1px solid #d9d9d9",
-            borderRadius: 4,
-            minHeight: "80px",
-            boxSizing: "border-box",
-            fontFamily: "inherit",
-          }}
+          style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
         />
       </div>
 
       <div>
-        <label style={{ display: "block", marginBottom: "0.25rem", fontWeight: 600 }}>
-          Observaciones generales
-        </label>
+        <label style={labelStyle}>Observaciones generales</label>
         <textarea
           name="observations"
           value={formData.observations}
           onChange={handleChange}
           placeholder="Observaciones de la consulta"
           required
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            border: "1px solid #d9d9d9",
-            borderRadius: 4,
-            minHeight: "80px",
-            boxSizing: "border-box",
-            fontFamily: "inherit",
-          }}
+          style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
         />
       </div>
 
       <div
         style={{
           padding: "1rem",
-          background: "#f6ffed",
-          border: "1px solid #b7eb8f",
-          borderRadius: 8,
+          background: colors.successBg,
+          border: `1px solid ${colors.successBorder}`,
+          borderRadius: radius.md,
         }}
       >
-        <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>
-          Nota profesional (datos internos)
+        <label style={{ ...labelStyle, color: colors.greenDark }}>
+          Nota profesional
         </label>
         <textarea
           name="professionalNote"
@@ -175,30 +160,37 @@ export function ConsultationForm({
           placeholder="Nota interna para seguimiento futuro (no se muestra al paciente)"
           required
           style={{
-            width: "100%",
-            padding: "0.5rem",
-            border: "1px solid #b7eb8f",
-            borderRadius: 4,
+            ...inputStyle,
             minHeight: "80px",
-            boxSizing: "border-box",
-            fontFamily: "inherit",
-            background: "white",
+            resize: "vertical",
+            border: `1px solid ${colors.successBorder}`,
           }}
         />
-        <p style={{ margin: "0.5rem 0 0", fontSize: "0.75rem", color: "#666" }}>
+        <p style={{ margin: "0.4rem 0 0", fontSize: "0.72rem", color: colors.textSecondary }}>
           Visible solo para la profesional · nunca se muestra al paciente.
         </p>
       </div>
 
       <div
         style={{
-          border: "1px solid #d9d9d9",
-          borderRadius: 8,
+          border: `1px solid ${colors.borderDefault}`,
+          borderRadius: radius.md,
           padding: "1rem",
-          background: "#fafafa",
+          background: colors.bgBase,
         }}
       >
-        <h4 style={{ margin: "0 0 1rem 0" }}>Mediciones profesionales</h4>
+        <h4
+          style={{
+            margin: "0 0 0.85rem",
+            fontSize: "0.82rem",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: colors.textSecondary,
+          }}
+        >
+          Mediciones profesionales
+        </h4>
 
         {formData.measurements.map((measurement, index) => (
           <div
@@ -209,27 +201,19 @@ export function ConsultationForm({
               gap: "0.75rem",
               marginBottom: "0.75rem",
               padding: "0.75rem",
-              background: "white",
-              border: "1px solid #e5e5e5",
-              borderRadius: 4,
+              background: colors.bgSurface,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.sm,
             }}
           >
             <div>
-              <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem" }}>
-                Tipo
-              </label>
+              <label style={labelStyle}>Tipo</label>
               <select
                 value={measurement.type}
                 onChange={(e) =>
                   handleMeasurementChange(index, "type", e.target.value as MeasurementType)
                 }
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d9d9d9",
-                  borderRadius: 4,
-                  boxSizing: "border-box",
-                }}
+                style={inputStyle}
               >
                 <option value="weight">Peso</option>
                 <option value="height">Altura</option>
@@ -240,9 +224,7 @@ export function ConsultationForm({
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem" }}>
-                Valor
-              </label>
+              <label style={labelStyle}>Valor</label>
               <input
                 type="number"
                 step="0.1"
@@ -251,30 +233,16 @@ export function ConsultationForm({
                   handleMeasurementChange(index, "value", parseFloat(e.target.value))
                 }
                 required
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d9d9d9",
-                  borderRadius: 4,
-                  boxSizing: "border-box",
-                }}
+                style={{ ...inputStyle, fontFamily: fonts.mono }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem" }}>
-                Unidad
-              </label>
+              <label style={labelStyle}>Unidad</label>
               <select
                 value={measurement.unit}
                 onChange={(e) => handleMeasurementChange(index, "unit", e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #d9d9d9",
-                  borderRadius: 4,
-                  boxSizing: "border-box",
-                }}
+                style={inputStyle}
               >
                 <option value="kg">kg</option>
                 <option value="cm">cm</option>
@@ -287,13 +255,15 @@ export function ConsultationForm({
                 type="button"
                 onClick={() => removeMeasurement(index)}
                 style={{
-                  padding: "0.5rem 0.75rem",
-                  background: "#ff4d4f",
-                  color: "white",
+                  padding: "0.4rem 0.65rem",
+                  background: colors.flaggedBg,
+                  color: colors.flaggedText,
                   border: "none",
-                  borderRadius: 4,
+                  borderRadius: radius.sm,
                   cursor: "pointer",
                   alignSelf: "flex-end",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
                 }}
               >
                 ✕
@@ -306,14 +276,16 @@ export function ConsultationForm({
           type="button"
           onClick={addMeasurement}
           style={{
-            padding: "0.5rem 1rem",
-            background: "white",
-            border: "1px solid #1677ff",
-            color: "#1677ff",
-            borderRadius: 4,
+            padding: "0.45rem 0.9rem",
+            background: colors.bgSurface,
+            border: `1px solid ${colors.greenPrimary}`,
+            color: colors.greenDark,
+            borderRadius: radius.sm,
             cursor: "pointer",
-            fontSize: "0.9rem",
-            marginTop: "0.5rem",
+            fontSize: "0.82rem",
+            fontWeight: 600,
+            fontFamily: fonts.body,
+            marginTop: "0.25rem",
           }}
         >
           + Agregar medición
@@ -324,20 +296,21 @@ export function ConsultationForm({
         type="submit"
         disabled={isLoading}
         style={{
-          padding: "0.75rem 1.5rem",
-          background: isLoading ? "#d9d9d9" : "#1677ff",
-          color: "white",
+          padding: "0.8rem 1.5rem",
+          background: isLoading ? colors.bgMuted : colors.greenPrimary,
+          color: isLoading ? colors.textSecondary : "white",
           border: "none",
-          borderRadius: 4,
+          borderRadius: radius.md,
           cursor: isLoading ? "not-allowed" : "pointer",
-          fontSize: "1rem",
+          fontSize: "0.95rem",
           fontWeight: 600,
+          fontFamily: fonts.body,
         }}
       >
         {isLoading ? "Procesando..." : "Guardar consulta"}
       </button>
 
-      <p style={{ fontSize: "0.85rem", color: "#888", marginTop: "1rem" }}>
+      <p style={{ fontSize: "0.78rem", color: colors.textSecondary, marginTop: "0.5rem" }}>
         Ambiente de demostración. Los datos no se guardan de forma permanente.
       </p>
     </form>
