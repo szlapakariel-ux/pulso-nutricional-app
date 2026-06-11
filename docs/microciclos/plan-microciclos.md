@@ -564,6 +564,41 @@
 
 ---
 
+## MC-FOTOS-MVP-0 — Fotos de comidas: preflight funcional y técnico *(MVP)*
+
+- **Objetivo:** diseñar y documentar el módulo de **fotos de comidas** de Mi
+  Pulso como parte del MVP, sin implementar todavía carga real de archivos.
+  El usuario confirmó que las fotos forman parte del MVP de valor: el paciente
+  registra visualmente lo que come, la nutricionista ve porciones reales y
+  puede comentar antes de la consulta, y queda material para la consulta.
+- **Alcance permitido:**
+  - `docs/fotos-comidas/preflight-fotos-comidas-mvp.md` — definición funcional,
+    regla de datos, modelo conceptual `meal_photo_logs`, storage (bucket
+    `orderly-suitcase`, path `patients/{patientId}/meal-photos/{year}/{month}/{fileId}`),
+    permisos, UI futura, exclusiones, roadmap y brechas.
+  - ADR 0028 documentando la decisión.
+  - Actualización de este plan.
+- **Regla de datos (no negociable):** toda foto nace con
+  `origin: "patient_reported"` y `reviewStatus: "pending"`; nunca se valida
+  automáticamente; reusa `DataOrigin`/`ReviewStatus` existentes.
+- **Roadmap del módulo:**
+  - MC-FOTOS-MVP-0: preflight/documentación *(este ciclo)*.
+  - MC-FOTOS-MVP-1: API + storage + modelo mínimo.
+  - MC-FOTOS-MVP-2: Mi Pulso carga foto.
+  - MC-FOTOS-MVP-3: panel profesional revisa/comenta.
+  - MC-FOTOS-MVP-4: smoke Railway.
+- **Qué NO tocar:** no código, no API, no Prisma schema todavía, no Postgres,
+  no Railway, no bucket, no CORS, no package.json, no pnpm-lock.yaml, no deploy,
+  no dominio, no credenciales inventadas, no datos reales, no avanzar a MC-11
+  ni MC-12.
+- **Criterios de aceptación:**
+  - Documentación clara y accionable para MC-FOTOS-MVP-1 en adelante.
+  - Consistente con los tipos de dominio existentes (`DataOrigin`, `ReviewStatus`).
+  - Sin secretos ni datos reales.
+  - Cada ciclo siguiente requiere autorización explícita.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -651,11 +686,20 @@
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
-| Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
+| MC-FOTOS-MVP-0 | ✅ Completado (preflight documental) |
+| MC-FOTOS-MVP-1 (API + storage) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-2 (Mi Pulso carga foto) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-3 (panel profesional revisa) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-4 (smoke Railway) | Pendiente (requiere autorización) |
+| Dominio, Play Store, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-REDEPLOY-2 completado.** Demo paciente funcionando online: Mi Pulso
-> carga Vista Hoy correctamente, obtiene `patientId` desde `/auth/me` y **no
-> presenta loop infinito de llamadas a `/today`**. El fix de MC-MIPULSO-FE-2
-> (estabilizar `loadToday` con `auth.logout`) está activo en producción.
+> **MC-FOTOS-MVP-0 completado.** Las **fotos de comidas quedan incorporadas al
+> roadmap MVP**: el paciente registra foto + tipo de comida + comentario desde
+> Mi Pulso; la foto nace como dato revisable (`origin: patient_reported`,
+> `reviewStatus: pending`); la nutricionista revisa y comenta desde el panel.
+> Storage futuro en bucket `orderly-suitcase` (solo referencia en Postgres).
+> Docs: [`../fotos-comidas/preflight-fotos-comidas-mvp.md`](../fotos-comidas/preflight-fotos-comidas-mvp.md),
+> [`../decisiones/0028-fotos-comidas-mvp.md`](../decisiones/0028-fotos-comidas-mvp.md).
+> Nada implementado todavía: MC-FOTOS-MVP-1 a 4 requieren autorización explícita.
 > Quedan pendientes **dominio propio, Play Store, MC-11 y MC-12**, sin avanzar
-> sin nueva autorización explícita.
+> sin nueva indicación explícita.
