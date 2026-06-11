@@ -490,6 +490,30 @@
 
 ---
 
+## MC-MIPULSO-REDEPLOY-2 — Redeploy final de Mi Pulso con fix FE-2
+
+- **Objetivo:** desplegar el servicio `mi-pulso-web` en Railway con el fix de
+  MC-MIPULSO-FE-2 para llevar a producción la corrección del loop infinito de
+  Vista Hoy.
+- **Alcance permitido:**
+  - Redeploy del servicio `mi-pulso-web` desde la rama `main` (SHA `cbc2dee`
+    post-merge FE-2, cierre documental `ad8fb71`).
+  - Verificación operativa: demo paciente funciona, Vista Hoy carga sin loop,
+    `/today` se llama una única vez (o cantidad controlada), no quedar atascado
+    en "Cargando tu día...".
+- **Qué NO tocar:** no API, no Postgres, no CORS, no dominio, no MC-11, no MC-12.
+- **Criterios de aceptación:**
+  - Deployment: `ACTIVE / Deployment successful`.
+  - `GET /` Mi Pulso → 200, badge "Conectado a API" visible.
+  - Login demo paciente funciona: `POST /auth/login` 200, `GET /auth/me` 200 con
+    `patientId: "demo-1"`, `GET /patients/demo-1/today` 200.
+  - Vista Hoy carga correctamente (plan/agenda o estado vacío controlado).
+  - **No hay loop infinito de llamadas a `/today`** en Network tab.
+  - Sin errores CORS en la consola del navegador.
+  - Web profesional sigue online.
+
+---
+
 ## MC-MIPULSO-RWY-0 — Mi Pulso: preflight para deploy controlado en Railway *(ciclo técnico)*
 
 - **Objetivo:** preparar el preflight documental para un deploy controlado de
@@ -623,16 +647,15 @@
 | MC-MIPULSO-RWY-0 | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-FE-1  | ✅ Completado (mergeado en `main`) |
 | MC-MIPULSO-FE-2  | ✅ Completado (mergeado en `main`) |
+| MC-MIPULSO-REDEPLOY-2 | ✅ Completado (operativo en Railway) |
 | MC-RWY-0   | ✅ Completado (mergeado en `main`) |
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | Deploy Mi Pulso, dominio, MC-11, MC-12 | Pendientes |
 
-> **MC-MIPULSO-FE-2 completado.** Mi Pulso ya corrige el loop infinito de Vista Hoy
-> estabilizando `loadToday` con `auth.logout` (en lugar de `[auth]`). API, CORS,
-> login y `patientId` ya eran correctos; el bug era de React (efecto disparándose
-> en cada render por dependencia inestable).
-> Docs: [`../decisiones/0027-mi-pulso-fe-fix-today-loop.md`](../decisiones/0027-mi-pulso-fe-fix-today-loop.md).
-> Queda pendiente el **redeploy de `mi-pulso-web`** en Railway para que el fix
-> llegue a producción.
-> MC-MIPULSO-FE-2 completado. Mi Pulso ya corrige el loop infinito de Vista Hoy estabilizando loadToday con auth.logout. Queda pendiente redeploy de mi-pulso-web para llevar el fix a producción. No se avanza a dominio, Play Store, MC-11 ni MC-12 sin una nueva indicación explícita.
+> **MC-MIPULSO-REDEPLOY-2 completado.** Demo paciente funcionando online: Mi Pulso
+> carga Vista Hoy correctamente, obtiene `patientId` desde `/auth/me` y **no
+> presenta loop infinito de llamadas a `/today`**. El fix de MC-MIPULSO-FE-2
+> (estabilizar `loadToday` con `auth.logout`) está activo en producción.
+> Quedan pendientes **dominio propio, Play Store, MC-11 y MC-12**, sin avanzar
+> sin nueva autorización explícita.
