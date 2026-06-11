@@ -694,6 +694,40 @@
 
 ---
 
+## MC-FOTOS-PROD-0 — Preflight db:push + bucket + deploy para fotos *(MVP)*
+
+- **Objetivo:** dejar un **runbook operativo seguro** para llevar el módulo de
+  fotos de comidas a producción (validar schema Prisma, decidir/ejecutar
+  `db:push`, configurar el bucket `orderly-suitcase`, ordenar el deploy, smoke
+  tests y rollback) **sin ejecutar nada todavía**. No debe romper la demo online
+  ni exponer fotos públicamente.
+- **Alcance permitido (solo documentación):**
+  - `docs/fotos-comidas/preflight-prod-fotos-comidas.md` — runbook: revisión de
+    scripts/comportamiento actual (Prisma, Railway, storage), preflight DB
+    (comando, entorno, `DATABASE_URL`, cómo evitar la DB equivocada, tablas/enums
+    esperados, validar que la demo no se rompe), preflight bucket (5 vars `S3_*`
+    en el servicio `api`, por qué no en el frontend, bucket privado, sin
+    `S3_PUBLIC_BASE_URL`, permisos mínimos, prueba sin datos reales), orden
+    recomendado (A→G), riesgos, rollback y go/no-go.
+  - `docs/decisiones/0031-fotos-comidas-prod-preflight.md` — ADR 0031.
+  - Actualización de este plan.
+- **Verificado contra el repo:** el `build`/`start` del API **no** ejecuta
+  `db:push` ni migraciones (solo `prisma generate`); el proyecto usa
+  `prisma db push` (sin `migrations/`); el código guarda solo `storageKey` y
+  **no** arma URLs públicas (no existe `S3_PUBLIC_BASE_URL`); sin `S3_*` el API
+  corre en `LocalFallbackStorage` (no rompe, descarta binario con aviso).
+- **Qué NO tocar:** no código, no API, no Prisma schema, no seed, no
+  `package.json`, no `pnpm-lock.yaml`, no Railway, no `db:push`, no Postgres, no
+  configurar bucket, no secretos, no deploy, no CORS, no dominio, no MC-11, no
+  MC-12, no Play Store.
+- **Criterios de aceptación:**
+  - Solo documentación; runbook claro y accionable.
+  - Sin secretos ni credenciales reales; sin comandos ejecutados contra
+    producción; sin Railway tocado; sin deploy; sin `db:push`.
+  - Riesgos y rollback documentados; go/no-go para el próximo ciclo definido.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -784,8 +818,11 @@
 | MC-FOTOS-MVP-0 | ✅ Completado (preflight documental) |
 | MC-FOTOS-MVP-1 (API + storage) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-2 (Mi Pulso carga foto + upload real) | ✅ Completado (mergeado en `main`) |
+| MC-FOTOS-PROD-0 (preflight db:push + bucket + deploy) | ✅ Completado (runbook documental) |
+| MC-FOTOS-PROD-1 (db:push + bucket + deploy API) | Pendiente (requiere autorización) |
+| MC-FOTOS-PROD-2 (deploy Mi Pulso + smoke upload) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | Pendiente (requiere autorización) |
-| MC-FOTOS-MVP-4 (smoke Railway) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-4 (smoke integral Railway) | Pendiente (requiere autorización) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
 
 > **MC-FOTOS-MVP-2 completado. Mi Pulso ya incorpora UI para registrar fotos de
