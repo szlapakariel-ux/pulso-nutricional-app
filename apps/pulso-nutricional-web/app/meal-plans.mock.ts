@@ -1,12 +1,6 @@
 import type { PatientPlanAssignment, PatientDailyAgenda } from "@pulso/shared";
 
-/**
- * DATOS FICTICIOS DE DEMOSTRACIÓN — MC-5.
- *
- * Planes y agendas demo. Idénticos a los de la API porque todavía no hay
- * conexión web ↔ API (diferido a un microciclo posterior).
- * No son reales. No representan recomendaciones clínicas.
- */
+/** Planes y agendas ficticios de demostración. No representan recomendaciones clínicas. */
 
 export const MOCK_PLAN_ASSIGNMENTS: Record<
   string,
@@ -18,53 +12,53 @@ export const MOCK_PLAN_ASSIGNMENTS: Record<
     mealPlanId: "plan-demo-1",
     mealPlan: {
       id: "plan-demo-1",
-      name: "Plan Demo — Hábitos Saludables",
+      name: "Plan Hábitos Saludables",
       description:
-        "Plan de demostración orientado a mejorar hábitos generales. " +
-        "No representa una prescripción real.",
+        "Plan orientado a mejorar hábitos alimentarios y estilo de vida. " +
+        "Datos de demostración.",
       status: "active",
       professionalId: "prof-demo-1",
       professionalNote:
-        "Nota interna (demo): ajustar porciones según evolución. No es dato real.",
+        "Ajustar porciones según evolución del peso y feedback de la paciente.",
       generalIndications:
         "Tomá agua durante el día. Priorizá alimentos frescos. " +
         "Registrá tus comidas en Mi Pulso para hacer el seguimiento.",
       meals: [
         {
           id: "meal-1",
-          name: "Desayuno demo",
+          name: "Desayuno",
           moment: "breakfast",
           timeHint: "08:00",
           description: "Infusión, tostadas integrales, fruta de estación.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 1,
         },
         {
           id: "meal-2",
-          name: "Almuerzo demo",
+          name: "Almuerzo",
           moment: "lunch",
           timeHint: "13:00",
           description:
             "Plato principal con proteína, vegetales y cereales integrales.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 2,
         },
         {
           id: "meal-3",
-          name: "Merienda demo",
+          name: "Merienda",
           moment: "snack",
           timeHint: "17:00",
           description: "Fruta, yogur o colación liviana.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 3,
         },
         {
           id: "meal-4",
-          name: "Cena demo",
+          name: "Cena",
           moment: "dinner",
           timeHint: "20:30",
           description: "Cena liviana: sopa, ensalada o guiso suave.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 4,
         },
       ],
@@ -84,59 +78,59 @@ export const MOCK_PLAN_ASSIGNMENTS: Record<
     mealPlanId: "plan-demo-2",
     mealPlan: {
       id: "plan-demo-2",
-      name: "Plan Demo — Mantenimiento",
+      name: "Plan Mantenimiento Activo",
       description:
-        "Plan de demostración orientado al mantenimiento. No representa una prescripción real.",
+        "Plan orientado a mantener el peso y mejorar la composición corporal. Datos de demostración.",
       status: "active",
       professionalId: "prof-demo-1",
       professionalNote:
-        "Nota interna (demo): enfoque en sostenibilidad. No es dato real.",
+        "Mantener actividad física. Incrementar proteína en almuerzo gradualmente.",
       generalIndications:
         "Mantenés un buen equilibrio. Seguí registrando en Mi Pulso. Hidratate bien.",
       meals: [
         {
           id: "meal-5",
-          name: "Desayuno demo",
+          name: "Desayuno",
           moment: "breakfast",
           timeHint: "07:30",
           description: "Mate o café, tostadas con palta o queso untable.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 1,
         },
         {
           id: "meal-6",
-          name: "Colación mañana demo",
+          name: "Colación de mañana",
           moment: "mid_morning",
           timeHint: "10:30",
           description: "Fruta o barritas de cereal.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 2,
         },
         {
           id: "meal-7",
-          name: "Almuerzo demo",
+          name: "Almuerzo",
           moment: "lunch",
           timeHint: "12:30",
           description: "Proteína magra, ensalada variada, arroz integral.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 3,
         },
         {
           id: "meal-8",
-          name: "Merienda demo",
+          name: "Merienda",
           moment: "snack",
           timeHint: "16:30",
           description: "Yogur natural o fruta.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 4,
         },
         {
           id: "meal-9",
-          name: "Cena demo",
+          name: "Cena",
           moment: "dinner",
           timeHint: "20:00",
           description: "Cena equilibrada, similar al almuerzo pero más ligera.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 5,
         },
       ],

@@ -57,7 +57,7 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
         </p>
         <p style={{ margin: 0, fontSize: "0.9rem" }}>
           Este paciente todavía no tiene un plan alimentario asignado.
-          En MC-5 la asignación es solo demo.
+          Podrás asignar un plan alimentario próximamente.
         </p>
       </div>
     );
@@ -89,7 +89,7 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      {/* PDF demo — MC-9 */}
+      {/* PDF del plan */}
       {assignment && (
         <section>
           <div
@@ -107,10 +107,10 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
           >
             <div>
               <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>
-                PDF del plan (demo MC-9)
+                PDF del plan
               </p>
               <p style={{ margin: "0.2rem 0 0", fontSize: "0.8rem", color: "#92400e" }}>
-                Datos ficticios · Solo incluye datos profesionales validados · Nunca incluye nota profesional ni registros del paciente
+                Datos de demostración
               </p>
             </div>
             <button
@@ -134,7 +134,7 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                   ? "Descargado"
                   : pdfStatus === "error"
                     ? "Error al descargar"
-                    : "Descargar PDF demo"}
+                    : "Descargar PDF"}
             </button>
           </div>
         </section>

@@ -19,8 +19,7 @@ export default function Page() {
           fontSize: "0.9rem",
         }}
       >
-        ⚠️ <strong>Datos ficticios de demostración — MC-5.</strong> Ningún dato de
-        esta pantalla es real. Sin base de datos, sin conexión a la API.
+        Ambiente de demostración · Datos ficticios · Ningún dato de esta pantalla es real.
       </div>
 
       <PanelView />

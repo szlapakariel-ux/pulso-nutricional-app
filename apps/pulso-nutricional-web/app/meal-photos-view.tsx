@@ -110,7 +110,7 @@ function PhotoPlaceholder({ mealType }: { mealType: MealPhotoType }) {
       >
         Foto no disponible
         <br />
-        (entrega diferida — MC-FOTOS-MVP-4)
+        Imagen no disponible
       </span>
     </div>
   );
@@ -252,8 +252,8 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
         }}
       >
         {useApi
-          ? "✓ Fotos en vivo — metadata real desde la API. Las imágenes no están disponibles (entrega diferida — MC-FOTOS-MVP-4)."
-          : "⚠️ Modo mock. Las fotos son datos ficticios de demostración (sin binarios reales)."}
+          ? "Registros de fotos del paciente · Las imágenes no están disponibles en este ambiente."
+          : "Ambiente de demostración · Datos ficticios"}
       </div>
 
       {/* Error de acción */}
@@ -529,9 +529,7 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                   color: "#1e3a8a",
                 }}
               >
-                ✓ Dato revisable del paciente (ReviewableData). Origin:{" "}
-                <code>patient_reported</code>. Tu revisión no convierte este
-                dato en ValidatedData.
+                ✓ Registro del paciente pendiente de tu revisión.
               </div>
 
               {/* Comentario profesional */}
@@ -657,9 +655,7 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                   fontStyle: "italic",
                 }}
               >
-                {useApi
-                  ? "Acción enviada a la API. El dato sigue siendo ReviewableData."
-                  : "Acción simulada (modo mock). El dato sigue siendo ReviewableData."}
+                Ambiente de demostración · Datos ficticios
               </p>
             </section>
           )}
