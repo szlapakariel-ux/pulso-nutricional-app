@@ -8,6 +8,7 @@ import { ConsultationsView } from "./consultations-view";
 import { MealPlanView } from "./meal-plan-view";
 import { ReviewInboxView } from "./review-inbox-view";
 import { ActivityView } from "./activity-view";
+import { MealPhotosView } from "./meal-photos-view";
 import { useApiAuth } from "../lib/use-api-auth";
 import { getDataConfig, isApiMode } from "../lib/data-config";
 import { getApiClient } from "../lib/api-client";
@@ -21,7 +22,7 @@ const STATUS_LABEL: Record<PatientStatus, string> = {
 export function PanelView() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"ficha" | "consultas" | "plan" | "revision" | "actividad">("ficha");
+  const [activeTab, setActiveTab] = useState<"ficha" | "consultas" | "plan" | "revision" | "actividad" | "fotos">("ficha");
   const [patientSummaries, setPatientSummaries] = useState<(PatientSummary | PatientDetail)[]>([...DEMO_PATIENTS]);
   const [selectedDetail, setSelectedDetail] = useState<PatientDetail | null>(null);
   const [loadingPatients, setLoadingPatients] = useState(false);
@@ -397,6 +398,21 @@ export function PanelView() {
               >
                 Actividad
               </button>
+              <button
+                onClick={() => setActiveTab("fotos")}
+                style={{
+                  padding: "0.75rem 1rem",
+                  border: "none",
+                  borderBottom:
+                    activeTab === "fotos" ? "2px solid #1677ff" : "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontWeight: activeTab === "fotos" ? 600 : 400,
+                  color: activeTab === "fotos" ? "#1677ff" : "#666",
+                }}
+              >
+                Fotos
+              </button>
             </div>
 
             {/* Tab content */}
@@ -407,6 +423,7 @@ export function PanelView() {
             {activeTab === "plan" && <MealPlanView patient={selected} />}
             {activeTab === "revision" && <ReviewInboxView patient={selected} />}
             {activeTab === "actividad" && <ActivityView patient={selected} />}
+            {activeTab === "fotos" && <MealPhotosView patient={selected} />}
           </>
         ) : (
           <p style={{ color: "#888" }}>Seleccioná un paciente para comenzar.</p>
