@@ -108,9 +108,7 @@ function PhotoPlaceholder({ mealType }: { mealType: MealPhotoType }) {
           padding: "0 0.5rem",
         }}
       >
-        Foto no disponible
-        <br />
-        Imagen no disponible
+        Imagen pendiente de disponibilidad
       </span>
     </div>
   );
