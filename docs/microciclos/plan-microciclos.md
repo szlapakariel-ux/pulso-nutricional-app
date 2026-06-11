@@ -783,24 +783,27 @@
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-0 | ✅ Completado (preflight documental) |
 | MC-FOTOS-MVP-1 (API + storage) | ✅ Completado (mergeado en `main`) |
-| MC-FOTOS-MVP-2 (Mi Pulso carga foto + upload real) | ✅ Completado (código implementado; pendiente deploy y bucket productivo) |
+| MC-FOTOS-MVP-2 (Mi Pulso carga foto + upload real) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-4 (smoke Railway) | Pendiente (requiere autorización) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
 
-> **MC-FOTOS-MVP-2 completado.** Upload real de fotos de comidas implementado
-> en código: endpoint `POST /patients/:patientId/meal-photos` acepta
-> `multipart/form-data` (campos: `file` [jpeg/png/webp, máx 5 MB], `mealType`,
-> `patientComment` opcional); backend sube el binario al bucket S3-compatible
-> con `@fastify/multipart` + `@aws-sdk/client-s3`, con fallback local (descarte
-> con aviso) cuando el bucket no está configurado. Mi Pulso tiene UI mobile-first
-> para tomar foto con cámara o subir desde galería, preview, selector de tipo de
-> comida y comentario; la foto nace como dato revisable (`origin:
-> patient_reported`, `reviewStatus: pending`) y se muestra confirmación
-> "Comida registrada. Pendiente de revisión por tu profesional." Verificado:
-> `type-check`, `build`, `lint` pasan; smoke local 22/22 casos. **No se hizo
-> deploy, no se tocó Railway, no se ejecutó db:push en producción, no hay
-> credenciales reales en el repo.** La revisión visual profesional (entrega de
-> imagen + UI panel) queda para MC-FOTOS-MVP-3. Quedan pendientes **bucket
-> real en Railway, db:push autorizado, dominio, Play Store, MC-11, MC-12**, sin
-> avanzar sin nueva indicación explícita. Ver ADR 0030.
+> **MC-FOTOS-MVP-2 completado. Mi Pulso ya incorpora UI para registrar fotos de
+> comidas desde cámara o galería, con preview, tipo de comida, comentario
+> opcional y envío multipart al API.** El backend valida imagen (jpeg/png/webp,
+> máx 5 MB), genera `storageKey` y mantiene la regla de dato revisable
+> (`origin: patient_reported`, `reviewStatus: pending`). Incorpora:
+> UI mobile-first en Mi Pulso (`RegisterPhotoForm`: file input sin `capture`,
+> preview via `URL.createObjectURL`, selector de tipo, comentario opcional,
+> estados carga/éxito/error), endpoint `POST /patients/:patientId/meal-photos`
+> con parseo multipart manual (`@fastify/multipart`), storage flow S3-compatible
+> (`@aws-sdk/client-s3`) con `S3MealPhotoStorage` + `LocalFallbackStorage`
+> (descarte con aviso cuando el bucket no está configurado), método
+> `createMealPhoto()` en el cliente API de Mi Pulso con `FormData` + `fetch`
+> (sin `Content-Type` manual), y ADR 0030. Mergeado en `main` (squash SHA
+> `8a424c227e7ac3591540b764e2cc025a6b383527`). **No se hizo deploy, no se tocó
+> Railway, no se ejecutó db:push en producción, no hay credenciales reales en
+> el repo, no hay panel profesional visual ni URLs firmadas.** Quedan pendientes
+> db:push autorizado, configuración real del bucket, deploy Railway,
+> visualización/revisión profesional (MC-FOTOS-MVP-3), smoke test Railway
+> (MC-FOTOS-MVP-4), dominio, Play Store, MC-11 y MC-12.
