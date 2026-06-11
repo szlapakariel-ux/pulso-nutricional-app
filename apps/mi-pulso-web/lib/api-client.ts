@@ -6,7 +6,10 @@
  *   - GET  /auth/me               → usuario del token (userId, email, role)
  *   - GET  /patients/:id/today    → vista "Hoy" (plan + agenda)
  *
- * SOLO LECTURA. No escribe datos (sin registros de comidas/peso/actividad).
+ * MC-FOTOS-MVP-2: escritura de fotos de comidas.
+ *   - POST /patients/:id/meal-photos → crea registro con imagen (multipart)
+ *     Responde metadata (MealPhotoLog), nunca el binario.
+ *
  * El token nunca se imprime completo.
  */
 
@@ -14,6 +17,8 @@ import type {
   AuthUser,
   LoginRequest,
   LoginResponse,
+  MealPhotoLog,
+  MealPhotoType,
   PatientTodayView,
 } from "@pulso/shared";
 
@@ -65,7 +70,7 @@ class ApiClient {
     }
 
     const data = await response.json();
-    return (data.data ?? data) as T; // soporta { data: T } y T directo
+    return (data.data ?? data) as T;
   }
 
   /** POST /auth/login — login demo paciente. */
@@ -96,6 +101,61 @@ class ApiClient {
       }
       throw e;
     }
+  }
+
+  /**
+   * POST /patients/:patientId/meal-photos — sube foto de comida.
+   *
+   * Envía multipart/form-data con los campos:
+   *   - file: la imagen (jpeg / png / webp, máx 5 MB)
+   *   - mealType: valor de MealPhotoType
+   *   - patientComment: comentario opcional
+   *
+   * Devuelve metadata (MealPhotoLog); nunca el binario ni URL pública.
+   * El registro nace con origin "patient_reported" y reviewStatus "pending".
+   */
+  async createMealPhoto(
+    patientId: string,
+    mealType: MealPhotoType,
+    file: File,
+    patientComment?: string,
+  ): Promise<MealPhotoLog> {
+    const url = `${this.baseUrl}/patients/${patientId}/meal-photos`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("mealType", mealType);
+    if (patientComment?.trim()) {
+      formData.append("patientComment", patientComment.trim());
+    }
+
+    // No establecer Content-Type manualmente: el browser lo fija con boundary
+    const headers = new Headers();
+    if (this.token) {
+      headers.set("Authorization", `Bearer ${this.token}`);
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.token = null;
+        throw new ApiError("Unauthorized", 401);
+      }
+      const body = await response
+        .json()
+        .catch(() => ({ error: { message: `HTTP ${response.status}` } }));
+      const msg =
+        (body as { error?: { message?: string } }).error?.message ??
+        `HTTP ${response.status}`;
+      throw new ApiError(msg, response.status);
+    }
+
+    const data = await response.json();
+    return ((data as { data?: MealPhotoLog }).data ?? data) as MealPhotoLog;
   }
 
   logout() {

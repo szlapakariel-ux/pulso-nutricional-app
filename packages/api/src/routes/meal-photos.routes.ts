@@ -11,7 +11,7 @@ import {
 } from "../middleware/auth-guards.js";
 
 /**
- * Rutas de fotos de comidas — MC-FOTOS-MVP-1.
+ * Rutas de fotos de comidas — MC-FOTOS-MVP-2.
  *
  * DATO REVISABLE: las fotos nacen origin "patient_reported" y
  * reviewStatus "pending". Nunca se validan automáticamente.
@@ -22,10 +22,11 @@ import {
  *   - review → requireProfessional
  *     (el paciente no puede escribir professionalComment ni reviewStatus)
  *
- * El body de creación NO acepta professionalComment, reviewStatus ni
- * origin (additionalProperties: false): el paciente no puede inyectarlos.
- *
- * Upload del binario: NO implementado en este ciclo (MC-FOTOS-MVP-2).
+ * MC-FOTOS-MVP-2: el endpoint de creación acepta multipart/form-data
+ * (campos: file[obligatorio], mealType[obligatorio], patientComment[opcional]).
+ * No hay schema.body en esa ruta: los campos se validan manualmente en el
+ * controller. professionalComment, reviewStatus y origin son descartados
+ * aunque el cliente los envíe.
  */
 export async function mealPhotosRoutes(app: FastifyInstance): Promise<void> {
   const patientIdSchema = {
@@ -43,16 +44,6 @@ export async function mealPhotosRoutes(app: FastifyInstance): Promise<void> {
     required: ["patientId", "photoId"],
   };
 
-  const createMealPhotoSchema = {
-    type: "object" as const,
-    additionalProperties: false,
-    properties: {
-      mealType: { type: "string" },
-      patientComment: { type: "string", maxLength: 500 },
-    },
-    required: ["mealType"],
-  };
-
   const reviewMealPhotoSchema = {
     type: "object" as const,
     additionalProperties: false,
@@ -64,11 +55,14 @@ export async function mealPhotosRoutes(app: FastifyInstance): Promise<void> {
   };
 
   // POST /patients/:patientId/meal-photos — paciente crea su registro
+  // Content-Type: multipart/form-data
+  // Campos: file (imagen), mealType, patientComment (opcional)
+  // No hay schema.body — el multipart se parsea manualmente en el controller.
   app.post(
     "/patients/:patientId/meal-photos",
     {
       preHandler: requirePatientSelf as any,
-      schema: { params: patientIdSchema, body: createMealPhotoSchema },
+      schema: { params: patientIdSchema },
     },
     createMealPhotoController,
   );

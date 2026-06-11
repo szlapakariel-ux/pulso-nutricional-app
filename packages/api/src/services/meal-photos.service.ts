@@ -1,5 +1,5 @@
 /**
- * Servicio de fotos de comidas — MC-FOTOS-MVP-1.
+ * Servicio de fotos de comidas — MC-FOTOS-MVP-2.
  *
  * REGLA CRÍTICA: toda foto nace como DATO REVISABLE.
  *   - origin: "patient_reported" (siempre; el campo nunca cambia)
@@ -8,9 +8,13 @@
  *   - Solo el flujo profesional escribe professionalComment y avanza
  *     reviewStatus (el guard de la ruta lo garantiza).
  *
- * STORAGE: este servicio genera la storageKey en servidor. El binario NO
- * se sube en MC-FOTOS-MVP-1 (ver storage/meal-photo-storage.ts): los
- * registros son metadata + key reservada hasta MC-FOTOS-MVP-2.
+ * STORAGE (MC-FOTOS-MVP-2):
+ *   - createMealPhoto recibe buffer + contentType del controller.
+ *   - Llama al storage adapter (S3 real si configurado; fallback local si no).
+ *   - El binario se sube ANTES de guardar el metadata: si el upload falla,
+ *     el registro no se crea (no quedan keys huérfanas sin binario en S3).
+ *   - En modo fallback (sin S3), el binario es descartado con aviso y el
+ *     metadata se guarda igual (útil para desarrollo y smoke tests).
  *
  * Fuente de datos: mock (default) | prisma según PULSO_DATA_SOURCE.
  */
@@ -21,7 +25,10 @@ import type {
   MealPhotoReviewDraft,
 } from "@pulso/shared";
 import { isPrismaMode } from "../config/data-source.js";
-import { buildMealPhotoStorageKey } from "../storage/meal-photo-storage.js";
+import {
+  buildMealPhotoStorageKey,
+  getMealPhotoStorage,
+} from "../storage/meal-photo-storage.js";
 import {
   generateMealPhotoLogId,
   listMockMealPhotos,
@@ -35,12 +42,6 @@ import {
   createMealPhotoInDB,
   reviewMealPhotoInDB,
 } from "../repositories/meal-photos.repository.js";
-
-/**
- * MIME type por defecto para la key reservada mientras el upload real no
- * existe (MC-FOTOS-MVP-2 recibirá el contentType real del archivo).
- */
-const PLACEHOLDER_CONTENT_TYPE = "image/jpeg";
 
 export async function listMealPhotos(
   patientId: string,
@@ -63,16 +64,22 @@ export async function getMealPhoto(
 
 /**
  * Crea un registro de foto de comida del paciente.
+ *
+ * MC-FOTOS-MVP-2: recibe el buffer real de la imagen y su MIME type.
+ * Sube el binario al storage antes de persistir el metadata.
  * SIEMPRE nace pending / patient_reported — sin excepciones.
  */
 export async function createMealPhoto(
   patientId: string,
   draft: MealPhotoLogDraft,
+  fileBuffer: Buffer,
+  contentType: string,
 ): Promise<MealPhotoLog> {
-  const storageKey = buildMealPhotoStorageKey(
-    patientId,
-    PLACEHOLDER_CONTENT_TYPE,
-  );
+  const storageKey = buildMealPhotoStorageKey(patientId, contentType);
+
+  // Upload binario (S3 real o fallback local que descarta con aviso).
+  // Si falla (solo S3 real), la excepción propaga y no se guarda metadata.
+  await getMealPhotoStorage().putObject(storageKey, fileBuffer, contentType);
 
   if (isPrismaMode()) {
     return createMealPhotoInDB({
