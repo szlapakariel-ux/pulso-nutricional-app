@@ -12,6 +12,8 @@ import type {
   PatientDailyAgenda,
   LoginResponse,
   LoginRequest,
+  ReviewInboxResponse,
+  ReviewActionPreview,
 } from "@pulso/shared";
 
 export interface ApiClientConfig {
@@ -102,6 +104,28 @@ class ApiClient {
       }
       throw e;
     }
+  }
+
+  /** GET /patients/:patientId/review-inbox — bandeja de revisión (MC-INTEGRACION-1). */
+  async getReviewInbox(patientId: string): Promise<ReviewInboxResponse> {
+    return this.fetch<ReviewInboxResponse>(
+      `/patients/${patientId}/review-inbox`,
+    );
+  }
+
+  /** POST /review-inbox/:entryId/action/preview — acción de revisión (MC-INTEGRACION-1). */
+  async postReviewAction(
+    entryId: string,
+    actionType: string,
+    comment?: string,
+  ): Promise<ReviewActionPreview> {
+    return this.fetch<ReviewActionPreview>(
+      `/review-inbox/${entryId}/action/preview`,
+      {
+        method: "POST",
+        body: JSON.stringify({ actionType, comment }),
+      },
+    );
   }
 
   async getAgenda(patientId: string): Promise<PatientDailyAgenda | null> {

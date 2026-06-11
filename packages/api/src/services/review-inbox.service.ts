@@ -4,24 +4,23 @@ import type {
   ReviewActionPreview,
   ReviewInboxResponse,
 } from "@pulso/shared";
-import {
-  getReviewInboxForPatient,
-  getFullReviewInbox,
-  applyReviewAction,
-} from "../mock-data/review-inbox.mock.js";
+import { getFullReviewInbox } from "../mock-data/review-inbox.mock.js";
 
 /**
- * Servicio de bandeja de revisión profesional — MC-8.
+ * Servicio de bandeja de revisión profesional — MC-8 / MC-INTEGRACION-1.
  *
  * REGLA CRÍTICA: todos los registros en la bandeja permanecen como
  * ReviewableData. Las acciones de revisión cambian reviewStatus pero
  * NUNCA crean ValidatedData.
  *
- * No hay persistencia en MC-8 — solo simulación/preview.
+ * PERSISTENCIA: inboxState es un store EN MEMORIA del proceso (demo). NO es
+ * persistencia real en base de datos: el contenido se pierde al reiniciar el
+ * proceso y no usa Prisma/Postgres. La persistencia real queda para un
+ * microciclo posterior.
+ *   - inicializado con mock seed al primer acceso
+ *   - acepta entradas nuevas vía addEntryToReviewInbox (MC-INTEGRACION-1)
  */
 
-// Mantener estado en memoria para esta sesión (demo)
-// En MC-8 todos los cambios son solo simulación
 const inboxState = new Map<string, ReviewInboxItem>();
 
 function initializeInboxState(): void {
@@ -31,16 +30,19 @@ function initializeInboxState(): void {
   }
 }
 
+/** Agrega un entrada al inbox en memoria (llamado desde patient-logs.service). */
+export function addEntryToReviewInbox(entry: ReviewInboxItem): void {
+  initializeInboxState();
+  inboxState.set(entry.id, entry);
+}
+
 export function getReviewInbox(patientId?: string): ReviewInboxResponse {
   initializeInboxState();
 
-  let items: ReviewInboxItem[];
-
-  if (patientId) {
-    items = getReviewInboxForPatient(patientId);
-  } else {
-    items = Array.from(inboxState.values());
-  }
+  const all = Array.from(inboxState.values());
+  const items = patientId
+    ? all.filter((item) => item.patientId === patientId)
+    : all;
 
   return {
     items,

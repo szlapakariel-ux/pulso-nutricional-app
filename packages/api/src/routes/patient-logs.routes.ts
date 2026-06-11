@@ -3,6 +3,9 @@ import {
   previewMealLogController,
   previewWeightLogController,
   previewNoteController,
+  createMealLogController,
+  createWeightLogController,
+  createNoteController,
 } from "../controllers/patient-logs.controller.js";
 import { requirePatientSelf } from "../middleware/auth-guards.js";
 
@@ -53,6 +56,36 @@ export async function patientLogsRoutes(app: FastifyInstance): Promise<void> {
     },
     required: ["type", "subject", "body"],
   };
+
+  // POST /patients/:patientId/meal-logs — persiste en inbox en memoria (MC-INTEGRACION-1)
+  app.post(
+    "/patients/:patientId/meal-logs",
+    {
+      preHandler: requirePatientSelf as any,
+      schema: { params: patientIdSchema, body: mealLogPreviewSchema },
+    },
+    createMealLogController,
+  );
+
+  // POST /patients/:patientId/weight-logs — persiste en inbox en memoria (MC-INTEGRACION-1)
+  app.post(
+    "/patients/:patientId/weight-logs",
+    {
+      preHandler: requirePatientSelf as any,
+      schema: { params: patientIdSchema, body: weightLogPreviewSchema },
+    },
+    createWeightLogController,
+  );
+
+  // POST /patients/:patientId/notes — persiste en inbox en memoria (MC-INTEGRACION-1)
+  app.post(
+    "/patients/:patientId/notes",
+    {
+      preHandler: requirePatientSelf as any,
+      schema: { params: patientIdSchema, body: notePreviewSchema },
+    },
+    createNoteController,
+  );
 
   // POST /patients/:patientId/meal-logs/preview
   app.post(

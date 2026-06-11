@@ -20,6 +20,12 @@ import type {
   MealPhotoLog,
   MealPhotoType,
   PatientTodayView,
+  PatientMealLogDraft,
+  PatientWeightLogDraft,
+  PatientNoteDraft,
+  PatientMealLogReviewable,
+  PatientWeightLogReviewable,
+  PatientNoteReviewable,
 } from "@pulso/shared";
 
 export class ApiError extends Error {
@@ -101,6 +107,39 @@ class ApiClient {
       }
       throw e;
     }
+  }
+
+  /** POST /patients/:patientId/meal-logs — registra comida (MC-INTEGRACION-1). */
+  async createMealLog(
+    patientId: string,
+    draft: PatientMealLogDraft,
+  ): Promise<PatientMealLogReviewable> {
+    return this.fetch<PatientMealLogReviewable>(
+      `/patients/${patientId}/meal-logs`,
+      { method: "POST", body: JSON.stringify(draft) },
+    );
+  }
+
+  /** POST /patients/:patientId/weight-logs — registra peso (MC-INTEGRACION-1). */
+  async createWeightLog(
+    patientId: string,
+    draft: PatientWeightLogDraft,
+  ): Promise<PatientWeightLogReviewable> {
+    return this.fetch<PatientWeightLogReviewable>(
+      `/patients/${patientId}/weight-logs`,
+      { method: "POST", body: JSON.stringify(draft) },
+    );
+  }
+
+  /** POST /patients/:patientId/notes — registra nota (MC-INTEGRACION-1). */
+  async createNote(
+    patientId: string,
+    draft: PatientNoteDraft,
+  ): Promise<PatientNoteReviewable> {
+    return this.fetch<PatientNoteReviewable>(
+      `/patients/${patientId}/notes`,
+      { method: "POST", body: JSON.stringify(draft) },
+    );
   }
 
   /**
