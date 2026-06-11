@@ -132,6 +132,17 @@ enum NoteType {
   concern
 }
 
+// Refleja MealPhotoType de @pulso/shared/types/meal-photo.ts (MC-FOTOS-MVP-1)
+// Vocabulario propio del módulo de fotos (ADR 0029) — NO converge con DayMoment.
+enum MealPhotoType {
+  breakfast
+  lunch
+  snack     // merienda
+  dinner
+  collation // colación
+  other
+}
+
 // Refleja ReviewActionType de @pulso/shared/types/review-inbox.ts
 enum ReviewActionType {
   mark_reviewed
@@ -194,6 +205,7 @@ model Patient {
   weightLogs       WeightLog[]
   patientNotes     PatientNote[]
   exerciseLogs     ExerciseLog[]
+  mealPhotoLogs    MealPhotoLog[]
   activitySettings ActivitySettings?
 }
 
@@ -419,6 +431,29 @@ model ExerciseLog {
   updatedAt       DateTime          @updatedAt
 
   reviewActions ReviewAction[]
+}
+
+// Foto de comida cargada por el paciente — MC-FOTOS-MVP-1 (ADR 0029).
+// El binario vive en el bucket S3-compatible; Postgres guarda SOLO storageKey.
+// Patrón de key: patients/{patientId}/meal-photos/{year}/{month}/{fileId}
+// REGLA: professionalComment solo lo escribe la profesional (guard en API).
+model MealPhotoLog {
+  id                  String        @id @default(uuid())
+  patientId           String
+  patient             Patient       @relation(fields: [patientId], references: [id])
+  // Referencia al objeto en storage — NUNCA el binario, NUNCA URL pública.
+  storageKey          String
+  mealType            MealPhotoType
+  patientComment      String?
+  professionalComment String?
+  // Separación de dominio: datos revisables del paciente
+  origin              DataOrigin    @default(patient_reported)
+  reviewStatus        ReviewStatus  @default(pending)
+  reviewedAt          DateTime?
+  reviewedBy          String?       // ID del profesional que revisó
+  isDemoData          Boolean       @default(false)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 }
 
 // ─── BANDEJA DE REVISIÓN ─────────────────────────────────────────────────────

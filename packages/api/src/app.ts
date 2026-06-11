@@ -17,6 +17,7 @@ import { patientLogsRoutes } from "./routes/patient-logs.routes.js";
 import { reviewInboxRoutes } from "./routes/review-inbox.routes.js";
 import { pdfRoutes } from "./routes/pdf.routes.js";
 import { activityRoutes } from "./routes/activity.routes.js";
+import { mealPhotosRoutes } from "./routes/meal-photos.routes.js";
 
 /**
  * Crea y configura la instancia de Fastify.
@@ -57,6 +58,7 @@ export function buildApp() {
   app.register(reviewInboxRoutes);
   app.register(pdfRoutes);
   app.register(activityRoutes);
+  app.register(mealPhotosRoutes);
 
   return app;
 }

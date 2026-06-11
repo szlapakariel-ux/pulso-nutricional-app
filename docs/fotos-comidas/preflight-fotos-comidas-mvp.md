@@ -174,11 +174,17 @@ Reglas duras:
 
 | Microciclo | Contenido | Estado |
 |------------|-----------|--------|
-| **MC-FOTOS-MVP-0** | Preflight y documentación (este documento + ADR 0028). | ✅ Este ciclo |
-| **MC-FOTOS-MVP-1** | API + storage + modelo mínimo: entidad `meal_photo_logs` en Prisma, endpoint de alta con upload al bucket, guards de permisos, URLs firmadas. | Pendiente |
-| **MC-FOTOS-MVP-2** | Mi Pulso: UI "Registrar comida" con foto, tipo y comentario. | Pendiente |
-| **MC-FOTOS-MVP-3** | Panel profesional: sección "Fotos de comidas", revisar/comentar. | Pendiente |
+| **MC-FOTOS-MVP-0** | Preflight y documentación (este documento + ADR 0028). | ✅ Completado |
+| **MC-FOTOS-MVP-1** | API + storage + modelo mínimo: modelo `MealPhotoLog` en Prisma, endpoints con guards, contrato del storage adapter. **Upload real del binario diferido a MVP-2** (ver ADR 0029). | ✅ Completado (backend metadata-only) |
+| **MC-FOTOS-MVP-2** | Mi Pulso: UI "Registrar comida" (tomar foto / subir desde galería, tipo, comentario) + **upload real del binario** (multipart o URL firmada de subida, SDK S3, bucket). | Pendiente |
+| **MC-FOTOS-MVP-3** | Panel profesional: sección "Fotos de comidas", revisar/comentar + entrega de imagen por URL firmada/endpoint controlado. | Pendiente |
 | **MC-FOTOS-MVP-4** | Smoke test Railway de la cadena completa. | Pendiente |
+
+> **Decisión resuelta en MC-FOTOS-MVP-1 (ADR 0029):** `mealType` usa enum
+> propio `MealPhotoType` (`breakfast | lunch | snack | dinner | collation |
+> other`) — no converge con `timeOfDay` de MC-7. El endpoint de review usa
+> **POST** (no PATCH) por consistencia con review-inbox y porque CORS solo
+> permite GET/POST/OPTIONS.
 
 Cada ciclo requiere autorización explícita antes de ejecutarse.
 
