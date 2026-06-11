@@ -1,7 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import type { PatientDetail, PatientMealLog, PatientWeightLog, PatientNote } from "@pulso/shared";
+import { useState, useEffect } from "react";
+import type {
+  PatientDetail,
+  PatientMealLog,
+  PatientWeightLog,
+  PatientNote,
+  ReviewInboxItem,
+} from "@pulso/shared";
+import { isApiMode } from "../lib/data-config";
+import { getApiClient, ApiError } from "../lib/api-client";
 
 interface ReviewInboxItemUI {
   id: string;
@@ -16,7 +24,7 @@ interface ReviewInboxItemUI {
   isDemoData: boolean;
 }
 
-// Mock inbox data — en producción vendría de la API
+// Mock inbox data — usado en modo mock
 const MOCK_INBOX: ReviewInboxItemUI[] = [
   {
     id: "inbox-meal-1",
@@ -93,6 +101,21 @@ const MOCK_INBOX: ReviewInboxItemUI[] = [
   },
 ];
 
+function apiItemToUI(item: ReviewInboxItem): ReviewInboxItemUI {
+  return {
+    id: item.id,
+    patientId: item.patientId,
+    patientName: item.patientName,
+    entryType: item.entryType,
+    reviewStatus: item.reviewStatus,
+    createdAt: item.createdAt,
+    lastActionAt: item.lastActionAt,
+    comment: item.comment,
+    data: item.entry.data as PatientMealLog | PatientWeightLog | PatientNote,
+    isDemoData: item.isDemoData,
+  };
+}
+
 const STATUS_COLORS: Record<string, string> = {
   pending: "#fef3c7",
   reviewed: "#dbeafe",
@@ -112,21 +135,100 @@ interface ReviewionViewProps {
 }
 
 export function ReviewInboxView({ patient }: ReviewionViewProps) {
+  const useApi = isApiMode();
+
+  const [inboxItems, setInboxItems] = useState<ReviewInboxItemUI[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<ReviewInboxItemUI | null>(null);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  // Filtrar por paciente seleccionado
-  const patientInboxItems = MOCK_INBOX.filter((item) => item.patientId === patient.id);
+  useEffect(() => {
+    if (useApi) {
+      setLoading(true);
+      setLoadError(null);
+      setSelectedItem(null);
+      getApiClient()
+        .getReviewInbox(patient.id)
+        .then((resp) => {
+          setInboxItems(resp.items.map(apiItemToUI));
+        })
+        .catch((err) => {
+          setLoadError(
+            err instanceof ApiError ? err.message : "Error al cargar bandeja",
+          );
+          setInboxItems([]);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setInboxItems(MOCK_INBOX.filter((item) => item.patientId === patient.id));
+    }
+  }, [useApi, patient.id]);
 
-  const handleAction = (itemId: string, action: string) => {
+  const handleAction = async (itemId: string, action: string) => {
     setActionInProgress(itemId);
-    console.log(`Acción simulada: ${action} en registro ${itemId}`);
-    setTimeout(() => {
-      setActionInProgress(null);
-    }, 500);
+    setActionError(null);
+    if (useApi) {
+      try {
+        const result = await getApiClient().postReviewAction(itemId, action);
+        setInboxItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId
+              ? { ...item, reviewStatus: result.newStatus, lastActionAt: result.executedAt }
+              : item,
+          ),
+        );
+        setSelectedItem((prev) =>
+          prev?.id === itemId
+            ? { ...prev, reviewStatus: result.newStatus, lastActionAt: result.executedAt }
+            : prev,
+        );
+      } catch (err) {
+        setActionError(
+          err instanceof ApiError ? err.message : "Error al ejecutar acción",
+        );
+      } finally {
+        setActionInProgress(null);
+      }
+    } else {
+      setTimeout(() => {
+        setInboxItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId ? { ...item, reviewStatus: action === "mark_reviewed" ? "reviewed" : action === "accept" ? "accepted" : "flagged" } : item,
+          ),
+        );
+        setActionInProgress(null);
+      }, 300);
+    }
   };
 
-  if (patientInboxItems.length === 0) {
+  if (loading) {
+    return (
+      <div style={{ padding: "2rem", textAlign: "center", color: "#9ca3af" }}>
+        Cargando bandeja…
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div
+        style={{
+          padding: "1rem",
+          background: "#fef2f2",
+          border: "1px solid #fecaca",
+          borderRadius: 10,
+          color: "#b91c1c",
+          fontSize: "0.85rem",
+        }}
+      >
+        ❌ No se pudo cargar la bandeja: {loadError}
+      </div>
+    );
+  }
+
+  if (inboxItems.length === 0) {
     return (
       <div
         style={{
@@ -141,7 +243,9 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
           Sin registros pendientes de revisión
         </p>
         <p style={{ margin: 0, fontSize: "0.9rem" }}>
-          Todos los registros del paciente están revisados o aceptados.
+          {useApi
+            ? "Cuando el paciente envíe registros desde Mi Pulso, aparecerán aquí."
+            : "Todos los registros del paciente están revisados o aceptados."}
         </p>
       </div>
     );
@@ -149,25 +253,42 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      {/* Banner demo */}
+      {/* Banner modo */}
       <div
         style={{
-          background: "#fffbe6",
-          border: "1px solid #ffe58f",
+          background: useApi ? "#f0fdf4" : "#fffbe6",
+          border: `1px solid ${useApi ? "#bbf7d0" : "#ffe58f"}`,
           borderRadius: 10,
           padding: "0.75rem 1rem",
           fontSize: "0.85rem",
-          color: "#614700",
+          color: useApi ? "#166534" : "#614700",
         }}
       >
-        ⚠️ Bandeja simulada — MC-8. Los registros permanecen como datos revisables
-        (ReviewableData) incluso después de las acciones. No hay persistencia real.
+        {useApi
+          ? "✓ Bandeja en vivo — mostrando registros reales del paciente desde la API."
+          : "⚠️ Bandeja simulada (modo mock). Los registros permanecen como datos revisables (ReviewableData)."}
       </div>
+
+      {/* Error de acción */}
+      {actionError && (
+        <div
+          style={{
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: 8,
+            padding: "0.65rem 0.9rem",
+            fontSize: "0.82rem",
+            color: "#b91c1c",
+          }}
+        >
+          ❌ {actionError}
+        </div>
+      )}
 
       {/* Lista de registros */}
       <section>
         <h3 style={{ margin: "0 0 0.75rem", fontSize: "0.95rem" }}>
-          Registros pendientes/en revisión ({patientInboxItems.length})
+          Registros pendientes/en revisión ({inboxItems.length})
         </h3>
 
         <div
@@ -178,13 +299,13 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
           }}
         >
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {patientInboxItems.map((item, idx) => (
+            {inboxItems.map((item, idx) => (
               <li
                 key={item.id}
                 style={{
                   padding: "1rem 1.25rem",
                   borderBottom:
-                    idx < patientInboxItems.length - 1
+                    idx < inboxItems.length - 1
                       ? "1px solid #f0f0f0"
                       : "none",
                   background: "white",
@@ -219,7 +340,6 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
                       </span>
                     </div>
 
-                    {/* Resumen del contenido */}
                     {item.entryType === "meal_log" && (
                       <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#555" }}>
                         {(item.data as PatientMealLog).foodDescription}
@@ -345,7 +465,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
 
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               <button
-                onClick={() => handleAction(selectedItem.id, "mark_reviewed")}
+                onClick={() => void handleAction(selectedItem.id, "mark_reviewed")}
                 disabled={actionInProgress === selectedItem.id}
                 style={{
                   padding: "0.6rem 1rem",
@@ -363,7 +483,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
               </button>
 
               <button
-                onClick={() => handleAction(selectedItem.id, "accept")}
+                onClick={() => void handleAction(selectedItem.id, "accept")}
                 disabled={actionInProgress === selectedItem.id}
                 style={{
                   padding: "0.6rem 1rem",
@@ -381,7 +501,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
               </button>
 
               <button
-                onClick={() => handleAction(selectedItem.id, "flag")}
+                onClick={() => void handleAction(selectedItem.id, "flag")}
                 disabled={actionInProgress === selectedItem.id}
                 style={{
                   padding: "0.6rem 1rem",
@@ -407,8 +527,9 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
                 fontStyle: "italic",
               }}
             >
-              Acciones simuladas — MC-8. No hay persistencia. El registro sigue siendo
-              ReviewableData (nunca se convierte en ValidatedData).
+              {useApi
+                ? "El registro sigue siendo ReviewableData (nunca se convierte en ValidatedData)."
+                : "Acciones simuladas (modo mock). El registro sigue siendo ReviewableData."}
             </p>
           </div>
         </section>

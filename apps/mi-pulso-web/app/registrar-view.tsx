@@ -10,19 +10,29 @@ import type {
   ActivityIntensity,
 } from "@pulso/shared";
 import { DEMO_ACTIVITY_MODULE_ACTIVE } from "./activity.mock";
+import { getDataConfig } from "../lib/data-config";
+import { ApiError, getApiClient } from "../lib/api-client";
+import { usePatientAuth } from "../lib/use-patient-auth";
 
 interface RegistroEnviado {
   tipo: "comida" | "peso" | "nota" | "actividad";
   timestamp: string;
+  apiSent?: boolean;
 }
 
 export function RegistrarView() {
+  const auth = usePatientAuth();
+  const dataConfig = getDataConfig();
+  const useApi = dataConfig.mode === "api";
+
   const [activeTab, setActiveTab] = useState<"comida" | "peso" | "nota" | "actividad">(
     "comida"
   );
   const [registrosEnviados, setRegistrosEnviados] = useState<RegistroEnviado[]>(
     []
   );
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Comida
   const [mealDate, setMealDate] = useState(
@@ -56,9 +66,9 @@ export function RegistrarView() {
   const [actIntensity, setActIntensity] = useState<ActivityIntensity>("low");
   const [actNotes, setActNotes] = useState("");
 
-  const handleSubmitMeal = (e: React.FormEvent) => {
+  const handleSubmitMeal = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mealDescription.trim()) return;
+    if (!mealDescription.trim() || submitting) return;
 
     const draft: PatientMealLogDraft = {
       date: mealDate,
@@ -68,21 +78,40 @@ export function RegistrarView() {
       notes: mealNotes || undefined,
     };
 
-    console.log("Comida enviada (demo):", draft);
-    setRegistrosEnviados((prev) => [
-      ...prev,
-      { tipo: "comida", timestamp: new Date().toISOString() },
-    ]);
-
-    // Limpiar formulario
-    setMealDescription("");
-    setMealPortion("");
-    setMealNotes("");
+    if (useApi && auth.user?.patientId) {
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        await getApiClient().createMealLog(auth.user.patientId, draft);
+        setRegistrosEnviados((prev) => [
+          ...prev,
+          { tipo: "comida", timestamp: new Date().toISOString(), apiSent: true },
+        ]);
+        setMealDescription("");
+        setMealPortion("");
+        setMealNotes("");
+      } catch (err) {
+        setSubmitError(
+          err instanceof ApiError ? err.message : "Error al enviar comida",
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      console.log("Comida enviada (demo):", draft);
+      setRegistrosEnviados((prev) => [
+        ...prev,
+        { tipo: "comida", timestamp: new Date().toISOString(), apiSent: false },
+      ]);
+      setMealDescription("");
+      setMealPortion("");
+      setMealNotes("");
+    }
   };
 
-  const handleSubmitWeight = (e: React.FormEvent) => {
+  const handleSubmitWeight = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!weight.trim()) return;
+    if (!weight.trim() || submitting) return;
 
     const draft: PatientWeightLogDraft = {
       date: weightDate,
@@ -90,15 +119,33 @@ export function RegistrarView() {
       notes: weightNotes || undefined,
     };
 
-    console.log("Peso enviado (demo):", draft);
-    setRegistrosEnviados((prev) => [
-      ...prev,
-      { tipo: "peso", timestamp: new Date().toISOString() },
-    ]);
-
-    // Limpiar formulario
-    setWeight("");
-    setWeightNotes("");
+    if (useApi && auth.user?.patientId) {
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        await getApiClient().createWeightLog(auth.user.patientId, draft);
+        setRegistrosEnviados((prev) => [
+          ...prev,
+          { tipo: "peso", timestamp: new Date().toISOString(), apiSent: true },
+        ]);
+        setWeight("");
+        setWeightNotes("");
+      } catch (err) {
+        setSubmitError(
+          err instanceof ApiError ? err.message : "Error al enviar peso",
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      console.log("Peso enviado (demo):", draft);
+      setRegistrosEnviados((prev) => [
+        ...prev,
+        { tipo: "peso", timestamp: new Date().toISOString(), apiSent: false },
+      ]);
+      setWeight("");
+      setWeightNotes("");
+    }
   };
 
   const handleSubmitActivity = (e: React.FormEvent) => {
@@ -116,16 +163,16 @@ export function RegistrarView() {
     console.log("Actividad enviada (demo):", draft);
     setRegistrosEnviados((prev) => [
       ...prev,
-      { tipo: "actividad", timestamp: new Date().toISOString() },
+      { tipo: "actividad", timestamp: new Date().toISOString(), apiSent: false },
     ]);
 
     setActDuration("");
     setActNotes("");
   };
 
-  const handleSubmitNote = (e: React.FormEvent) => {
+  const handleSubmitNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!noteSubject.trim() || !noteBody.trim()) return;
+    if (!noteSubject.trim() || !noteBody.trim() || submitting) return;
 
     const draft: PatientNoteDraft = {
       type: noteType,
@@ -133,15 +180,33 @@ export function RegistrarView() {
       body: noteBody,
     };
 
-    console.log("Nota enviada (demo):", draft);
-    setRegistrosEnviados((prev) => [
-      ...prev,
-      { tipo: "nota", timestamp: new Date().toISOString() },
-    ]);
-
-    // Limpiar formulario
-    setNoteSubject("");
-    setNoteBody("");
+    if (useApi && auth.user?.patientId) {
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        await getApiClient().createNote(auth.user.patientId, draft);
+        setRegistrosEnviados((prev) => [
+          ...prev,
+          { tipo: "nota", timestamp: new Date().toISOString(), apiSent: true },
+        ]);
+        setNoteSubject("");
+        setNoteBody("");
+      } catch (err) {
+        setSubmitError(
+          err instanceof ApiError ? err.message : "Error al enviar nota",
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      console.log("Nota enviada (demo):", draft);
+      setRegistrosEnviados((prev) => [
+        ...prev,
+        { tipo: "nota", timestamp: new Date().toISOString(), apiSent: false },
+      ]);
+      setNoteSubject("");
+      setNoteBody("");
+    }
   };
 
   return (
@@ -187,21 +252,70 @@ export function RegistrarView() {
       </header>
 
       <main style={{ padding: "1rem 1rem 5rem" }}>
-        {/* Banner demo */}
-        <div
-          style={{
-            background: "#fffbe6",
-            border: "1px solid #ffe58f",
-            borderRadius: 10,
-            padding: "0.6rem 0.9rem",
-            marginBottom: "1rem",
-            fontSize: "0.8rem",
-            color: "#614700",
-          }}
-        >
-          ⚠️ Datos ficticios de demostración — MC-7. Tus registros quedarán
-          pendientes de revisión por tu profesional.
-        </div>
+        {/* Banner modo */}
+        {useApi && auth.user?.patientId ? (
+          <div
+            style={{
+              background: "#f0fdf4",
+              border: "1px solid #bbf7d0",
+              borderRadius: 10,
+              padding: "0.6rem 0.9rem",
+              marginBottom: "1rem",
+              fontSize: "0.8rem",
+              color: "#166534",
+            }}
+          >
+            ✓ Sesión activa ({auth.user.email ?? "paciente"}). Tus registros se
+            envían a la API y quedan pendientes de revisión profesional.
+          </div>
+        ) : useApi ? (
+          <div
+            style={{
+              background: "#fff7ed",
+              border: "1px solid #fed7aa",
+              borderRadius: 10,
+              padding: "0.6rem 0.9rem",
+              marginBottom: "1rem",
+              fontSize: "0.8rem",
+              color: "#9a3412",
+            }}
+          >
+            ⚠️ Modo API activo. Iniciá sesión en la vista Hoy para enviar
+            registros a la API.
+          </div>
+        ) : (
+          <div
+            style={{
+              background: "#fffbe6",
+              border: "1px solid #ffe58f",
+              borderRadius: 10,
+              padding: "0.6rem 0.9rem",
+              marginBottom: "1rem",
+              fontSize: "0.8rem",
+              color: "#614700",
+            }}
+          >
+            ⚠️ Datos ficticios de demostración. Tus registros quedarán
+            pendientes de revisión por tu profesional.
+          </div>
+        )}
+
+        {/* Error de envío */}
+        {submitError && (
+          <div
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: 10,
+              padding: "0.6rem 0.9rem",
+              marginBottom: "1rem",
+              fontSize: "0.8rem",
+              color: "#b91c1c",
+            }}
+          >
+            ❌ {submitError}
+          </div>
+        )}
 
         {/* Tabs */}
         <div
@@ -398,21 +512,21 @@ export function RegistrarView() {
 
             <button
               type="submit"
-              disabled={!mealDescription.trim()}
+              disabled={!mealDescription.trim() || submitting}
               style={{
                 width: "100%",
                 padding: "0.7rem",
                 background:
-                  mealDescription.trim() ? "#2563eb" : "#d1d5db",
+                  mealDescription.trim() && !submitting ? "#2563eb" : "#d1d5db",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
                 fontWeight: 600,
-                cursor: mealDescription.trim() ? "pointer" : "not-allowed",
+                cursor: mealDescription.trim() && !submitting ? "pointer" : "not-allowed",
                 fontSize: "0.9rem",
               }}
             >
-              Enviar comida
+              {submitting ? "Enviando…" : "Enviar comida"}
             </button>
           </form>
         )}
@@ -510,20 +624,20 @@ export function RegistrarView() {
 
             <button
               type="submit"
-              disabled={!weight.trim()}
+              disabled={!weight.trim() || submitting}
               style={{
                 width: "100%",
                 padding: "0.7rem",
-                background: weight.trim() ? "#2563eb" : "#d1d5db",
+                background: weight.trim() && !submitting ? "#2563eb" : "#d1d5db",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
                 fontWeight: 600,
-                cursor: weight.trim() ? "pointer" : "not-allowed",
+                cursor: weight.trim() && !submitting ? "pointer" : "not-allowed",
                 fontSize: "0.9rem",
               }}
             >
-              Enviar peso
+              {submitting ? "Enviando…" : "Enviar peso"}
             </button>
           </form>
         )}
@@ -624,24 +738,24 @@ export function RegistrarView() {
 
             <button
               type="submit"
-              disabled={!noteSubject.trim() || !noteBody.trim()}
+              disabled={!noteSubject.trim() || !noteBody.trim() || submitting}
               style={{
                 width: "100%",
                 padding: "0.7rem",
                 background:
-                  noteSubject.trim() && noteBody.trim() ? "#2563eb" : "#d1d5db",
+                  noteSubject.trim() && noteBody.trim() && !submitting ? "#2563eb" : "#d1d5db",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
                 fontWeight: 600,
                 cursor:
-                  noteSubject.trim() && noteBody.trim()
+                  noteSubject.trim() && noteBody.trim() && !submitting
                     ? "pointer"
                     : "not-allowed",
                 fontSize: "0.9rem",
               }}
             >
-              Enviar nota
+              {submitting ? "Enviando…" : "Enviar nota"}
             </button>
           </form>
         )}
@@ -774,7 +888,7 @@ export function RegistrarView() {
           </form>
         )}
 
-        {/* Histórico de registros enviados (demo) */}
+        {/* Histórico de registros enviados */}
         {registrosEnviados.length > 0 && (
           <section style={{ marginTop: "2rem" }}>
             <h3
@@ -787,7 +901,7 @@ export function RegistrarView() {
                 letterSpacing: "0.05em",
               }}
             >
-              Registros enviados (demo, no persistidos)
+              Registros enviados esta sesión
             </h3>
             <div
               style={{
@@ -826,14 +940,14 @@ export function RegistrarView() {
                     <span
                       style={{
                         fontSize: "0.75rem",
-                        background: "#fef3c7",
-                        color: "#92400e",
+                        background: r.apiSent ? "#dcfce7" : "#fef3c7",
+                        color: r.apiSent ? "#166534" : "#92400e",
                         padding: "0.2rem 0.5rem",
                         borderRadius: 4,
                         fontWeight: 600,
                       }}
                     >
-                      Pendiente
+                      {r.apiSent ? "Enviado ✓" : "Pendiente (mock)"}
                     </span>
                   </li>
                 ))}

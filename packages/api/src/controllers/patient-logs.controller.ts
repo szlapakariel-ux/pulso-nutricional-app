@@ -8,6 +8,9 @@ import {
   previewMealLog,
   previewWeightLog,
   previewNote,
+  createMealLog,
+  createWeightLog,
+  createNote,
 } from "../services/patient-logs.service.js";
 
 interface PatientIdParams {
@@ -39,6 +42,51 @@ interface NotePreviewBody {
   type: "question" | "observation" | "concern";
   subject: string;
   body: string;
+}
+
+/**
+ * POST /patients/:patientId/meal-logs — MC-INTEGRACION-1.
+ * Persiste en inbox en memoria. Dato revisable (patient_reported / pending).
+ */
+export async function createMealLogController(
+  request: FastifyRequest<{
+    Params: PatientIdParams;
+    Body: MealLogPreviewBody;
+  }>,
+  reply: FastifyReply,
+): Promise<void> {
+  const { patientId } = request.params;
+  const draft: PatientMealLogDraft = request.body;
+  const reviewable = createMealLog(patientId, draft);
+  await reply.status(201).send({ data: reviewable });
+}
+
+/** POST /patients/:patientId/weight-logs — MC-INTEGRACION-1. */
+export async function createWeightLogController(
+  request: FastifyRequest<{
+    Params: PatientIdParams;
+    Body: WeightLogPreviewBody;
+  }>,
+  reply: FastifyReply,
+): Promise<void> {
+  const { patientId } = request.params;
+  const draft: PatientWeightLogDraft = request.body;
+  const reviewable = createWeightLog(patientId, draft);
+  await reply.status(201).send({ data: reviewable });
+}
+
+/** POST /patients/:patientId/notes — MC-INTEGRACION-1. */
+export async function createNoteController(
+  request: FastifyRequest<{
+    Params: PatientIdParams;
+    Body: NotePreviewBody;
+  }>,
+  reply: FastifyReply,
+): Promise<void> {
+  const { patientId } = request.params;
+  const draft: PatientNoteDraft = request.body;
+  const reviewable = createNote(patientId, draft);
+  await reply.status(201).send({ data: reviewable });
 }
 
 /**

@@ -823,6 +823,7 @@
 | MC-FOTOS-PROD-2 (deploy Mi Pulso + smoke upload) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-4 (smoke integral Railway) | Pendiente (requiere autorización) |
+| MC-INTEGRACION-1 (flujo paciente→profesional) | ✅ Completado (código implementado) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
 
 > **MC-FOTOS-MVP-2 completado. Mi Pulso ya incorpora UI para registrar fotos de
@@ -844,3 +845,36 @@
 > db:push autorizado, configuración real del bucket, deploy Railway,
 > visualización/revisión profesional (MC-FOTOS-MVP-3), smoke test Railway
 > (MC-FOTOS-MVP-4), dominio, Play Store, MC-11 y MC-12.
+
+> **MC-INTEGRACION-1 completado.** Flujo de valor paciente→profesional
+> implementado en código con **persistencia en memoria para demo (store de
+> sesión del proceso del servidor) — NO es persistencia real en base de datos**;
+> los datos se pierden al reiniciar el proceso y no usan Prisma/Postgres:
+> — API: nuevos endpoints `POST /patients/:id/meal-logs`, `.../weight-logs`,
+> `.../notes` que crean `ReviewInboxItem` con `origin: patient_reported` /
+> `reviewStatus: pending` y los agregan al `inboxState` en memoria de la sesión
+> del servidor; `GET /patients/:id/review-inbox` devuelve entradas reales (mock
+> seed + dinámicas) en lugar de mock estático por paciente; acción de revisión
+> `POST /review-inbox/:id/action/preview` persiste en memoria.
+> — Mi Pulso: `api-client.ts` expone `createMealLog`, `createWeightLog`,
+> `createNote`; `registrar-view.tsx` detecta modo (`NEXT_PUBLIC_PULSO_DATA_MODE`)
+> y llama a la API cuando está autenticado (reusa sesión del token en
+> `localStorage`), con estados de carga/error/éxito; en modo mock conserva el
+> comportamiento anterior.
+> — Panel profesional: `api-client.ts` expone `getReviewInbox` y
+> `postReviewAction`; `review-inbox-view.tsx` carga la bandeja desde la API en
+> modo `api` (con `useEffect` por cambio de paciente), muestra estado de carga y
+> error, mapea `ReviewInboxItem.entry.data` al modelo plano de la UI, y ejecuta
+> acciones actualizando el estado local; en modo mock conserva comportamiento
+> anterior.
+> — Smoke E2E: `scripts/smoke-integracion-1.mjs` verifica el flujo completo:
+> login paciente → crea comida/peso/nota → login profesional → bandeja contiene
+> los registros → acción de revisión devuelve nuevo estado. Por defecto apunta a
+> `http://localhost:3000`; exige `PULSO_API_BASE_URL` explícito para correr
+> contra otra instancia (no golpea Railway sin intención).
+> — Verificado: `pnpm type-check`, `pnpm build`, `pnpm lint` pasan sin errores
+> (7/7 tareas OK). **No se tocó Railway, Postgres, CORS, ni se ejecutó
+> db:push, ni se hizo deploy, ni se configuró bucket.** La persistencia real en
+> DB queda para un microciclo posterior. Quedan pendientes: MC-FOTOS-MVP-3
+> (revisión de fotos en panel), MC-DEMO-VENDIBLE-1 (limpieza cosmética),
+> MC-11/12, dominio, sin avanzar sin nueva indicación explícita.
