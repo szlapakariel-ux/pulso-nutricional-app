@@ -1,37 +1,40 @@
 /**
- * Storage adapter para fotos de comidas — MC-FOTOS-MVP-1.
+ * Storage adapter para fotos de comidas — MC-FOTOS-MVP-2.
  *
- * CONTRATO preparado para un bucket S3-compatible ("orderly-suitcase"),
- * sin implementación real todavía:
- *   - El SDK de S3 NO se agrega en este ciclo (sin dependencia nueva).
- *   - El upload real del binario llega en MC-FOTOS-MVP-2.
- *   - Compila y corre sin credenciales: si el storage no está configurado,
- *     el adapter lo reporta de forma explícita en lugar de fallar silencioso.
+ * Dos implementaciones:
+ *   - S3MealPhotoStorage: upload real a bucket S3-compatible usando
+ *     @aws-sdk/client-s3 (PutObjectCommand). Solo se instancia cuando
+ *     las 5 variables de entorno S3_* están definidas.
+ *   - LocalFallbackStorage: descarta el binario con aviso. Se usa cuando
+ *     el bucket no está configurado (desarrollo local, smoke tests).
+ *     El metadata se guarda igual; el binario no se persiste.
  *
- * REGLAS:
- *   - storageKey SIEMPRE generada en servidor (nunca el nombre original
- *     del archivo: evita colisiones y fuga de metadatos del dispositivo).
- *   - Patrón de key: patients/{patientId}/meal-photos/{year}/{month}/{fileId}
- *   - NUNCA URLs públicas permanentes: la entrega futura será por URL
- *     firmada o endpoint controlado.
+ * REGLAS (invariantes que no cambian en MC-FOTOS-MVP-2):
+ *   - storageKey SIEMPRE generada en servidor (UUID, nunca nombre original).
+ *   - Patrón: patients/{patientId}/meal-photos/{year}/{month}/{fileId}.{ext}
+ *   - NUNCA URLs públicas permanentes.
+ *   - Postgres guarda solo la key, nunca el binario.
+ *   - Sin credenciales hardcodeadas: todo por variables de entorno.
  */
 
 import { randomUUID } from "node:crypto";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import {
   getStorageConfig,
   IMAGE_EXTENSION_BY_MIME,
+  type StorageConfig,
 } from "../config/storage.js";
 
 /**
- * Contrato del adapter. La implementación S3 real (con SDK y URLs firmadas)
- * se agrega en MC-FOTOS-MVP-2 cuando se autorice el upload.
+ * Contrato del adapter. Implementado por S3MealPhotoStorage (real)
+ * y LocalFallbackStorage (sin credenciales / desarrollo local).
  */
 export interface MealPhotoStorageAdapter {
-  /** true si hay configuración S3 completa en el entorno. */
+  /** true si el adapter subirá el binario a un bucket real. */
   isConfigured(): boolean;
   /**
-   * Sube el binario de la foto a la key indicada.
-   * En MC-FOTOS-MVP-1 NO está implementado: rechaza con error explícito.
+   * Sube el binario de la foto al path indicado.
+   * En modo fallback, descarta el binario y registra un aviso.
    */
   putObject(key: string, body: Buffer, contentType: string): Promise<void>;
 }
@@ -41,10 +44,9 @@ export interface MealPhotoStorageAdapter {
  *
  * patients/{patientId}/meal-photos/{year}/{month}/{fileId}.{ext}
  *
- * - year/month: del momento de la carga (UTC) — evita directorios gigantes.
+ * - year/month: del momento de la carga (UTC).
  * - fileId: UUID generado en servidor.
- * - ext: derivada del MIME type aceptado; "bin" como fallback defensivo
- *   (el MIME ya se valida antes, en la capa de entrada).
+ * - ext: derivada del MIME type aceptado; "bin" como fallback defensivo.
  */
 export function buildMealPhotoStorageKey(
   patientId: string,
@@ -58,30 +60,68 @@ export function buildMealPhotoStorageKey(
   return `patients/${patientId}/meal-photos/${year}/${month}/${fileId}.${ext}`;
 }
 
-/**
- * Adapter actual: contrato sin upload real.
- * MC-FOTOS-MVP-2 lo reemplaza por la implementación S3 (SDK + credenciales
- * vía variables de entorno, nunca hardcodeadas).
- */
-class NotImplementedMealPhotoStorage implements MealPhotoStorageAdapter {
-  isConfigured(): boolean {
-    return getStorageConfig() !== null;
+/** Upload real a bucket S3-compatible. */
+class S3MealPhotoStorage implements MealPhotoStorageAdapter {
+  private client: S3Client;
+  private bucket: string;
+
+  constructor(config: StorageConfig) {
+    this.client = new S3Client({
+      endpoint: config.endpoint,
+      region: config.region,
+      credentials: {
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+      },
+      // forcePathStyle necesario para buckets S3-compatibles (MinIO, Railway, etc.)
+      forcePathStyle: true,
+    });
+    this.bucket = config.bucket;
   }
 
-  async putObject(): Promise<void> {
-    throw new Error(
-      "Upload de fotos no implementado en MC-FOTOS-MVP-1. " +
-        "El binario se sube en MC-FOTOS-MVP-2 (requiere autorización).",
+  isConfigured(): boolean {
+    return true;
+  }
+
+  async putObject(key: string, body: Buffer, contentType: string): Promise<void> {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      }),
+    );
+  }
+}
+
+/**
+ * Adapter de fallback para entornos sin S3 configurado.
+ * Descarta el binario (no lo persiste) y loguea un aviso.
+ * Usado en desarrollo local y smoke tests: el metadata se guarda
+ * igual y el upload "tiene éxito", pero la imagen no existe en bucket.
+ */
+class LocalFallbackStorage implements MealPhotoStorageAdapter {
+  isConfigured(): boolean {
+    return false;
+  }
+
+  async putObject(key: string): Promise<void> {
+    console.warn(
+      `[storage] S3 no configurado — binario descartado (fallback local). ` +
+        `key=${key}. Configura S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY_ID, ` +
+        `S3_SECRET_ACCESS_KEY y S3_BUCKET para producción.`,
     );
   }
 }
 
 let adapter: MealPhotoStorageAdapter | null = null;
 
-/** Singleton del adapter de storage de fotos de comidas. */
+/** Singleton del adapter. S3 real si hay credenciales; fallback si no. */
 export function getMealPhotoStorage(): MealPhotoStorageAdapter {
   if (!adapter) {
-    adapter = new NotImplementedMealPhotoStorage();
+    const config = getStorageConfig();
+    adapter = config ? new S3MealPhotoStorage(config) : new LocalFallbackStorage();
   }
   return adapter;
 }

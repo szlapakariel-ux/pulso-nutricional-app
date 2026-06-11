@@ -1,12 +1,14 @@
 import Fastify from "fastify";
 import jwt from "@fastify/jwt";
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 import { resolveJwtSecret } from "./config/auth.js";
 import {
   buildCorsOriginValidator,
   CORS_METHODS,
   CORS_ALLOWED_HEADERS,
 } from "./config/cors.js";
+import { MAX_IMAGE_SIZE_BYTES } from "./config/storage.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { healthRoutes } from "./routes/health.routes.js";
 import { patientsRoutes } from "./routes/patients.routes.js";
@@ -44,6 +46,17 @@ export function buildApp() {
   // JWT plugin — registrado siempre; en modo off usa secret placeholder
   // (nunca se usa para verificación real si PULSO_AUTH_MODE=off)
   app.register(jwt, { secret: resolveJwtSecret() });
+
+  // Multipart — para subida de fotos de comidas (MC-FOTOS-MVP-2).
+  // Solo intercepta peticiones con content-type multipart/form-data;
+  // las rutas JSON quedan intactas.
+  app.register(multipart, {
+    limits: {
+      fileSize: MAX_IMAGE_SIZE_BYTES,
+      files: 1,
+      fields: 5,
+    },
+  });
 
   // Rutas de auth (devuelven 501 si PULSO_AUTH_MODE=off)
   app.register(authRoutes);
