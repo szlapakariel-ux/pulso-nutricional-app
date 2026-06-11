@@ -606,7 +606,7 @@ function HoyApiView() {
       try {
         const view = await getApiClient().getToday(patientId);
         if (!view) {
-          setTodayError("La API no devolvió la vista Hoy (404).");
+          setTodayError("No pudimos cargar tu día en este momento.");
           setTodayView(null);
         } else {
           setTodayView(view);
@@ -617,7 +617,7 @@ function HoyApiView() {
           setTodayView(null);
         } else {
           setTodayError(
-            e instanceof Error ? e.message : "Error de conexión con la API.",
+            e instanceof Error ? e.message : "No pudimos conectar con tu espacio de seguimiento.",
           );
         }
       } finally {
@@ -631,7 +631,7 @@ function HoyApiView() {
     if (auth.user?.patientId) {
       void loadToday(auth.user.patientId);
     } else if (auth.user) {
-      setBlocked("La API no devolvió el patientId del paciente autenticado.");
+      setBlocked("No pudimos asociar esta sesión con un paciente de la demo.");
       setTodayView(null);
     } else {
       setTodayView(null);
