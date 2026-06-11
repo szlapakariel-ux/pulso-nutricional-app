@@ -41,6 +41,7 @@ const {
   NoteType,
   DataOrigin,
   ReviewStatus,
+  MealPhotoType,
 } = pkg;
 
 const prisma = new PrismaClient();
@@ -104,6 +105,7 @@ const IDS = {
   // Registros revisables
   mealLog1Id: "d0000000-0000-000a-0000-000000000001",
   mealLog2Id: "d0000000-0000-000a-0000-000000000002",
+  mealPhoto1Id: "d0000000-0000-000e-0000-000000000001",
   weightLog1Id: "d0000000-0000-000b-0000-000000000001",
   note1Id:    "d0000000-0000-000c-0000-000000000001",
   exerciseLog1Id: "d0000000-0000-000d-0000-000000000001",
@@ -571,6 +573,24 @@ async function main() {
     },
   });
 
+  // Foto de comida demo — MC-FOTOS-MVP-1.
+  // storageKey FICTICIA: no existe binario en ningún bucket.
+  await prisma.mealPhotoLog.upsert({
+    where: { id: IDS.mealPhoto1Id },
+    update: {},
+    create: {
+      id: IDS.mealPhoto1Id,
+      patientId: IDS.patient1Id,
+      storageKey:
+        "patients/demo-1/meal-photos/2026/06/ficticia-seed-0000-000000000001.jpg",
+      mealType: MealPhotoType.breakfast,
+      patientComment: "Desayuno de hoy (foto demo ficticia, sin binario)",
+      origin: DataOrigin.patient_reported,
+      reviewStatus: ReviewStatus.pending,
+      isDemoData: true,
+    },
+  });
+
   console.log("\n✅ Seed completado:");
   console.log("   - 1 profesional demo");
   console.log("   - 3 pacientes demo");
@@ -581,6 +601,7 @@ async function main() {
   console.log("   - Configuración de actividad (demo-1: activo; demo-2/3: inactivo)");
   console.log("   - 2 prescripciones de ejercicio (demo-1)");
   console.log("   - 2 meal logs + 1 weight log + 1 nota + 1 exercise log (pendientes de revisión)");
+  console.log("   - 1 foto de comida (metadata ficticia, pendiente de revisión)");
   console.log("\n⚠  Datos ficticios — no usar en producción ni Railway.");
 }
 

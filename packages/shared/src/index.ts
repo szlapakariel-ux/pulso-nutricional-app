@@ -92,6 +92,15 @@ export type {
   PatientReviewableEntryType,
 } from "./types/patient-logs.js";
 
+// Tipos de fotos de comidas del paciente (MC-FOTOS-MVP-1 — revisables)
+export type {
+  MealPhotoLogId,
+  MealPhotoType,
+  MealPhotoLog,
+  MealPhotoLogDraft,
+  MealPhotoReviewDraft,
+} from "./types/meal-photo.js";
+
 // Tipos de Mi Pulso — vista del paciente (MC-6 — datos mock)
 export type {
   PatientVisibleMeal,

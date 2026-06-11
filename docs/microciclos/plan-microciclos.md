@@ -599,6 +599,50 @@
 
 ---
 
+## MC-FOTOS-MVP-1 — Fotos de comidas: API + modelo mínimo + storage adapter *(MVP)*
+
+- **Objetivo:** implementar el backend mínimo del módulo de fotos de comidas:
+  modelo Prisma, tipos compartidos, endpoints con guards y contrato del storage
+  adapter — **sin upload real del binario y sin UI de Mi Pulso** (MC-FOTOS-MVP-2).
+- **Alcance permitido:**
+  - `packages/shared/src/types/meal-photo.ts` — `MealPhotoType`, `MealPhotoLog`,
+    `MealPhotoLogDraft`, `MealPhotoReviewDraft`.
+  - Prisma: enum `MealPhotoType` + modelo `MealPhotoLog` (sección revisables,
+    defaults `patient_reported`/`pending`) + relación en `Patient` + seed demo
+    ficticio.
+  - `packages/api/src/config/storage.ts` — config S3 100% por env
+    (`S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`,
+    `S3_BUCKET`), MIME permitidos (jpeg/png/webp), límite preliminar 5 MB.
+  - `packages/api/src/storage/meal-photo-storage.ts` — contrato del adapter +
+    generador de storageKey (`patients/{patientId}/meal-photos/{year}/{month}/{fileId}.{ext}`,
+    fileId UUID de servidor).
+  - Mock store + repositorio Prisma + servicio (rama mock|prisma) +
+    controller + rutas:
+    `POST/GET /patients/:patientId/meal-photos`,
+    `GET /patients/:patientId/meal-photos/:photoId`,
+    `POST /patients/:patientId/meal-photos/:photoId/review`.
+  - Guards: crear/listar/detalle → `requirePatientSelf`; review →
+    `requireProfessional`.
+  - `.env.example` con sección S3 (sin valores). ADR 0029.
+- **Decisiones (ADR 0029):** `mealType` con enum propio (no converge con
+  `timeOfDay` de MC-7); review por POST (patrón review-inbox + CORS sin tocar);
+  upload del binario diferido a MC-FOTOS-MVP-2 (sin SDK nuevo: package.json y
+  lockfile intactos).
+- **Qué NO tocar:** no Railway, no variables reales, no Postgres productivo,
+  no migraciones contra producción, no credenciales reales, no bucket, no CORS,
+  no web profesional, no UI de Mi Pulso, no deploy, no dominio, no Play Store,
+  no MC-11 ni MC-12.
+- **Criterios de aceptación:**
+  - `prisma generate` válido; `pnpm type-check`, `pnpm build`, `pnpm lint` sin error.
+  - Todo registro nace `patient_reported`/`pending`; el paciente no puede
+    inyectar `professionalComment`/`reviewStatus`/`origin` (verificado por smoke
+    local con fastify.inject).
+  - La revisión nunca cambia `origin` y rechaza `pending` como destino.
+  - El API devuelve solo metadata — nunca binarios ni URLs públicas.
+  - Storage adapter compila sin credenciales.
+
+---
+
 ## MC-11 — Pulso Nutricional Mobile
 
 - **Objetivo:** versión reducida del panel profesional para celular.
@@ -687,19 +731,20 @@
 | MC-RWY-1   | ✅ Completado (operativo en Railway) |
 | MC-RWY-2   | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-0 | ✅ Completado (preflight documental) |
-| MC-FOTOS-MVP-1 (API + storage) | Pendiente (requiere autorización) |
-| MC-FOTOS-MVP-2 (Mi Pulso carga foto) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-1 (API + storage) | 🔄 En curso |
+| MC-FOTOS-MVP-2 (Mi Pulso carga foto + upload real) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-4 (smoke Railway) | Pendiente (requiere autorización) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
 
-> **MC-FOTOS-MVP-0 completado.** Las **fotos de comidas quedan incorporadas al
-> roadmap MVP**: el paciente registra foto + tipo de comida + comentario desde
-> Mi Pulso; la foto nace como dato revisable (`origin: patient_reported`,
-> `reviewStatus: pending`); la nutricionista revisa y comenta desde el panel.
-> Storage futuro en bucket `orderly-suitcase` (solo referencia en Postgres).
-> Docs: [`../fotos-comidas/preflight-fotos-comidas-mvp.md`](../fotos-comidas/preflight-fotos-comidas-mvp.md),
-> [`../decisiones/0028-fotos-comidas-mvp.md`](../decisiones/0028-fotos-comidas-mvp.md).
-> Nada implementado todavía: MC-FOTOS-MVP-1 a 4 requieren autorización explícita.
+> **MC-FOTOS-MVP-1 en curso.** Backend mínimo de fotos de comidas: modelo
+> `MealPhotoLog` en Prisma, tipos compartidos, 4 endpoints con guards
+> (`requirePatientSelf` / `requireProfessional`) y contrato del storage adapter
+> S3-compatible por variables de entorno (sin credenciales, sin SDK nuevo).
+> Todo registro nace `patient_reported`/`pending`; el API devuelve solo
+> metadata, nunca binarios ni URLs públicas.
+> **El upload real del binario y la UI de tomar/subir foto quedan para
+> MC-FOTOS-MVP-2.** Ver ADR 0029.
+> No se tocó Railway, ni Postgres productivo, ni bucket, ni CORS.
 > Quedan pendientes **dominio propio, Play Store, MC-11 y MC-12**, sin avanzar
 > sin nueva indicación explícita.
