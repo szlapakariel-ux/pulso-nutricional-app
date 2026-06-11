@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export const metadata = {
   title: "Pulso Nutricional",
-  description: "Panel profesional — módulo de pacientes (MC-3, datos de demostración).",
+  description: "Panel profesional Pulso Nutricional · Ambiente de demostración",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

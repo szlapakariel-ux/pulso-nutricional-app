@@ -334,11 +334,11 @@ export function ConsultationForm({
           fontWeight: 600,
         }}
       >
-        {isLoading ? "Procesando..." : "Guardar consulta (demo)"}
+        {isLoading ? "Procesando..." : "Guardar consulta"}
       </button>
 
       <p style={{ fontSize: "0.85rem", color: "#888", marginTop: "1rem" }}>
-        Nota: Esta es una simulación de MC-4. Los datos no se guardan.
+        Ambiente de demostración. Los datos no se guardan de forma permanente.
       </p>
     </form>
   );

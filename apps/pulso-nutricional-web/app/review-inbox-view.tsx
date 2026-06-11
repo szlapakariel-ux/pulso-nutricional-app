@@ -29,7 +29,7 @@ const MOCK_INBOX: ReviewInboxItemUI[] = [
   {
     id: "inbox-meal-1",
     patientId: "demo-1",
-    patientName: "Paciente Demo Uno",
+    patientName: "Valentina Morales",
     entryType: "meal_log",
     reviewStatus: "pending",
     createdAt: new Date(Date.now() - 3600000).toISOString(),
@@ -48,7 +48,7 @@ const MOCK_INBOX: ReviewInboxItemUI[] = [
   {
     id: "inbox-weight-1",
     patientId: "demo-1",
-    patientName: "Paciente Demo Uno",
+    patientName: "Valentina Morales",
     entryType: "weight_log",
     reviewStatus: "reviewed",
     createdAt: new Date(Date.now() - 7200000).toISOString(),
@@ -67,7 +67,7 @@ const MOCK_INBOX: ReviewInboxItemUI[] = [
   {
     id: "inbox-note-1",
     patientId: "demo-1",
-    patientName: "Paciente Demo Uno",
+    patientName: "Valentina Morales",
     entryType: "note",
     reviewStatus: "pending",
     createdAt: new Date(Date.now() - 1800000).toISOString(),
@@ -84,7 +84,7 @@ const MOCK_INBOX: ReviewInboxItemUI[] = [
   {
     id: "inbox-weight-2",
     patientId: "demo-2",
-    patientName: "Paciente Demo Dos",
+    patientName: "Marcos Rodríguez",
     entryType: "weight_log",
     reviewStatus: "pending",
     createdAt: new Date(Date.now() - 5400000).toISOString(),
@@ -265,8 +265,8 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
         }}
       >
         {useApi
-          ? "✓ Bandeja en vivo — mostrando registros reales del paciente desde la API."
-          : "⚠️ Bandeja simulada (modo mock). Los registros permanecen como datos revisables (ReviewableData)."}
+          ? "✓ Registros del paciente · Pendientes de tu revisión."
+          : "Ambiente de demostración · Datos ficticios"}
       </div>
 
       {/* Error de acción */}
@@ -459,8 +459,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
                 color: "#1e3a8a",
               }}
             >
-              ✓ Este es un dato revisable del paciente (ReviewableData). Permanece así
-              incluso después de tus acciones de revisión.
+              ✓ Dato del paciente pendiente de revisión. Tu acción queda registrada.
             </div>
 
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -527,9 +526,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
                 fontStyle: "italic",
               }}
             >
-              {useApi
-                ? "El registro sigue siendo ReviewableData (nunca se convierte en ValidatedData)."
-                : "Acciones simuladas (modo mock). El registro sigue siendo ReviewableData."}
+              Ambiente de demostración · Datos ficticios
             </p>
           </div>
         </section>

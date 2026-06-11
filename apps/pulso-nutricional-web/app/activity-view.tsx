@@ -57,9 +57,7 @@ export function ActivityView({ patient }: ActivityViewProps) {
           color: "#614700",
         }}
       >
-        ⚠️ Módulo opcional de actividad física — MC-10. Datos ficticios de demostración.
-        No representan recomendaciones médicas ni planes de entrenamiento reales.
-        Sin persistencia. Sin métricas avanzadas.
+        Actividad física · Datos de demostración. No representan recomendaciones médicas ni planes de entrenamiento reales.
       </div>
 
       {/* Estado del módulo */}

@@ -142,10 +142,10 @@ function HoyMockView() {
   const date = view?.date ?? new Date().toISOString().split("T")[0] ?? "";
 
   return (
-    <Shell date={date} badge={<ModeBadge label="Modo mock" tone="mock" />}>
+    <Shell date={date} badge={<ModeBadge label="Demo" tone="mock" />}>
       <DemoBanner />
 
-      {/* Selector de paciente demo (solo modo mock) */}
+      {/* Selector de paciente (solo modo demo) */}
       <div
         style={{
           background: "white",
@@ -165,7 +165,7 @@ function HoyMockView() {
             fontWeight: 600,
           }}
         >
-          Paciente (selector demo)
+          Seleccionar paciente
         </p>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           {DEMO_PATIENT_IDS.map((id) => (
@@ -201,7 +201,7 @@ function HoyMockView() {
   );
 }
 
-/** Formulario de login demo paciente (modo api, sin token). */
+/** Botón de acceso a demo para el paciente (modo api, sin token). */
 function PatientLoginForm({
   onSubmit,
   loading,
@@ -211,73 +211,19 @@ function PatientLoginForm({
   loading: boolean;
   error: string | null;
 }) {
-  const [email, setEmail] = useState(DEMO_PATIENT_EMAIL);
-  const [password, setPassword] = useState(DEMO_PATIENT_PASSWORD);
-
   return (
     <div
       style={{
         background: "white",
         border: "1px solid #e5e7eb",
         borderRadius: 12,
-        padding: "1.25rem",
+        padding: "1.5rem",
+        textAlign: "center",
       }}
     >
-      <p style={{ margin: "0 0 1rem", fontWeight: 600, color: "#111827" }}>
-        Iniciar sesión demo paciente
+      <p style={{ margin: "0 0 1.25rem", fontWeight: 600, color: "#111827", fontSize: "1rem" }}>
+        Mi Pulso
       </p>
-
-      <label style={{ display: "block", marginBottom: "0.75rem" }}>
-        <span
-          style={{
-            display: "block",
-            fontSize: "0.78rem",
-            color: "#6b7280",
-            marginBottom: "0.25rem",
-          }}
-        >
-          Email
-        </span>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "0.6rem 0.75rem",
-            border: "1px solid #d1d5db",
-            borderRadius: 8,
-            fontSize: "0.85rem",
-            boxSizing: "border-box",
-          }}
-        />
-      </label>
-
-      <label style={{ display: "block", marginBottom: "1rem" }}>
-        <span
-          style={{
-            display: "block",
-            fontSize: "0.78rem",
-            color: "#6b7280",
-            marginBottom: "0.25rem",
-          }}
-        >
-          Contraseña
-        </span>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "0.6rem 0.75rem",
-            border: "1px solid #d1d5db",
-            borderRadius: 8,
-            fontSize: "0.85rem",
-            boxSizing: "border-box",
-          }}
-        />
-      </label>
 
       {error && (
         <div
@@ -298,31 +244,30 @@ function PatientLoginForm({
       <button
         type="button"
         disabled={loading}
-        onClick={() => onSubmit(email, password)}
+        onClick={() => onSubmit(DEMO_PATIENT_EMAIL, DEMO_PATIENT_PASSWORD)}
         style={{
           width: "100%",
-          padding: "0.7rem",
+          padding: "0.8rem",
           background: loading ? "#93c5fd" : "#2563eb",
           color: "white",
           border: "none",
           borderRadius: 8,
-          fontSize: "0.9rem",
+          fontSize: "0.95rem",
           fontWeight: 600,
           cursor: loading ? "not-allowed" : "pointer",
         }}
       >
-        {loading ? "Conectando…" : "Conectar"}
+        {loading ? "Ingresando…" : "Ingresar como paciente demo"}
       </button>
 
       <p
         style={{
-          margin: "0.9rem 0 0",
-          fontSize: "0.75rem",
+          margin: "1rem 0 0",
+          fontSize: "0.72rem",
           color: "#9ca3af",
-          textAlign: "center",
         }}
       >
-        Credenciales demo precargadas (ficticias).
+        Ambiente de demostración · Datos ficticios
       </p>
     </div>
   );
@@ -764,7 +709,7 @@ function HoyApiView() {
     return (
       <Shell
         date={today}
-        badge={<ModeBadge label="Conectado a API" tone="api" />}
+        badge={<ModeBadge label="Demo" tone="api" />}
       >
         <PatientLoginForm
           onSubmit={(email, password) => void auth.login(email, password)}
@@ -781,7 +726,7 @@ function HoyApiView() {
       date={today}
       badge={
         <ModeBadge
-          label={hasError ? "Error de conexión" : "Sesión demo paciente"}
+          label={hasError ? "Error de conexión" : "Sesión activa"}
           tone={hasError ? "error" : "api"}
         />
       }

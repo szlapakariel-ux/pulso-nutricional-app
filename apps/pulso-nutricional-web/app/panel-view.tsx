@@ -10,7 +10,7 @@ import { ReviewInboxView } from "./review-inbox-view";
 import { ActivityView } from "./activity-view";
 import { MealPhotosView } from "./meal-photos-view";
 import { useApiAuth } from "../lib/use-api-auth";
-import { getDataConfig, isApiMode } from "../lib/data-config";
+import { isApiMode } from "../lib/data-config";
 import { getApiClient } from "../lib/api-client";
 
 const STATUS_LABEL: Record<PatientStatus, string> = {
@@ -19,6 +19,9 @@ const STATUS_LABEL: Record<PatientStatus, string> = {
   pending: "Pendiente",
 };
 
+const DEMO_PROF_EMAIL = "profesional-demo@pulsonutricional.demo";
+const DEMO_PROF_PASSWORD = "demo-profesional-2026";
+
 export function PanelView() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string>("");
@@ -26,12 +29,9 @@ export function PanelView() {
   const [patientSummaries, setPatientSummaries] = useState<(PatientSummary | PatientDetail)[]>([...DEMO_PATIENTS]);
   const [selectedDetail, setSelectedDetail] = useState<PatientDetail | null>(null);
   const [loadingPatients, setLoadingPatients] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("profesional-demo@pulsonutricional.demo");
-  const [loginPassword, setLoginPassword] = useState("demo-profesional-2026");
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const authState = useApiAuth();
-  const config = getDataConfig();
   const useApi = isApiMode();
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export function PanelView() {
   const handleLogin = async () => {
     setLoginError(null);
     try {
-      await authState.login(loginEmail, loginPassword);
+      await authState.login(DEMO_PROF_EMAIL, DEMO_PROF_PASSWORD);
     } catch (e) {
       setLoginError(e instanceof Error ? e.message : "Error al iniciar sesión");
     }
@@ -121,8 +121,8 @@ export function PanelView() {
     return (
       <div style={{ maxWidth: "400px", margin: "3rem auto" }}>
         <div style={{ marginBottom: "2rem", textAlign: "center" }}>
-          <h2>Pulso Nutricional — Panel Profesional</h2>
-          <p style={{ color: "#666", fontSize: "0.9rem" }}>Modo API - Conectar a Railway</p>
+          <h2 style={{ margin: "0 0 0.5rem" }}>Pulso Nutricional</h2>
+          <p style={{ color: "#666", fontSize: "0.9rem", margin: 0 }}>Panel profesional</p>
         </div>
 
         <div
@@ -133,46 +133,6 @@ export function PanelView() {
             backgroundColor: "#fafafa",
           }}
         >
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>
-              Email
-            </label>
-            <input
-              type="email"
-              value={loginEmail}
-              onChange={(e) => setLoginEmail(e.target.value)}
-              placeholder="tu@email.com"
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "1px solid #d9d9d9",
-                borderRadius: 4,
-                fontSize: "0.9rem",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>
-              Contraseña
-            </label>
-            <input
-              type="password"
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-              placeholder="Contraseña"
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "1px solid #d9d9d9",
-                borderRadius: 4,
-                fontSize: "0.9rem",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-
           {loginError && (
             <div
               style={{
@@ -189,34 +149,28 @@ export function PanelView() {
             </div>
           )}
 
-          {authState.loading && (
-            <div style={{ marginBottom: "1.5rem", color: "#666", fontSize: "0.9rem" }}>
-              Iniciando sesión...
-            </div>
-          )}
-
           <button
             type="button"
-            onClick={handleLogin}
+            onClick={() => void handleLogin()}
             disabled={authState.loading}
             style={{
               width: "100%",
-              padding: "0.75rem",
+              padding: "0.85rem",
               backgroundColor: authState.loading ? "#d9d9d9" : "#1677ff",
               color: "white",
               border: "none",
-              borderRadius: 4,
-              fontSize: "0.9rem",
-              fontWeight: 500,
+              borderRadius: 6,
+              fontSize: "1rem",
+              fontWeight: 600,
               cursor: authState.loading ? "not-allowed" : "pointer",
             }}
           >
-            {authState.loading ? "Conectando..." : "Conectar"}
+            {authState.loading ? "Ingresando…" : "Ingresar a la demo profesional"}
           </button>
         </div>
 
-        <p style={{ marginTop: "2rem", color: "#888", fontSize: "0.85rem", textAlign: "center" }}>
-          Credenciales demo para pruebas
+        <p style={{ marginTop: "1.5rem", color: "#aaa", fontSize: "0.82rem", textAlign: "center" }}>
+          Ambiente de demostración · Datos ficticios
         </p>
       </div>
     );
@@ -224,10 +178,19 @@ export function PanelView() {
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "250px 1fr", gap: "2rem" }}>
-      {/* Mode indicator and logout */}
+      {/* Demo banner and logout */}
       <div style={{ gridColumn: "1 / -1", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontSize: "0.85rem", color: "#666" }}>
-          Modo: <strong>{useApi ? "🔗 API" : "📦 Mock"}</strong>
+        <div
+          style={{
+            fontSize: "0.78rem",
+            color: "#888",
+            background: "#f5f5f5",
+            padding: "0.3rem 0.7rem",
+            borderRadius: 99,
+            border: "1px solid #e5e5e5",
+          }}
+        >
+          Ambiente de demostración · Datos ficticios
         </div>
         {useApi && authState.token && (
           <button
@@ -242,7 +205,7 @@ export function PanelView() {
               fontSize: "0.85rem",
             }}
           >
-            Desconectar
+            Cerrar sesión
           </button>
         )}
       </div>

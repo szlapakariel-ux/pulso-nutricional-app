@@ -280,8 +280,7 @@ export function RegistrarView() {
               color: "#9a3412",
             }}
           >
-            ⚠️ Modo API activo. Iniciá sesión en la vista Hoy para enviar
-            registros a la API.
+            Iniciá sesión en la vista Hoy para enviar tus registros a tu profesional.
           </div>
         ) : (
           <div
@@ -864,8 +863,7 @@ export function RegistrarView() {
                 color: "#1e3a8a",
               }}
             >
-              ✓ Tu actividad se enviará a revisión de tu profesional. Estado: pendiente.
-              Sin persistencia real — demo MC-10.
+              ✓ Tu actividad se enviará a revisión de tu profesional.
             </div>
 
             <button
@@ -947,7 +945,7 @@ export function RegistrarView() {
                         fontWeight: 600,
                       }}
                     >
-                      {r.apiSent ? "Enviado ✓" : "Pendiente (mock)"}
+                      {r.apiSent ? "Enviado ✓" : "Pendiente"}
                     </span>
                   </li>
                 ))}

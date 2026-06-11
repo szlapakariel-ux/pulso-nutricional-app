@@ -1,62 +1,52 @@
 import type { PatientTodayView } from "@pulso/shared";
 
-/**
- * DATOS FICTICIOS DE DEMOSTRACIÓN — MC-6.
- *
- * Proyección PACIENTE de los datos de planes y agendas.
- * NUNCA incluye professionalNote ni notas internas.
- *
- * Estos datos son independientes de los del API (misma fuente conceptual,
- * duplicados intencionalmente hasta que se conecte web ↔ API).
- *
- * No representan recomendaciones clínicas reales.
- */
+/** Proyección PACIENTE de los datos de planes y agendas. Datos ficticios de demostración. */
 export const MOCK_TODAY_VIEWS: Record<string, PatientTodayView> = {
   "demo-1": {
     patientId: "demo-1",
     date: "2026-06-10",
     plan: {
       id: "plan-demo-1",
-      name: "Plan Demo — Hábitos Saludables",
+      name: "Plan Hábitos Saludables",
       generalIndications:
         "Tomá agua durante el día. Priorizá alimentos frescos. " +
         "Registrá tus comidas en Mi Pulso para hacer el seguimiento.",
       meals: [
         {
           id: "meal-1",
-          name: "Desayuno demo",
+          name: "Desayuno",
           moment: "breakfast",
           timeHint: "08:00",
           description: "Infusión, tostadas integrales, fruta de estación.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 1,
         },
         {
           id: "meal-2",
-          name: "Almuerzo demo",
+          name: "Almuerzo",
           moment: "lunch",
           timeHint: "13:00",
           description:
             "Plato principal con proteína, vegetales y cereales integrales.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 2,
         },
         {
           id: "meal-3",
-          name: "Merienda demo",
+          name: "Merienda",
           moment: "snack",
           timeHint: "17:00",
           description: "Fruta, yogur o colación liviana.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 3,
         },
         {
           id: "meal-4",
-          name: "Cena demo",
+          name: "Cena",
           moment: "dinner",
           timeHint: "20:30",
           description: "Cena liviana: sopa, ensalada o guiso suave.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 4,
         },
       ],
@@ -125,54 +115,54 @@ export const MOCK_TODAY_VIEWS: Record<string, PatientTodayView> = {
     date: "2026-06-10",
     plan: {
       id: "plan-demo-2",
-      name: "Plan Demo — Mantenimiento",
+      name: "Plan Mantenimiento Activo",
       generalIndications:
         "Mantenés un buen equilibrio. Seguí registrando en Mi Pulso. " +
         "Hidratate bien durante el día.",
       meals: [
         {
           id: "meal-5",
-          name: "Desayuno demo",
+          name: "Desayuno",
           moment: "breakfast",
           timeHint: "07:30",
           description: "Mate o café, tostadas con palta o queso untable.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 1,
         },
         {
           id: "meal-6",
-          name: "Colación mañana demo",
+          name: "Colación de mañana",
           moment: "mid_morning",
           timeHint: "10:30",
           description: "Fruta o barritas de cereal.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 2,
         },
         {
           id: "meal-7",
-          name: "Almuerzo demo",
+          name: "Almuerzo",
           moment: "lunch",
           timeHint: "12:30",
           description: "Proteína magra, ensalada variada, arroz integral.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 3,
         },
         {
           id: "meal-8",
-          name: "Merienda demo",
+          name: "Merienda",
           moment: "snack",
           timeHint: "16:30",
           description: "Yogur natural o fruta.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 4,
         },
         {
           id: "meal-9",
-          name: "Cena demo",
+          name: "Cena",
           moment: "dinner",
           timeHint: "20:00",
           description: "Cena equilibrada, similar al almuerzo pero más ligera.",
-          portionHint: "Porción orientativa (demo).",
+          portionHint: "Porción orientativa.",
           order: 5,
         },
       ],
@@ -237,7 +227,7 @@ export const MOCK_TODAY_VIEWS: Record<string, PatientTodayView> = {
 };
 
 export const DEMO_PATIENT_LABELS: Record<string, string> = {
-  "demo-1": "Paciente Demo Uno",
-  "demo-2": "Paciente Demo Dos",
-  "demo-3": "Paciente Demo Tres",
+  "demo-1": "Valentina Morales",
+  "demo-2": "Marcos Rodríguez",
+  "demo-3": "Carolina Benzaquen",
 };
