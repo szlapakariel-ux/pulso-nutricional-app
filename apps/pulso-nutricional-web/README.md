@@ -1,33 +1,49 @@
-# Pulso Nutricional PC (`@pulso/pulso-nutricional-web`)
+# Panel Profesional — Pulso Nutricional (`@pulso/pulso-nutricional-web`)
 
-**Panel profesional completo** para nutricionistas (experiencia de escritorio).
+Herramienta de escritorio para nutricionistas. Parte del sistema
+[Pulso Nutricional](../../README.md).
 
-## Propósito
+## Qué incluye
 
-Es la herramienta de gestión de la profesional: pacientes, fichas, consultas,
-mediciones, planes, agenda, bandeja de revisión y documentos.
+- **Pacientes:** lista con búsqueda, ficha con datos básicos y bloque de notas
+  profesionales (nunca visible para el paciente).
+- **Consultas:** historial y registro de nuevas consultas con mediciones.
+- **Plan y agenda:** plan alimentario asignado, agenda del día, descarga de plan
+  en PDF.
+- **Bandeja de revisión:** registros del paciente pendientes de revisión (comidas,
+  peso, notas). La profesional revisa y actúa explícitamente.
+- **Actividad física:** módulo opcional con prescripciones y registros.
 
-## Estado (MC-3)
+## Demo online
 
-App **Next.js** (App Router) con la **primera pantalla del panel**: módulo de
-**pacientes** con lista, buscador simple y **ficha mínima**. Todos los datos son
-**ficticios de demostración** (ver `app/patients.mock.ts`).
+URL: `https://pulso-nutricional-web-production.up.railway.app`
 
-- **No** hay login, roles ni permisos reales.
-- **No** hay base de datos ni Prisma.
-- **No** se conecta todavía con la API (los datos son mock locales tipados con
-  los contratos de `@pulso/shared`).
-- La ficha muestra un bloque **"Datos profesionales"** que, por contrato, nunca
-  debe exponerse a la experiencia del paciente.
+Credenciales: `profesional-demo@pulsonutricional.demo` / `demo-profesional-2026`
+
+## Modo de datos
+
+La app soporta dos modos configurables por variable de entorno:
+
+- **`mock`** (default): datos ficticios locales, sin conexión a la API.
+  Útil para desarrollo sin Railway.
+- **`api`**: conecta a la API Railway con autenticación JWT. Requiere
+  `NEXT_PUBLIC_PULSO_API_BASE_URL`.
 
 ## Comandos
 
-- `pnpm --filter @pulso/pulso-nutricional-web dev` — servidor de desarrollo local.
-- `pnpm --filter @pulso/pulso-nutricional-web build` — build de producción.
-- `pnpm --filter @pulso/pulso-nutricional-web type-check` — chequeo de tipos.
+```bash
+pnpm --filter @pulso/pulso-nutricional-web dev        # desarrollo local
+pnpm --filter @pulso/pulso-nutricional-web build      # build de producción
+pnpm --filter @pulso/pulso-nutricional-web type-check # chequeo de tipos
+```
 
-## Pendiente (microciclos futuros)
+## Variables de entorno
 
-- MC-3 en adelante: pacientes y ficha, consultas, planes y agenda.
+Ver `.env.example` en esta carpeta.
 
-> No usar datos reales. No conectar Railway. Sin variables de entorno ni secretos.
+```
+NEXT_PUBLIC_PULSO_DATA_MODE=mock        # "mock" | "api"
+NEXT_PUBLIC_PULSO_API_BASE_URL=         # URL de la API (solo en modo api)
+```
+
+> No usar datos reales. No hardcodear credenciales.

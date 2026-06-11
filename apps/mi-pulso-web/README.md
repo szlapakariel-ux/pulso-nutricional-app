@@ -1,28 +1,49 @@
 # Mi Pulso (`@pulso/mi-pulso-web`)
 
-**PWA mobile-first del paciente**. Es la cara visible para el paciente.
+PWA mobile-first para pacientes. Parte del sistema
+[Pulso Nutricional](../../README.md).
 
-## Propósito
+## Qué incluye
 
-Permitir al paciente ver su plan y agenda del día (pantalla **Hoy**) y registrar
-su día a día (comidas, peso, actividad física). Todo lo que carga el paciente es
-**dato revisable**.
+- **Vista Hoy:** plan del día y agenda (horarios, preparaciones, hidratación).
+- **Registrar:** formularios para cargar comidas, peso, notas y actividad física.
+  Todo lo que registra el paciente nace como **dato revisable** — queda pendiente
+  de que la nutricionista lo revise.
+- **Fotos de comidas:** upload de foto (JPEG/PNG/WebP, máx 5 MB) con tipo de
+  comida y comentario opcional. Preview antes de enviar.
 
-## Estado (MC-1)
+## Demo online
 
-App **Next.js** (App Router) con una **única pantalla placeholder**
-(`Mi Pulso — MC-1`). **No** implementa funcionalidad de negocio ni capacidades
-**PWA reales** (sin manifest funcional, sin service worker). Sin conexión a la
-API ni a la base de datos.
+URL: `https://mi-pulso-web-production.up.railway.app`
+
+Credenciales: `paciente-demo-uno@pulsonutricional.demo` / `demo-paciente-2026`
+
+Para abrir desde el celular, visitar la URL en el navegador móvil.
+
+## Modo de datos
+
+La app soporta dos modos configurables por variable de entorno:
+
+- **`mock`** (default): datos ficticios locales, selector de paciente demo.
+  Útil para desarrollo sin Railway.
+- **`api`**: conecta a la API Railway con autenticación JWT. Requiere
+  `NEXT_PUBLIC_PULSO_API_BASE_URL`.
 
 ## Comandos
 
-- `pnpm --filter @pulso/mi-pulso-web dev` — servidor de desarrollo local.
-- `pnpm --filter @pulso/mi-pulso-web build` — build de producción.
-- `pnpm --filter @pulso/mi-pulso-web type-check` — chequeo de tipos.
+```bash
+pnpm --filter @pulso/mi-pulso-web dev        # desarrollo local
+pnpm --filter @pulso/mi-pulso-web build      # build de producción
+pnpm --filter @pulso/mi-pulso-web type-check # chequeo de tipos
+```
 
-## Pendiente (microciclos futuros)
+## Variables de entorno
 
-- MC-6: pantalla Hoy. MC-7: registros del paciente. MC-12: PWA/TWA instalable.
+Ver `.env.example` en esta carpeta.
 
-> No usar datos reales. No conectar Railway. Sin variables de entorno ni secretos.
+```
+NEXT_PUBLIC_PULSO_DATA_MODE=mock        # "mock" | "api"
+NEXT_PUBLIC_PULSO_API_BASE_URL=         # URL de la API (solo en modo api)
+```
+
+> No usar datos reales. No hardcodear credenciales.

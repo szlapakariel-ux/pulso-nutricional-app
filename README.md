@@ -1,156 +1,143 @@
 # Pulso Nutricional
 
-Sistema PWA para seguimiento nutricional, pensado para conectar el trabajo
-profesional de un/a nutricionista con el seguimiento diario de sus pacientes.
+Sistema SaaS de seguimiento nutricional que conecta el trabajo de una
+nutricionista con el registro diario de sus pacientes.
 
-> ⚠️ **Proyecto en estado inicial (MC-0).** En este momento el repositorio
-> solo contiene documentación y la estructura base de carpetas. **No hay código
-> funcional, no hay despliegue y no se debe usar ningún dato real.**
-
----
-
-## Descripción del proyecto
-
-Pulso Nutricional es una plataforma de seguimiento nutricional compuesta por
-varias experiencias que comparten **una sola API** y **una sola base de datos**.
-
-El objetivo del producto es que la profesional pueda gestionar pacientes,
-consultas, mediciones, planes alimentarios y agenda, mientras que el paciente
-registra su día a día (comidas, peso, actividad física) desde una app móvil
-simple. Todo el seguimiento del paciente queda disponible para revisión
-profesional sin mezclarse automáticamente con los datos validados.
+La profesional gestiona pacientes, consultas, planes y revisa registros desde
+el panel web. El paciente registra comidas, peso, actividad y fotos desde
+**Mi Pulso**, una PWA mobile-first.
 
 ---
 
-## Experiencias del sistema
+## Demo online
 
-El sistema ofrece tres experiencias diferenciadas:
+| Experiencia | URL |
+|-------------|-----|
+| Panel profesional | `https://pulso-nutricional-web-production.up.railway.app` |
+| Mi Pulso (paciente) | `https://mi-pulso-web-production.up.railway.app` |
+| API | `https://api-production-42e99.up.railway.app/health` |
 
-### 1. Pulso Nutricional PC
-Panel profesional completo para nutricionistas. Pensado para escritorio.
-Permite gestionar pacientes, fichas, consultas, planes, agenda, revisión de
-registros y generación de documentos.
+**Credenciales demo:**
 
-### 2. Pulso Nutricional Mobile
-Versión reducida del panel profesional, pensada para que la nutricionista
-pueda consultar y resolver tareas frecuentes desde el celular.
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| Profesional | `profesional-demo@pulsonutricional.demo` | `demo-profesional-2026` |
+| Paciente 1 | `paciente-demo-uno@pulsonutricional.demo` | `demo-paciente-2026` |
+| Paciente 2 | `paciente-demo-dos@pulsonutricional.demo` | `demo-paciente-2026` |
 
-### 3. Mi Pulso
-PWA mobile-first orientada al paciente. Permite registrar comidas, peso,
-actividad física y ver su agenda y plan del día. Es la cara visible para el
-paciente.
+Para el flujo recomendado de presentación, ver
+[`docs/demo/guia-demo.md`](docs/demo/guia-demo.md).
 
 ---
 
-## Arquitectura general
+## Qué hace el sistema
+
+La plataforma conecta dos experiencias en torno a una sola API y base de datos:
+
+### Panel profesional — Pulso Nutricional
+Herramienta de escritorio para nutricionistas. Permite:
+- Gestionar pacientes, fichas y estado de seguimiento.
+- Registrar consultas con mediciones.
+- Crear y asignar planes alimentarios y agenda.
+- Revisar lo que cargó el paciente (bandeja de revisión).
+- Módulo opcional de actividad física.
+- Descarga de plan en PDF.
+
+### App del paciente — Mi Pulso
+PWA mobile-first orientada al paciente. Permite:
+- Ver el plan y la agenda del día (Vista Hoy).
+- Registrar comidas, peso, notas y actividad.
+- Subir fotos de comidas con tipo y comentario opcional.
+
+### Regla central de datos
+Los registros del paciente nacen siempre como **dato revisable** (`patient_reported`, `pending`). La nutricionista los revisa y actúa explícitamente. Nunca se valida automáticamente nada.
+
+---
+
+## Arquitectura
 
 ```
-+---------------------------+   +----------------------+   +------------------+
-|  Pulso Nutricional PC     |   | Pulso Nutricional    |   |     Mi Pulso     |
-|  (panel profesional)      |   | Mobile (profesional) |   |    (paciente)    |
-+-------------+-------------+   +----------+-----------+   +--------+---------+
-              |                            |                        |
-              +----------------------------+------------------------+
-                                           |
-                                   +-------v--------+
-                                   |   API común    |
-                                   +-------+--------+
-                                           |
-                                   +-------v--------+
-                                   | Base de datos  |
-                                   |  (Postgres)    |
-                                   +----------------+
+┌──────────────────────────┐   ┌──────────────────┐
+│  Panel profesional       │   │   Mi Pulso       │
+│  (pulso-nutricional-web) │   │ (mi-pulso-web)   │
+└────────────┬─────────────┘   └────────┬─────────┘
+             │                          │
+             └──────────────┬───────────┘
+                            │
+                    ┌───────▼────────┐
+                    │   API Fastify  │
+                    │   (@pulso/api) │
+                    └───────┬────────┘
+                            │
+                    ┌───────▼────────┐
+                    │   PostgreSQL   │
+                    │   (Railway)    │
+                    └────────────────┘
 ```
 
-- Las **tres experiencias** son clientes que se conectan a **una única API**.
-- La **API** es la única que habla con la **base de datos**.
-- La base de datos es **una sola** y compartida entre todas las experiencias.
-
-La estructura del repositorio es un monorepo:
+Monorepo pnpm + Turborepo:
 
 ```
 apps/
-  pulso-nutricional-web/      # Panel profesional (PC)
-  mi-pulso-web/               # PWA del paciente (Mi Pulso)
-  pulso-nutricional-mobile/   # Versión móvil reducida del profesional
+  pulso-nutricional-web/   # Panel profesional (Next.js, App Router)
+  mi-pulso-web/            # PWA del paciente (Next.js, App Router)
 
 packages/
-  api/                        # API común
-  shared/                     # Tipos, contratos y utilidades compartidas
-  ui/                         # Componentes de interfaz compartidos
-  config/                     # Configuración compartida (lint, tsconfig, etc.)
+  api/                     # API común (Fastify v5)
+  shared/                  # Tipos y contratos compartidos
+  config/                  # Configuración compartida (tsconfig, lint)
 
 docs/
-  producto/                   # Documento maestro y visión de producto
-  arquitectura/               # Arquitectura funcional y modelo de datos
-  microciclos/                # Plan de microciclos de desarrollo
-  decisiones/                 # Registro de decisiones (ADR)
+  demo/                    # Guía de demo y presentación
+  decisiones/              # ADRs
+  microciclos/             # Plan de desarrollo por ciclos
+  deploy/                  # Playbooks operativos
+  fotos-comidas/           # Diseño del módulo de fotos
 ```
 
 ---
 
 ## Estado actual
 
-- ✅ Repositorio GitHub creado: `pulso-nutricional-app`.
-- ✅ Proyecto Railway preparado con servicios (todos **offline** salvo Postgres):
-  - Postgres — *online*
-  - api — *offline*
-  - pulso-nutricional-web — *offline*
-  - mi-pulso-web — *offline*
-- ✅ MC-0 en curso: documentación base y estructura de carpetas.
-- ⛔ Sin código funcional.
-- ⛔ Sin despliegue.
-- ⛔ Sin conexión real a Railway.
-- ⛔ Sin variables de entorno ni credenciales.
+| Servicio | Estado |
+|----------|--------|
+| API | ✅ Operativa en Railway |
+| Panel profesional | ✅ Operativo en Railway |
+| Mi Pulso | ✅ Operativo en Railway |
+| PostgreSQL | ✅ Online en Railway |
+| Upload fotos (bucket S3) | Pendiente de activación (PROD-1) |
+
+Módulos implementados: gestión de pacientes, consultas, planes, agenda,
+bandeja de revisión, actividad física opcional, upload de fotos (código listo,
+pendiente de activación en producción), PDF de plan.
+
+Ver el estado completo en
+[`docs/microciclos/plan-microciclos.md`](docs/microciclos/plan-microciclos.md).
 
 ---
 
-## Regla central: separación de datos
+## Desarrollo local
 
-> **Los datos cargados por el paciente son datos revisables.**
-> **Los datos cargados o validados por la profesional son datos profesionales.**
-> **Nunca deben mezclarse automáticamente.**
+Requisitos: Node ≥ 20, pnpm ≥ 10.
 
-Esto significa que:
+```bash
+pnpm install
+pnpm dev          # levanta todas las apps en paralelo (turbo)
+```
 
-- Lo que registra el paciente (comidas, peso, actividad) entra como
-  **dato revisable**: queda pendiente de que la profesional lo mire.
-- Lo que carga o valida la profesional es **dato profesional / validado**.
-- El sistema **no** promueve automáticamente un dato revisable a dato validado.
-  Siempre hay un paso explícito de revisión por parte de la profesional.
-- La separación se refleja tanto en el modelo de datos como en la interfaz.
+Variables de entorno: ver `packages/api/.env.example`,
+`apps/mi-pulso-web/.env.example` y `apps/pulso-nutricional-web/.env.example`.
 
----
-
-## Servicios previstos en Railway
-
-> Estos servicios **existen** en el proyecto Railway pero **todavía no se
-> conectan** desde el código. Se documentan solo como referencia.
-
-| Servicio                  | Rol                                   | Estado  |
-|---------------------------|---------------------------------------|---------|
-| Postgres                  | Base de datos única                   | online  |
-| api                       | API común                             | offline |
-| pulso-nutricional-web     | Panel profesional (PC)                | offline |
-| mi-pulso-web              | PWA del paciente (Mi Pulso)           | offline |
-
----
-
-## ⚠️ Advertencia importante
-
-- **No usar datos reales todavía.** No cargar información real de pacientes,
-  mediciones, ni datos de salud de personas reales.
-- No conectar Railway ni desplegar nada en este momento.
-- No crear credenciales ni variables de entorno con secretos reales.
-- Todo el trabajo se realiza por **microciclos seguros** (ver
-  [`docs/microciclos/plan-microciclos.md`](docs/microciclos/plan-microciclos.md)).
+Por defecto, todas las apps arrancan en modo **mock** (sin base de datos, sin
+Railway). Para conectar a la API Railway, configurar
+`NEXT_PUBLIC_PULSO_DATA_MODE=api` y `NEXT_PUBLIC_PULSO_API_BASE_URL` en las
+apps web.
 
 ---
 
 ## Documentación
 
-- [Documento maestro de producto](docs/producto/documento-maestro-v2.md)
-- [Arquitectura funcional](docs/arquitectura/arquitectura-funcional.md)
-- [Modelo de datos inicial](docs/arquitectura/modelo-datos-inicial.md)
+- [Guía de demo](docs/demo/guia-demo.md)
 - [Plan de microciclos](docs/microciclos/plan-microciclos.md)
-- [Decisión 0001 — Nombres y alcance](docs/decisiones/0001-nombres-y-alcance.md)
+- [Decisiones de arquitectura (ADRs)](docs/decisiones/)
+- [Playbooks de deploy](docs/deploy/)
