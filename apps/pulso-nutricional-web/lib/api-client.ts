@@ -14,6 +14,8 @@ import type {
   LoginRequest,
   ReviewInboxResponse,
   ReviewActionPreview,
+  MealPhotoLog,
+  MealPhotoReviewDraft,
 } from "@pulso/shared";
 
 export interface ApiClientConfig {
@@ -124,6 +126,26 @@ class ApiClient {
       {
         method: "POST",
         body: JSON.stringify({ actionType, comment }),
+      },
+    );
+  }
+
+  /** GET /patients/:patientId/meal-photos — listado de fotos (MC-FOTOS-MVP-3). */
+  async listMealPhotos(patientId: string): Promise<MealPhotoLog[]> {
+    return this.fetch<MealPhotoLog[]>(`/patients/${patientId}/meal-photos`);
+  }
+
+  /** POST /patients/:patientId/meal-photos/:photoId/review — revisar foto (MC-FOTOS-MVP-3). */
+  async reviewMealPhoto(
+    patientId: string,
+    photoId: string,
+    draft: MealPhotoReviewDraft,
+  ): Promise<MealPhotoLog> {
+    return this.fetch<MealPhotoLog>(
+      `/patients/${patientId}/meal-photos/${photoId}/review`,
+      {
+        method: "POST",
+        body: JSON.stringify(draft),
       },
     );
   }

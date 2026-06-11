@@ -821,7 +821,7 @@
 | MC-FOTOS-PROD-0 (preflight db:push + bucket + deploy) | ✅ Completado (runbook documental) |
 | MC-FOTOS-PROD-1 (db:push + bucket + deploy API) | Pendiente (requiere autorización) |
 | MC-FOTOS-PROD-2 (deploy Mi Pulso + smoke upload) | Pendiente (requiere autorización) |
-| MC-FOTOS-MVP-3 (panel profesional revisa) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-3 (panel profesional revisa) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-4 (smoke integral Railway) | Pendiente (requiere autorización) |
 | MC-INTEGRACION-1 (flujo paciente→profesional) | ✅ Completado (código implementado) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
@@ -875,6 +875,24 @@
 > — Verificado: `pnpm type-check`, `pnpm build`, `pnpm lint` pasan sin errores
 > (7/7 tareas OK). **No se tocó Railway, Postgres, CORS, ni se ejecutó
 > db:push, ni se hizo deploy, ni se configuró bucket.** La persistencia real en
-> DB queda para un microciclo posterior. Quedan pendientes: MC-FOTOS-MVP-3
-> (revisión de fotos en panel), MC-DEMO-VENDIBLE-1 (limpieza cosmética),
-> MC-11/12, dominio, sin avanzar sin nueva indicación explícita.
+> DB queda para un microciclo posterior. Quedan pendientes: MC-DEMO-VENDIBLE-1
+> (limpieza cosmética), MC-11/12, dominio, sin avanzar sin nueva indicación
+> explícita.
+
+> **MC-FOTOS-MVP-3 completado.** El panel profesional incorpora nueva pestaña
+> "Fotos" que muestra metadata de fotos de comidas del paciente con placeholder
+> visual elegante (sin entrega de imagen — diferida a MC-FOTOS-MVP-4 per ADR
+> 0032). Incorpora: `listMealPhotos` y `reviewMealPhoto` en
+> `apps/pulso-nutricional-web/lib/api-client.ts`; nuevo componente
+> `meal-photos-view.tsx` con cards de fotos (tipo de comida, fecha, comentario
+> del paciente, badge de estado), panel de revisión con comentario profesional
+> y acciones (marcar revisado / aceptar / marcar seguimiento); `storageKey`
+> expuesta solo como chip interno discreto (no como URL navegable); tab "Fotos"
+> en `panel-view.tsx`; mock data para modo mock; smoke test
+> `scripts/smoke-fotos-mvp3.mjs` para flujo profesional lista-y-revisa; ADR 0032
+> documentando la decisión de diferir la entrega de imagen. La regla de dato
+> revisable se mantiene: `origin: patient_reported`, la revisión no convierte
+> el dato en ValidatedData. **No se tocó Railway, Postgres, ni se ejecutó
+> db:push, ni se configuró bucket real.** Quedan pendientes: MC-FOTOS-MVP-4
+> (smoke integral Railway con imagen real), MC-DEMO-VENDIBLE-1, MC-11/12,
+> dominio, sin avanzar sin nueva indicación explícita.
