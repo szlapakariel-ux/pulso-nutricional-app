@@ -466,24 +466,6 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                       {new Date(selectedPhoto.reviewedAt).toLocaleString("es-AR")}
                     </p>
                   )}
-
-                  <div
-                    style={{
-                      padding: "0.3rem 0.6rem",
-                      background: colors.bgMuted,
-                      borderRadius: radius.sm,
-                      fontSize: "0.68rem",
-                      color: colors.textSecondary,
-                      fontFamily: fonts.mono,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      border: `1px solid ${colors.borderDefault}`,
-                    }}
-                    title={selectedPhoto.storageKey}
-                  >
-                    key: {selectedPhoto.storageKey}
-                  </div>
                 </div>
               </div>
 
