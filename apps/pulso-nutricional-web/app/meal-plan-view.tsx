@@ -7,9 +7,16 @@ import type {
   PatientDailyAgenda,
   AgendaItemType,
   DayMoment,
+  MealPlanStatus,
 } from "@pulso/shared";
 import { MOCK_PLAN_ASSIGNMENTS, MOCK_DAILY_AGENDAS } from "./meal-plans.mock";
 import { colors, fonts, radius, shadow } from "../lib/design-tokens";
+
+const PLAN_STATUS_LABEL: Record<MealPlanStatus, string> = {
+  draft: "Borrador",
+  active: "Activo",
+  archived: "Archivado",
+};
 
 const MOMENT_LABEL: Record<DayMoment, string> = {
   morning: "Mañana",
@@ -201,7 +208,7 @@ export function MealPlanView({ patient }: MealPlanViewProps) {
                   fontFamily: fonts.mono,
                 }}
               >
-                {plan.status} · Desde: {assignment.startDate}
+                {PLAN_STATUS_LABEL[plan.status]} · Desde: {assignment.startDate}
               </p>
             </div>
           </div>
