@@ -128,7 +128,11 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
         .listMealPhotos(patient.id)
         .then((data) => setPhotos(data))
         .catch((err) => {
-          setLoadError(err instanceof ApiError ? err.message : "Error al cargar fotos");
+          setLoadError(
+            err instanceof ApiError && err.status === 401
+              ? "Tu sesión expiró. Volvé a iniciar sesión."
+              : "No fue posible cargar los registros de fotos en este momento.",
+          );
           setPhotos([]);
         })
         .finally(() => setLoading(false));
@@ -155,7 +159,11 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
         setPhotos((prev) => prev.map((p) => (p.id === photoId ? updated : p)));
         setSelectedPhoto((prev) => (prev?.id === photoId ? updated : prev));
       } catch (err) {
-        setActionError(err instanceof ApiError ? err.message : "Error al revisar foto");
+        setActionError(
+          err instanceof ApiError && err.status === 401
+            ? "Tu sesión expiró. Volvé a iniciar sesión."
+            : "No fue posible guardar la revisión. Intentá de nuevo.",
+        );
       } finally {
         setActionInProgress(null);
       }
@@ -203,15 +211,29 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
     return (
       <div
         style={{
-          padding: "1rem",
-          background: colors.errorBg,
-          border: `1px solid ${colors.errorBorder}`,
-          borderRadius: radius.md,
-          color: colors.errorText,
-          fontSize: "0.85rem",
+          padding: "1.25rem 1.5rem",
+          background: colors.warningBg,
+          border: `1px solid ${colors.warningBorder}`,
+          borderRadius: radius.lg,
         }}
       >
-        No se pudieron cargar las fotos: {loadError}
+        <p
+          style={{
+            margin: "0 0 0.35rem",
+            fontWeight: 600,
+            fontSize: "0.9rem",
+            color: colors.textPrimary,
+          }}
+        >
+          Fotos no disponibles en este momento
+        </p>
+        <p style={{ margin: "0 0 0.25rem", fontSize: "0.85rem", color: colors.warningText }}>
+          {loadError}
+        </p>
+        <p style={{ margin: 0, fontSize: "0.8rem", color: colors.textSecondary }}>
+          La visualización de imágenes estará disponible en la versión productiva.
+          El resto del panel funciona con normalidad.
+        </p>
       </div>
     );
   }

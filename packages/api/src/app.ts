@@ -73,5 +73,18 @@ export function buildApp() {
   app.register(activityRoutes);
   app.register(mealPhotosRoutes);
 
+  // Manejador global de errores no capturados — evita que Fastify devuelva
+  // un 500 crudo con stack trace cuando un handler lanza sin try/catch.
+  app.setErrorHandler((error, request, reply) => {
+    request.log.error({ err: error }, "Error no controlado en handler");
+    void reply.status(500).send({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Ocurrió un error inesperado. Intentá de nuevo más tarde.",
+        statusCode: 500,
+      },
+    });
+  });
+
   return app;
 }
