@@ -1,11 +1,12 @@
 # Estado Demo Comercial — Pulso Nutricional
 
-> Estado de la demo online tras MC-MIPULSO-RWY-1.
-> Última actualización: 2026-06-12 (cierre MC-MIPULSO-RWY-1).
+> Estado de la demo online tras MC-FOTOS-GRACEFUL-1.
+> Última actualización: 2026-06-12 (cierre MC-FOTOS-GRACEFUL-1).
 >
 > Historial:
 > - MC-DEMO-LIVE-0 (2026-06-12): auditoría previa al deploy de Mi Pulso.
 > - MC-MIPULSO-RWY-1-CIERRE (2026-06-12): demo online completa.
+> - MC-FOTOS-GRACEFUL-1-CIERRE (2026-06-12): tab Fotos con fallback seguro validado.
 
 ---
 
@@ -17,9 +18,11 @@ El flujo demo completo —paciente entra, registra, profesional ve— está
 operativo end-to-end contra la API en producción. Ambas apps (panel
 profesional y Mi Pulso) están online con la identidad visual nueva.
 
-Hay **un bloqueo parcial conocido**: el tab **Fotos** del panel profesional
-devuelve HTTP 500 porque no hay bucket S3 productivo. No afecta el resto del
-flujo. Ver "Bloqueos conocidos".
+El tab **Fotos** del panel profesional **ya no expone HTTP 500 visible**: tras
+MC-FOTOS-GRACEFUL-1 (PR #40, SHA `f84a870`) degrada con un **fallback seguro
+validado** cuando no hay bucket S3 productivo. Las **fotos reales siguen fuera
+de alcance** (no hay S3 productivo): se valida el fallback, no el
+almacenamiento de imágenes. Ver "Estado del tab Fotos".
 
 ---
 
@@ -36,8 +39,9 @@ flujo. Ver "Bloqueos conocidos".
 > **Nota de verificación:** Los smoke tests automatizados (`pnpm smoke:*:railway`)
 > y este informe NO se ejecutan desde el entorno remoto de Claude Code: la
 > política de red bloquea el egress a Railway (403 `host_not_allowed`,
-> ADR 0018). Los resultados de smoke test documentados abajo provienen del
-> reporte de ejecución de MC-MIPULSO-RWY-1 (terminal/navegador con acceso real).
+> ADR 0018). Los resultados de smoke test documentados abajo provienen de
+> reportes de ejecución manual (terminal/navegador con acceso real):
+> MC-MIPULSO-RWY-1 para el flujo general y MC-FOTOS-GRACEFUL-1 para el tab Fotos.
 
 ---
 
@@ -54,7 +58,7 @@ flujo. Ver "Bloqueos conocidos".
 | 7 | Login demo paciente | ✅ OK |
 | 8 | Registro de comida desde Mi Pulso | ✅ OK |
 | 9 | Flujo paciente → API → panel profesional | ✅ Operativo |
-| 10 | Tab Fotos del panel profesional | ❌ HTTP 500 (sin S3 real) |
+| 10 | Tab Fotos del panel profesional | ✅ Fallback seguro (sin HTTP 500 visible) — MC-FOTOS-GRACEFUL-1 |
 
 **Garantías del deploy:**
 - No se ejecutó `db:push`.
@@ -76,37 +80,43 @@ flujo. Ver "Bloqueos conocidos".
 
 ---
 
-## Bloqueos conocidos
+## Estado del tab Fotos
 
-### BLOQUEO 1 — Tab Fotos del panel devuelve HTTP 500
+### Fallback seguro validado (MC-FOTOS-GRACEFUL-1)
 
-**Síntoma:** Al abrir el tab **Fotos** de un paciente en el panel profesional,
-la respuesta es HTTP 500.
+**Antes:** al abrir el tab **Fotos** de un paciente, la respuesta era HTTP 500
+visible (sin bucket S3 productivo).
 
-**Causa:** No hay bucket S3 productivo configurado. El backend intenta resolver
-las imágenes y falla sin un fallback seguro.
+**Ahora:** tras MC-FOTOS-GRACEFUL-1 (PR #40, SHA `f84a870`), el tab **degrada
+con gracia** y muestra un fallback amigable, sin error técnico visible:
 
-**Impacto demo:** El tab Fotos no se puede mostrar. El resto del flujo
-(ficha, consultas, plan, agenda, revisión, actividad) funciona normalmente.
+- Título: **"Fotos no disponibles en este momento"**
+- Descripción: **"No fue posible cargar los registros de fotos en este momento."**
+- Pie: **"La visualización de imágenes estará disponible en la versión
+  productiva. El resto del panel funciona con normalidad."**
 
-**Mitigación inmediata para la demo:** No abrir el tab Fotos durante la
-presentación. El registro de comida desde Mi Pulso sí funciona (se guarda
-como metadata).
+**Validado por smoke manual (PASS, 2026-06-12):** el tab abre correctamente y ya
+**no** muestra HTTP 500, stack trace ni lenguaje técnico crudo. El resto del
+panel (ficha, consultas, plan, agenda, revisión, actividad) funciona normalmente.
 
-**Resolución recomendada:** Microciclo **MC-FOTOS-GRACEFUL-1** — implementar un
-fallback visual seguro cuando no hay S3 (placeholder/empty state en lugar de
-500). **No** implica activar S3 real. Es un cambio de manejo de error en el
-frontend/backend para degradar con gracia.
+**Impacto demo:** el tab Fotos **se puede mostrar** durante la presentación. Ya
+no hay que evitarlo.
 
-> **Fuera de alcance de este ciclo (documental).** No se toca código aquí.
+> **Nota operativa (caché del navegador):** si tras un deploy el navegador
+> muestra una versión anterior de la interfaz —por ejemplo el mensaje viejo
+> *"No se pudieron cargar las fotos: HTTP 500"*—, hacer **hard reload con
+> Ctrl+Shift+R**. Eso fuerza la descarga del bundle nuevo. En el smoke de cierre,
+> ese fue el único problema residual, y se resolvió con hard reload.
 
 ---
 
-### BLOQUEO 2 — Fotos reales / bucket S3 fuera de alcance
+### Fotos reales / bucket S3 fuera de alcance
 
-El upload real de fotos al bucket sigue **no activado** (pendiente histórico
-MC-FOTOS-PROD-1). En la demo, la foto de comida se registra como metadata; la
-imagen no persiste. Comunicarlo si se llega al paso de fotos en Mi Pulso.
+Lo validado es el **fallback seguro**, no el almacenamiento de fotos reales. El
+upload real de fotos al bucket sigue **no activado** (pendiente histórico
+MC-FOTOS-PROD-1) porque **no hay bucket S3 productivo**. En la demo, la foto de
+comida se registra como metadata; la imagen no persiste. Comunicarlo si se llega
+al paso de fotos en Mi Pulso.
 
 ---
 
@@ -136,7 +146,7 @@ Requiere decisión y un microciclo dedicado para tocar Railway.
 
 | Pendiente | Estado | Microciclo sugerido |
 |-----------|--------|---------------------|
-| Tab Fotos 500 sin S3 | Bloqueo de demo | MC-FOTOS-GRACEFUL-1 |
+| Tab Fotos sin S3 | ✅ Resuelto con fallback seguro | MC-FOTOS-GRACEFUL-1 (cerrado) |
 | Upload real de fotos | Fuera de alcance | MC-FOTOS-PROD-1 |
 | Decisión auto-deploy front-end | Pendiente de decisión | (a definir) |
 | Dominio propio | No conectado | (a definir) |
@@ -152,7 +162,7 @@ Requiere decisión y un microciclo dedicado para tocar Railway.
 | Datos de pacientes | Ficticios (nombres genéricos, valores inventados) |
 | Credenciales de login | Ficticias (dominio `.demo`) |
 | Fotos de comida | Metadata únicamente; imagen no persiste (sin bucket S3) |
-| Tab Fotos del panel | HTTP 500 (sin S3); requiere MC-FOTOS-GRACEFUL-1 |
+| Tab Fotos del panel | Fallback seguro validado (sin HTTP 500 visible) — MC-FOTOS-GRACEFUL-1 |
 | PDF del plan | Generado en el momento por pdfkit, con datos demo |
 | Postgres | Online con seed demo; sin datos reales |
 | URLs | Railway `*.up.railway.app`, no son URLs finales del producto |
@@ -173,7 +183,9 @@ Con ambas apps online, el flujo end-to-end es demostrable:
 7. **Registrar** → cargar una comida desde Mi Pulso.
 8. **Volver al panel** → el registro aparece en la bandeja de Revisión.
 
-> ⚠️ **No abrir el tab Fotos** del panel durante la demo (HTTP 500 sin S3).
+> ℹ️ El tab **Fotos** del panel **se puede mostrar**: degrada con un fallback
+> amigable (sin error técnico visible). Si el navegador muestra una versión
+> anterior, hacer **Ctrl+Shift+R** antes de presentar.
 
 Detalle paso a paso en `docs/demo/guia-demo.md`.
 

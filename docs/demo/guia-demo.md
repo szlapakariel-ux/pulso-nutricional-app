@@ -20,9 +20,14 @@ Tener abiertos en el navegador:
 Opcional: abrir Mi Pulso en el celular (visitar la URL en Chrome/Safari móvil)
 para mostrar la experiencia mobile-first real.
 
-> ⚠️ **No abrir el tab Fotos del panel profesional** durante la demo: devuelve
-> HTTP 500 por falta de bucket S3 productivo. El resto del flujo funciona. Ver
+> ℹ️ El **tab Fotos del panel profesional se puede mostrar**: degrada con un
+> fallback amigable cuando no hay bucket de imágenes productivo (no expone
+> errores técnicos). Las imágenes reales todavía no persisten. Ver
 > `docs/demo/estado-demo-comercial.md`.
+
+> 🔄 **Si el navegador muestra una versión anterior de la interfaz, hacer
+> Ctrl+Shift+R antes de presentar.** Eso fuerza la descarga del build más
+> reciente.
 
 **Modo recomendado para la demo:** modo `api` (conectado a Railway con datos
 reales demo). Es el modo por defecto en producción.
@@ -116,7 +121,7 @@ reales demo). Es el modo por defecto en producción.
 | Upload fotos de comidas (UI + metadata) | ✅ UI activa, imagen sin persistir |
 | PDF del plan | ✅ Activo |
 | Datos persistidos en Postgres | ✅ Activo (usuarios, planes, agenda, consultas) |
-| Tab Fotos del panel profesional | ❌ HTTP 500 sin S3 (requiere MC-FOTOS-GRACEFUL-1) |
+| Tab Fotos del panel profesional | ✅ Fallback seguro (sin error técnico visible) — MC-FOTOS-GRACEFUL-1 |
 | Upload real de fotos al bucket | ⏳ Pendiente (MC-FOTOS-PROD-1) |
 
 ---
@@ -144,9 +149,11 @@ moderno, y los datos se almacenan en servidores cloud seguros.
 
 ## Limitaciones conocidas de la demo actual
 
-- **Tab Fotos del panel devuelve HTTP 500.** Sin bucket S3 productivo, el tab
-  Fotos del panel profesional falla. No abrirlo durante la demo. Resolución
-  recomendada: MC-FOTOS-GRACEFUL-1 (fallback visual seguro, sin activar S3).
+- **Tab Fotos del panel: fallback seguro, no imágenes reales.** Sin bucket de
+  imágenes productivo, el tab Fotos no muestra fotos, pero **ya no falla con
+  error técnico**: degrada con un mensaje amigable (MC-FOTOS-GRACEFUL-1). Se
+  puede mostrar en la demo. El almacenamiento real de imágenes sigue pendiente
+  (MC-FOTOS-PROD-1).
 - El bucket de imágenes no está activo en producción (las fotos se guardan como
   metadata, pendiente MC-FOTOS-PROD-1). La UI de upload funciona pero la imagen
   no persiste.
