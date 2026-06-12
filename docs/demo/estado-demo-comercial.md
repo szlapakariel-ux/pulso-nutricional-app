@@ -1,98 +1,65 @@
-# Estado Demo Comercial — MC-DEMO-LIVE-0
+# Estado Demo Comercial — Pulso Nutricional
 
-> Auditoría de preparación para mostrar la demo a una nutricionista.
-> Fecha: 2026-06-12.
+> Estado de la demo online tras MC-MIPULSO-RWY-1.
+> Última actualización: 2026-06-12 (cierre MC-MIPULSO-RWY-1).
+>
+> Historial:
+> - MC-DEMO-LIVE-0 (2026-06-12): auditoría previa al deploy de Mi Pulso.
+> - MC-MIPULSO-RWY-1-CIERRE (2026-06-12): demo online completa.
 
 ---
 
 ## Veredicto
 
-**PARCIALMENTE LISTA — con bloqueadores críticos.**
+**DEMO ONLINE DISPONIBLE — apta para mostrar comercialmente.**
 
-La demo NO puede mostrarse comercialmente en su estado actual porque
-**Mi Pulso no está desplegado online**. El flujo demo completo —paciente
-entrando, registrando, profesional viendo— requiere que ambas apps estén
-accesibles desde un navegador externo. Hoy solo el panel profesional y la
-API están en Railway.
+El flujo demo completo —paciente entra, registra, profesional ve— está
+operativo end-to-end contra la API en producción. Ambas apps (panel
+profesional y Mi Pulso) están online con la identidad visual nueva.
+
+Hay **un bloqueo parcial conocido**: el tab **Fotos** del panel profesional
+devuelve HTTP 500 porque no hay bucket S3 productivo. No afecta el resto del
+flujo. Ver "Bloqueos conocidos".
 
 ---
 
-## Estado de servicios online
+## URLs finales de producción
 
-| Servicio | URL | Estado | Versión deployada |
-|----------|-----|--------|-------------------|
-| API (Fastify) | `https://api-production-42e99.up.railway.app` | ✅ Desplegada (MC-RWY-1) | Desconocida — auto-deploy off |
-| Panel profesional | `https://pulso-nutricional-web-production.up.railway.app` | ✅ Desplegada (MC-WEB-3) | Desconocida — auto-deploy off |
-| Mi Pulso (paciente) | `https://mi-pulso-web-production.up.railway.app` | ❌ **NO desplegada** | Preflight documentado, sin ejecutar |
-| Postgres Railway | (interno Railway) | ✅ Online con datos demo | — |
+| Servicio | URL | Estado |
+|----------|-----|--------|
+| API (Fastify) | `https://api-production-42e99.up.railway.app` | ✅ Online · health OK |
+| Panel profesional | `https://pulso-nutricional-web-production.up.railway.app` | ✅ Online · identidad visual nueva |
+| Mi Pulso (paciente) | `https://mi-pulso-web-production.up.railway.app` | ✅ Online · identidad visual nueva |
+| Postgres Railway | (interno Railway) | ✅ Online con datos demo |
+| Bucket S3 (fotos reales) | — | ❌ No productivo (fuera de alcance) |
 
 > **Nota de verificación:** Los smoke tests automatizados (`pnpm smoke:*:railway`)
-> no pueden ejecutarse desde el entorno remoto de Claude Code porque la política
-> de red bloquea el egress a Railway (403 `host_not_allowed`). Esta limitación
-> está documentada en ADR 0018 y en los playbooks de cada servicio. La
-> verificación real debe hacerse desde un navegador o terminal con acceso a internet.
+> y este informe NO se ejecutan desde el entorno remoto de Claude Code: la
+> política de red bloquea el egress a Railway (403 `host_not_allowed`,
+> ADR 0018). Los resultados de smoke test documentados abajo provienen del
+> reporte de ejecución de MC-MIPULSO-RWY-1 (terminal/navegador con acceso real).
 
 ---
 
-## Bloqueadores (ordenados por prioridad)
+## Checklist de smoke tests reportados (MC-MIPULSO-RWY-1)
 
-### BLOQUEADOR 1 — Mi Pulso sin deploy (crítico)
+| # | Verificación | Resultado |
+|---|--------------|-----------|
+| 1 | API `/health` | ✅ OK |
+| 2 | Panel profesional online con identidad visual nueva | ✅ OK |
+| 3 | Mi Pulso online con identidad visual nueva | ✅ OK |
+| 4 | CORS configurado para panel profesional | ✅ OK |
+| 5 | CORS configurado para Mi Pulso | ✅ OK |
+| 6 | Login demo profesional | ✅ OK |
+| 7 | Login demo paciente | ✅ OK |
+| 8 | Registro de comida desde Mi Pulso | ✅ OK |
+| 9 | Flujo paciente → API → panel profesional | ✅ Operativo |
+| 10 | Tab Fotos del panel profesional | ❌ HTTP 500 (sin S3 real) |
 
-**Impacto:** El flujo demo del paciente (pasos 5-6 del guion) es imposible.
-No hay URL pública de Mi Pulso.
-
-**Qué falta para resolverlo:**
-1. Ampliar la allowlist CORS de la API para incluir el origen de Mi Pulso
-   (variable `PULSO_ALLOWED_ORIGINS` en Railway → redeploy de la API).
-2. Configurar y desplegar el servicio `mi-pulso-web` en Railway con las
-   variables `NEXT_PUBLIC_PULSO_DATA_MODE=api` y
-   `NEXT_PUBLIC_PULSO_API_BASE_URL=https://api-production-42e99.up.railway.app`.
-3. Verificar con el checklist del playbook (`docs/deploy/mi-pulso-railway-preflight.md`).
-
-**Autorización requerida:** Sí. Requiere `MC-MIPULSO-RWY-1` explícito antes de ejecutar.
-
----
-
-### BLOQUEADOR 2 — Versión deployada probablemente desactualizada
-
-**Contexto:** Auto-deploy está desactivado en Railway (configuración intencional
-de MC-RWY-1). Los cambios de los siguientes microciclos **no se desplegaron
-automáticamente** tras su merge en main:
-
-| Microciclo | PR | Qué cambia en producción |
-|------------|----|--------------------------|
-| MC-FOTOS-MVP-3 | #34 | Panel profesional ve y revisa fotos de comidas |
-| MC-DEMO-VENDIBLE-1 | #35 | Limpieza visual y comercial |
-| MC-DESIGN-1 | #36 | Identidad visual (colores, tipografía, tokens) |
-| MC-DEMO-QA-1 | #37 | Correcciones de copy, storageKey oculto, status en español |
-
-Si no hubo un redeploy manual de la web profesional y la API tras cada merge,
-**la versión online puede tener entre 1 y 4 microciclos de atraso visual**.
-
-**Impacto demo:** Si el panel no tiene MC-DESIGN-1, el visitante ve la
-identidad visual antigua (sin Plus Jakarta Sans, sin paleta warm healthtech,
-con labels técnicos en inglés).
-
-**Cómo resolver:** Redeploy manual del servicio `pulso-nutricional-web` (y
-opcionalmente del `api`) en el dashboard de Railway. Verificar con el
-checklist de `docs/deploy/web-profesional-railway-playbook.md`.
-
-**Autorización requerida:** Sí. Redeploy manual en Railway.
-
----
-
-### BLOQUEADOR 3 — Guía de demo desactualizada
-
-**Detectado:**
-- La guía lista "Panel profesional ve fotos del paciente" como `⏳ Próximo ciclo
-  (MC-FOTOS-MVP-3)` cuando MC-FOTOS-MVP-3 ya está mergeado en main (PR #34).
-- La guía lista como limitación "El panel profesional no muestra todavía las
-  fotos subidas por el paciente (pendiente MC-FOTOS-MVP-3)" — ya resuelto.
-- La guía no menciona la identidad visual (MC-DESIGN-1).
-- La guía menciona `https://mi-pulso-web-production.up.railway.app` como
-  disponible, pero esa URL no existe online.
-
-**Cómo resolver:** Actualizar `docs/demo/guia-demo.md`. ✅ Resuelto en este PR.
+**Garantías del deploy:**
+- No se ejecutó `db:push`.
+- No se tocaron datos reales.
+- Postgres demo intacto (datos ficticios idempotentes).
 
 ---
 
@@ -109,80 +76,114 @@ checklist de `docs/deploy/web-profesional-railway-playbook.md`.
 
 ---
 
+## Bloqueos conocidos
+
+### BLOQUEO 1 — Tab Fotos del panel devuelve HTTP 500
+
+**Síntoma:** Al abrir el tab **Fotos** de un paciente en el panel profesional,
+la respuesta es HTTP 500.
+
+**Causa:** No hay bucket S3 productivo configurado. El backend intenta resolver
+las imágenes y falla sin un fallback seguro.
+
+**Impacto demo:** El tab Fotos no se puede mostrar. El resto del flujo
+(ficha, consultas, plan, agenda, revisión, actividad) funciona normalmente.
+
+**Mitigación inmediata para la demo:** No abrir el tab Fotos durante la
+presentación. El registro de comida desde Mi Pulso sí funciona (se guarda
+como metadata).
+
+**Resolución recomendada:** Microciclo **MC-FOTOS-GRACEFUL-1** — implementar un
+fallback visual seguro cuando no hay S3 (placeholder/empty state en lugar de
+500). **No** implica activar S3 real. Es un cambio de manejo de error en el
+frontend/backend para degradar con gracia.
+
+> **Fuera de alcance de este ciclo (documental).** No se toca código aquí.
+
+---
+
+### BLOQUEO 2 — Fotos reales / bucket S3 fuera de alcance
+
+El upload real de fotos al bucket sigue **no activado** (pendiente histórico
+MC-FOTOS-PROD-1). En la demo, la foto de comida se registra como metadata; la
+imagen no persiste. Comunicarlo si se llega al paso de fotos en Mi Pulso.
+
+---
+
+## Riesgos y pendientes
+
+### RIESGO 1 — Auto-deploy quedó habilitado en los front-end
+
+Durante MC-MIPULSO-RWY-1, el **auto-deploy quedó habilitado** en los servicios
+front-end (`pulso-nutricional-web` y `mi-pulso-web`), cuando previamente estaba
+**desactivado de forma intencional** (deploy manual controlado, definido en
+MC-RWY-1).
+
+**Implicancia:** Cada push a `main` puede disparar un deploy automático de las
+apps web. Esto rompe el modelo de "deploy controlado" anterior: un cambio
+mergeado podría llegar a la demo sin verificación previa.
+
+**Estado en este ciclo:** Documentado, **no modificado**. Cambiar esta
+configuración está fuera del alcance de este cierre documental.
+
+**Pendiente:** Decidir explícitamente si se mantiene auto-deploy (más ágil,
+menos control) o se vuelve a deploy manual (más control, como MC-RWY-1).
+Requiere decisión y un microciclo dedicado para tocar Railway.
+
+---
+
+### Otros pendientes (sin cambios)
+
+| Pendiente | Estado | Microciclo sugerido |
+|-----------|--------|---------------------|
+| Tab Fotos 500 sin S3 | Bloqueo de demo | MC-FOTOS-GRACEFUL-1 |
+| Upload real de fotos | Fuera de alcance | MC-FOTOS-PROD-1 |
+| Decisión auto-deploy front-end | Pendiente de decisión | (a definir) |
+| Dominio propio | No conectado | (a definir) |
+| Auth real (passwordHash) | Demo en memoria | (previo a producción real) |
+| CI/CD (GitHub Actions) | No configurado | (a definir) |
+
+---
+
 ## Qué es demo / ficticio
 
 | Elemento | Estado |
 |----------|--------|
 | Datos de pacientes | Ficticios (nombres genéricos, valores inventados) |
 | Credenciales de login | Ficticias (dominio `.demo`) |
-| Fotos de comida | UI funciona; la imagen no se persiste (sin bucket S3 activo) |
+| Fotos de comida | Metadata únicamente; imagen no persiste (sin bucket S3) |
+| Tab Fotos del panel | HTTP 500 (sin S3); requiere MC-FOTOS-GRACEFUL-1 |
 | PDF del plan | Generado en el momento por pdfkit, con datos demo |
 | Postgres | Online con seed demo; sin datos reales |
-| URL del panel | Railway `*.up.railway.app`, no es URL final del producto |
+| URLs | Railway `*.up.railway.app`, no son URLs finales del producto |
 
 ---
 
-## Qué está funcionando (sin bloqueos de deploy)
+## Flujo demo recomendado (online completo)
 
-Según los microciclos cerrados en main y la documentación de deploy:
+Con ambas apps online, el flujo end-to-end es demostrable:
 
-| Feature | Estado en main | Estado online |
-|---------|---------------|---------------|
-| Login profesional y paciente | ✅ | ✅ (API desplegada) |
-| Lista de pacientes | ✅ | ✅ (si web = versión correcta) |
-| Ficha del paciente | ✅ | ✅ |
-| Consultas (listado + detalle) | ✅ | ✅ |
-| Plan y agenda + PDF | ✅ | ✅ |
-| Bandeja de revisión | ✅ | ✅ |
-| Panel ve fotos del paciente | ✅ (MC-FOTOS-MVP-3) | ❓ (depende de versión) |
-| Identidad visual (tokens, tipografía) | ✅ (MC-DESIGN-1) | ❓ (depende de redeploy) |
-| Mi Pulso — Vista Hoy | ✅ | ❌ (no desplegado) |
-| Mi Pulso — Registrar | ✅ | ❌ (no desplegado) |
-| Mi Pulso — Upload fotos | ✅ UI | ❌ (no desplegado) |
+1. **Panel profesional** — abrir la URL, login profesional, lista de pacientes.
+2. **Ficha** → datos profesionales internos (no visibles al paciente).
+3. **Consultas** → historial y nueva consulta.
+4. **Plan y agenda** → plan asignado + agenda + descarga PDF.
+5. **Revisión** → bandeja con registros pendientes del paciente.
+6. **Mi Pulso** (celular o segunda ventana) — login paciente, Vista Hoy con
+   el plan que asignó la profesional.
+7. **Registrar** → cargar una comida desde Mi Pulso.
+8. **Volver al panel** → el registro aparece en la bandeja de Revisión.
 
----
+> ⚠️ **No abrir el tab Fotos** del panel durante la demo (HTTP 500 sin S3).
 
-## Acciones requeridas para demo comercial completa
-
-En orden de ejecución recomendado. **Ninguna puede hacerse desde el entorno
-remoto de Claude Code. Todas requieren autorización explícita.**
-
-| # | Acción | Dónde | MC sugerido |
-|---|--------|-------|-------------|
-| 1 | Redeploy del servicio `api` en Railway (para reflejar main) | Dashboard Railway | — |
-| 2 | Redeploy del servicio `pulso-nutricional-web` en Railway | Dashboard Railway | — |
-| 3 | Ampliar CORS de la API: `PULSO_ALLOWED_ORIGINS` para incluir URL de Mi Pulso + redeploy de API | Dashboard Railway | MC-MIPULSO-RWY-1 |
-| 4 | Configurar y desplegar servicio `mi-pulso-web` en Railway | Dashboard Railway | MC-MIPULSO-RWY-1 |
-| 5 | Smoke test desde terminal local: `pnpm smoke:web:railway` y `pnpm smoke:mi-pulso:railway` | Terminal local | — |
-| 6 | Verificación manual en navegador según playbooks | Navegador | — |
-
----
-
-## Flujo demo posible HOY (parcial)
-
-Sin Mi Pulso online, la demo muestra **solo el lado profesional**:
-
-1. Abrir `https://pulso-nutricional-web-production.up.railway.app`.
-2. Login con `profesional-demo@pulsonutricional.demo` / `demo-profesional-2026`.
-3. Lista de pacientes → seleccionar Paciente Demo Uno.
-4. Tab **Ficha** → datos profesionales internos.
-5. Tab **Consultas** → historial y nueva consulta.
-6. Tab **Plan y agenda** → plan asignado + agenda del día + descarga PDF.
-7. Tab **Revisión** → bandeja con registros pendientes del paciente.
-8. Tab **Actividad** → historial de actividad.
-
-**Limitación:** no se puede mostrar la experiencia del paciente desde el celular.
-No hay URL pública de Mi Pulso.
+Detalle paso a paso en `docs/demo/guia-demo.md`.
 
 ---
 
 ## Notas adicionales
 
-- **Sin CI/CD automático:** no hay GitHub Actions. Cada deploy es manual y
-  controlado desde el dashboard de Railway.
 - **Sin dominio propio:** las URLs `*.up.railway.app` son de Railway. No usar
   como URLs finales del producto en material de marketing.
-- **Bucket S3 no activo:** la foto de comida se guarda como metadata. La imagen
-  no persiste en producción. Comunicarlo en la demo si se llega al paso de fotos.
 - **Verificación de CORS es manual (solo en navegador):** los smoke tests
-  verifican la cadena de datos, no el comportamiento CORS real.
+  verifican la cadena de datos, no el comportamiento CORS real del navegador.
+- **`NEXT_PUBLIC_*` se inlinean en build:** cambiar el modo/URL de las apps web
+  requiere rebuild, no solo cambio de variable en runtime.
