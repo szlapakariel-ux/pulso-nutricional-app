@@ -12,20 +12,17 @@ Tener abiertos en el navegador:
 | Ventana | URL |
 |---------|-----|
 | Panel profesional | `https://pulso-nutricional-web-production.up.railway.app` |
-| Mi Pulso (paciente) | `https://mi-pulso-web-production.up.railway.app` ⚠️ ver nota |
+| Mi Pulso (paciente) | `https://mi-pulso-web-production.up.railway.app` |
 
-> ⚠️ **Mi Pulso no está desplegado online todavía.** La URL del paciente no
-> está activa. Para mostrar Mi Pulso en la demo, correr localmente:
-> ```bash
-> NEXT_PUBLIC_PULSO_DATA_MODE=api \
-> NEXT_PUBLIC_PULSO_API_BASE_URL=https://api-production-42e99.up.railway.app \
-> pnpm --filter @pulso/mi-pulso-web dev
-> ```
-> Una vez autorizado el deploy (MC-MIPULSO-RWY-1), la URL estará disponible.
-> Ver detalles en `docs/demo/estado-demo-comercial.md`.
+> ✅ **Ambas apps están online** (deploy MC-MIPULSO-RWY-1). El flujo completo
+> paciente → profesional es demostrable end-to-end contra la API en producción.
 
-Opcional: abrir Mi Pulso en el celular (conectar el celular a la misma red local
-y visitar `http://<ip-local>:3001` en Chrome/Safari móvil).
+Opcional: abrir Mi Pulso en el celular (visitar la URL en Chrome/Safari móvil)
+para mostrar la experiencia mobile-first real.
+
+> ⚠️ **No abrir el tab Fotos del panel profesional** durante la demo: devuelve
+> HTTP 500 por falta de bucket S3 productivo. El resto del flujo funciona. Ver
+> `docs/demo/estado-demo-comercial.md`.
 
 **Modo recomendado para la demo:** modo `api` (conectado a Railway con datos
 reales demo). Es el modo por defecto en producción.
@@ -112,13 +109,14 @@ reales demo). Es el modo por defecto en producción.
 | Feature | Estado |
 |---------|--------|
 | Login demo (profesional y paciente) | ✅ Activo |
-| Panel profesional completo | ✅ Activo |
-| Identidad visual (colores, tipografía) | ✅ Activo (MC-DESIGN-1) |
-| Panel profesional ve y revisa fotos | ✅ Activo (MC-FOTOS-MVP-3) |
-| Mi Pulso (Vista Hoy + Registrar) | ✅ En código · ⚠️ pendiente deploy online |
+| Panel profesional completo | ✅ Online |
+| Identidad visual (colores, tipografía) | ✅ Online (MC-DESIGN-1) |
+| Mi Pulso (Vista Hoy + Registrar) | ✅ Online (MC-MIPULSO-RWY-1) |
+| Registro de comida Mi Pulso → bandeja del panel | ✅ Operativo end-to-end |
 | Upload fotos de comidas (UI + metadata) | ✅ UI activa, imagen sin persistir |
 | PDF del plan | ✅ Activo |
 | Datos persistidos en Postgres | ✅ Activo (usuarios, planes, agenda, consultas) |
+| Tab Fotos del panel profesional | ❌ HTTP 500 sin S3 (requiere MC-FOTOS-GRACEFUL-1) |
 | Upload real de fotos al bucket | ⏳ Pendiente (MC-FOTOS-PROD-1) |
 
 ---
@@ -146,15 +144,17 @@ moderno, y los datos se almacenan en servidores cloud seguros.
 
 ## Limitaciones conocidas de la demo actual
 
-- **Mi Pulso no está desplegado online.** El paciente solo puede mostrarse
-  corriendo localmente (ver nota al inicio). Deploy pendiente de autorización
-  (MC-MIPULSO-RWY-1).
+- **Tab Fotos del panel devuelve HTTP 500.** Sin bucket S3 productivo, el tab
+  Fotos del panel profesional falla. No abrirlo durante la demo. Resolución
+  recomendada: MC-FOTOS-GRACEFUL-1 (fallback visual seguro, sin activar S3).
 - El bucket de imágenes no está activo en producción (las fotos se guardan como
   metadata, pendiente MC-FOTOS-PROD-1). La UI de upload funciona pero la imagen
   no persiste.
 - Sin dominio personalizado (pendiente de activación futura).
-- Auto-deploy desactivado: cada cambio de código requiere un redeploy manual
-  en Railway para reflejarse en producción.
+- **Auto-deploy habilitado en las apps front-end:** tras MC-MIPULSO-RWY-1, los
+  servicios web tienen auto-deploy activo (antes era manual controlado). Cada
+  push a `main` puede actualizar la demo sin verificación previa. Estado a
+  decidir en un microciclo posterior.
 
 ---
 
