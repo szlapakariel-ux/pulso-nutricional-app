@@ -12,10 +12,20 @@ Tener abiertos en el navegador:
 | Ventana | URL |
 |---------|-----|
 | Panel profesional | `https://pulso-nutricional-web-production.up.railway.app` |
-| Mi Pulso (paciente) | `https://mi-pulso-web-production.up.railway.app` |
+| Mi Pulso (paciente) | `https://mi-pulso-web-production.up.railway.app` ⚠️ ver nota |
 
-Opcional: abrir Mi Pulso en el celular (visitar la URL en Chrome/Safari móvil)
-para mostrar la experiencia mobile-first real.
+> ⚠️ **Mi Pulso no está desplegado online todavía.** La URL del paciente no
+> está activa. Para mostrar Mi Pulso en la demo, correr localmente:
+> ```bash
+> NEXT_PUBLIC_PULSO_DATA_MODE=api \
+> NEXT_PUBLIC_PULSO_API_BASE_URL=https://api-production-42e99.up.railway.app \
+> pnpm --filter @pulso/mi-pulso-web dev
+> ```
+> Una vez autorizado el deploy (MC-MIPULSO-RWY-1), la URL estará disponible.
+> Ver detalles en `docs/demo/estado-demo-comercial.md`.
+
+Opcional: abrir Mi Pulso en el celular (conectar el celular a la misma red local
+y visitar `http://<ip-local>:3001` en Chrome/Safari móvil).
 
 **Modo recomendado para la demo:** modo `api` (conectado a Railway con datos
 reales demo). Es el modo por defecto en producción.
@@ -103,9 +113,10 @@ reales demo). Es el modo por defecto en producción.
 |---------|--------|
 | Login demo (profesional y paciente) | ✅ Activo |
 | Panel profesional completo | ✅ Activo |
-| Mi Pulso (Vista Hoy + Registrar) | ✅ Activo |
+| Identidad visual (colores, tipografía) | ✅ Activo (MC-DESIGN-1) |
+| Panel profesional ve y revisa fotos | ✅ Activo (MC-FOTOS-MVP-3) |
+| Mi Pulso (Vista Hoy + Registrar) | ✅ En código · ⚠️ pendiente deploy online |
 | Upload fotos de comidas (UI + metadata) | ✅ UI activa, imagen sin persistir |
-| Panel profesional ve fotos del paciente | ⏳ Próximo ciclo (MC-FOTOS-MVP-3) |
 | PDF del plan | ✅ Activo |
 | Datos persistidos en Postgres | ✅ Activo (usuarios, planes, agenda, consultas) |
 | Upload real de fotos al bucket | ⏳ Pendiente (MC-FOTOS-PROD-1) |
@@ -135,13 +146,15 @@ moderno, y los datos se almacenan en servidores cloud seguros.
 
 ## Limitaciones conocidas de la demo actual
 
-- Los nombres de los pacientes demo son ficticios genéricos (pendiente de
-  actualización en MC-DEMO-VENDIBLE-1).
-- El panel profesional no muestra todavía las fotos subidas por el paciente
-  (pendiente MC-FOTOS-MVP-3).
+- **Mi Pulso no está desplegado online.** El paciente solo puede mostrarse
+  corriendo localmente (ver nota al inicio). Deploy pendiente de autorización
+  (MC-MIPULSO-RWY-1).
 - El bucket de imágenes no está activo en producción (las fotos se guardan como
-  metadata, pendiente MC-FOTOS-PROD-1).
+  metadata, pendiente MC-FOTOS-PROD-1). La UI de upload funciona pero la imagen
+  no persiste.
 - Sin dominio personalizado (pendiente de activación futura).
+- Auto-deploy desactivado: cada cambio de código requiere un redeploy manual
+  en Railway para reflejarse en producción.
 
 ---
 
