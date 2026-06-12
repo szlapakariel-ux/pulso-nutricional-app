@@ -197,12 +197,15 @@ export async function createMealPhotoController(
 
   let photo: Awaited<ReturnType<typeof createMealPhoto>>;
   try {
+    // createMealPhoto guarda el binario y luego persiste la metadata:
+    // este catch cubre fallos de cualquiera de las dos etapas (guardado
+    // de foto en general), no solo del almacenamiento de imágenes.
     photo = await createMealPhoto(patientId, draft, fileBuffer, fileMimeType);
   } catch (err) {
     request.log.error({ err, patientId }, "Error al guardar foto de comida");
     await reply.code(503).send({
       error: {
-        code: "STORAGE_UNAVAILABLE",
+        code: "PHOTO_SAVE_UNAVAILABLE",
         message:
           "No fue posible guardar la foto en este momento. Intentá de nuevo más tarde.",
         statusCode: 503,
