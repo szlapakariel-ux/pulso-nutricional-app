@@ -7,6 +7,7 @@ import { TodayContent } from "./today-content";
 import { getDataConfig } from "../lib/data-config";
 import { ApiError, getApiClient } from "../lib/api-client";
 import { usePatientAuth } from "../lib/use-patient-auth";
+import { colors, fonts, radius } from "../lib/design-tokens";
 
 const DEMO_PATIENT_IDS = ["demo-1", "demo-2", "demo-3"];
 
@@ -25,29 +26,21 @@ const MEAL_TYPE_LABELS: Record<MealPhotoType, string> = {
 const ALLOWED_PHOTO_MIME = ["image/jpeg", "image/png", "image/webp"];
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
-/** Badge de modo en el header. */
-function ModeBadge({
-  label,
-  tone,
-}: {
-  label: string;
-  tone: "mock" | "api" | "error";
-}) {
+function ModeBadge({ label, tone }: { label: string; tone: "mock" | "api" | "error" }) {
   const bg =
-    tone === "api"
-      ? "rgba(34,197,94,0.25)"
-      : tone === "error"
-        ? "rgba(239,68,68,0.3)"
-        : "rgba(255,255,255,0.25)";
+    tone === "error"
+      ? "rgba(239,68,68,0.3)"
+      : "rgba(255,255,255,0.22)";
   return (
     <span
       style={{
-        fontSize: "0.7rem",
+        fontSize: "0.68rem",
         background: bg,
-        padding: "0.1rem 0.45rem",
-        borderRadius: 99,
+        padding: "0.1rem 0.5rem",
+        borderRadius: radius.pill,
         marginLeft: "0.25rem",
         whiteSpace: "nowrap",
+        fontFamily: fonts.body,
       }}
     >
       {label}
@@ -55,7 +48,6 @@ function ModeBadge({
   );
 }
 
-/** Shell común: contenedor + header. */
 function Shell({
   date,
   badge,
@@ -71,15 +63,15 @@ function Shell({
         maxWidth: 430,
         margin: "0 auto",
         minHeight: "100dvh",
-        background: "#f9fafb",
-        fontFamily: "system-ui, -apple-system, sans-serif",
+        background: colors.bgBase,
+        fontFamily: fonts.body,
       }}
     >
       <header
         style={{
-          background: "#2563eb",
+          background: colors.greenDark,
           color: "white",
-          padding: "1rem 1.25rem 1.25rem",
+          padding: "1rem 1.25rem 1.2rem",
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -89,23 +81,24 @@ function Shell({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.5rem",
-            marginBottom: "0.15rem",
+            gap: "0.4rem",
+            marginBottom: "0.1rem",
             flexWrap: "wrap",
           }}
         >
           <span
             style={{
-              fontSize: "1.35rem",
+              fontSize: "1.3rem",
               fontWeight: 700,
-              letterSpacing: "-0.5px",
+              letterSpacing: "-0.3px",
+              fontFamily: fonts.heading,
             }}
           >
             Mi Pulso
           </span>
           {badge}
         </div>
-        <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>
+        <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.8, fontFamily: fonts.mono }}>
           Hoy · {date}
         </p>
       </header>
@@ -114,74 +107,70 @@ function Shell({
   );
 }
 
-/** Banner de demo/ficticio. */
 function DemoBanner() {
   return (
     <div
       style={{
-        background: "#fffbe6",
-        border: "1px solid #ffe58f",
-        borderRadius: 10,
+        background: colors.warningBg,
+        border: `1px solid ${colors.warningBorder}`,
+        borderRadius: radius.md,
         padding: "0.6rem 0.9rem",
         marginBottom: "1rem",
-        fontSize: "0.8rem",
-        color: "#614700",
+        fontSize: "0.78rem",
+        color: colors.warningText,
       }}
     >
-      ⚠️ Datos ficticios de demostración. No representan información clínica
-      real.
+      Datos ficticios de demostración. No representan información clínica real.
     </div>
   );
 }
 
-/** Vista Hoy en modo mock — comportamiento previo (selector demo). */
 function HoyMockView() {
   const [patientId, setPatientId] = useState("demo-1");
   const view = MOCK_TODAY_VIEWS[patientId];
-
   const date = view?.date ?? new Date().toISOString().split("T")[0] ?? "";
 
   return (
     <Shell date={date} badge={<ModeBadge label="Demo" tone="mock" />}>
       <DemoBanner />
 
-      {/* Selector de paciente (solo modo demo) */}
       <div
         style={{
-          background: "white",
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: "0.9rem 1rem",
+          background: colors.bgSurface,
+          border: `1px solid ${colors.borderDefault}`,
+          borderRadius: radius.lg,
+          padding: "0.85rem 1rem",
           marginBottom: "1.25rem",
         }}
       >
         <p
           style={{
             margin: "0 0 0.5rem",
-            fontSize: "0.75rem",
-            color: "#6b7280",
+            fontSize: "0.68rem",
+            color: colors.textSecondary,
             textTransform: "uppercase",
-            letterSpacing: "0.05em",
+            letterSpacing: "0.07em",
             fontWeight: 600,
           }}
         >
           Seleccionar paciente
         </p>
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap" }}>
           {DEMO_PATIENT_IDS.map((id) => (
             <button
               key={id}
               onClick={() => setPatientId(id)}
               style={{
-                padding: "0.35rem 0.75rem",
-                borderRadius: 99,
+                padding: "0.3rem 0.7rem",
+                borderRadius: radius.pill,
                 border: "1px solid",
-                borderColor: patientId === id ? "#2563eb" : "#e5e7eb",
-                background: patientId === id ? "#eff6ff" : "white",
-                color: patientId === id ? "#2563eb" : "#374151",
+                borderColor: patientId === id ? colors.greenPrimary : colors.borderDefault,
+                background: patientId === id ? "#EBF5EF" : colors.bgSurface,
+                color: patientId === id ? colors.greenDark : colors.textPrimary,
                 fontSize: "0.82rem",
                 fontWeight: patientId === id ? 600 : 400,
                 cursor: "pointer",
+                fontFamily: fonts.body,
               }}
             >
               {DEMO_PATIENT_LABELS[id] ?? id}
@@ -193,7 +182,7 @@ function HoyMockView() {
       {view ? (
         <TodayContent view={view} />
       ) : (
-        <div style={{ padding: "2rem", textAlign: "center", color: "#888" }}>
+        <div style={{ padding: "2rem", textAlign: "center", color: colors.textSecondary }}>
           Paciente no encontrado.
         </div>
       )}
@@ -201,7 +190,6 @@ function HoyMockView() {
   );
 }
 
-/** Botón de acceso a demo para el paciente (modo api, sin token). */
 function PatientLoginForm({
   onSubmit,
   loading,
@@ -214,14 +202,22 @@ function PatientLoginForm({
   return (
     <div
       style={{
-        background: "white",
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
+        background: colors.bgSurface,
+        border: `1px solid ${colors.borderDefault}`,
+        borderRadius: radius.lg,
         padding: "1.5rem",
         textAlign: "center",
       }}
     >
-      <p style={{ margin: "0 0 1.25rem", fontWeight: 600, color: "#111827", fontSize: "1rem" }}>
+      <p
+        style={{
+          margin: "0 0 1.25rem",
+          fontWeight: 700,
+          color: colors.textPrimary,
+          fontSize: "1.05rem",
+          fontFamily: fonts.heading,
+        }}
+      >
         Mi Pulso
       </p>
 
@@ -230,10 +226,10 @@ function PatientLoginForm({
           style={{
             marginBottom: "1rem",
             padding: "0.6rem 0.75rem",
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: 8,
-            color: "#b91c1c",
+            background: colors.errorBg,
+            border: `1px solid ${colors.errorBorder}`,
+            borderRadius: radius.sm,
+            color: colors.errorText,
             fontSize: "0.82rem",
           }}
         >
@@ -248,39 +244,26 @@ function PatientLoginForm({
         style={{
           width: "100%",
           padding: "0.8rem",
-          background: loading ? "#93c5fd" : "#2563eb",
-          color: "white",
+          background: loading ? colors.bgMuted : colors.greenPrimary,
+          color: loading ? colors.textSecondary : "white",
           border: "none",
-          borderRadius: 8,
+          borderRadius: radius.md,
           fontSize: "0.95rem",
           fontWeight: 600,
+          fontFamily: fonts.body,
           cursor: loading ? "not-allowed" : "pointer",
         }}
       >
         {loading ? "Ingresando…" : "Ingresar como paciente demo"}
       </button>
 
-      <p
-        style={{
-          margin: "1rem 0 0",
-          fontSize: "0.72rem",
-          color: "#9ca3af",
-        }}
-      >
+      <p style={{ margin: "1rem 0 0", fontSize: "0.72rem", color: colors.textSecondary }}>
         Ambiente de demostración · Datos ficticios
       </p>
     </div>
   );
 }
 
-/**
- * Formulario para registrar una foto de comida.
- * MC-FOTOS-MVP-2: primera escritura real desde Mi Pulso.
- *
- * - Acepta jpeg / png / webp, máx 5 MB.
- * - Preview antes de enviar.
- * - El registro nace como dato revisable (patient_reported / pending).
- */
 function RegisterPhotoForm({
   patientId,
   onClose,
@@ -297,7 +280,6 @@ function RegisterPhotoForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Liberar la URL de preview al desmontar o al cambiar archivo
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -317,9 +299,7 @@ function RegisterPhotoForm({
     }
 
     if (!ALLOWED_PHOTO_MIME.includes(file.type)) {
-      setError(
-        `Formato no soportado: ${file.type || "desconocido"}. Usá JPEG, PNG o WebP.`,
-      );
+      setError(`Formato no soportado: ${file.type || "desconocido"}. Usá JPEG, PNG o WebP.`);
       setSelectedFile(null);
       setPreviewUrl(null);
       return;
@@ -373,34 +353,27 @@ function RegisterPhotoForm({
     return (
       <div
         style={{
-          background: "white",
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
+          background: colors.bgSurface,
+          border: `1px solid ${colors.borderDefault}`,
+          borderRadius: radius.lg,
           padding: "1.25rem",
           marginTop: "1rem",
         }}
       >
         <div
           style={{
-            background: "#f0fdf4",
-            border: "1px solid #bbf7d0",
-            borderRadius: 10,
+            background: colors.successBg,
+            border: `1px solid ${colors.successBorder}`,
+            borderRadius: radius.md,
             padding: "1rem",
             marginBottom: "1rem",
             textAlign: "center",
           }}
         >
-          <p
-            style={{
-              margin: "0 0 0.25rem",
-              fontSize: "1rem",
-              fontWeight: 600,
-              color: "#166534",
-            }}
-          >
+          <p style={{ margin: "0 0 0.25rem", fontSize: "1rem", fontWeight: 600, color: colors.successText }}>
             Comida registrada
           </p>
-          <p style={{ margin: 0, fontSize: "0.85rem", color: "#166534" }}>
+          <p style={{ margin: 0, fontSize: "0.85rem", color: colors.successText }}>
             Pendiente de revisión por tu profesional.
           </p>
         </div>
@@ -411,13 +384,14 @@ function RegisterPhotoForm({
             style={{
               flex: 1,
               padding: "0.6rem",
-              background: "#2563eb",
+              background: colors.greenPrimary,
               color: "white",
               border: "none",
-              borderRadius: 8,
+              borderRadius: radius.sm,
               fontWeight: 600,
               fontSize: "0.85rem",
               cursor: "pointer",
+              fontFamily: fonts.body,
             }}
           >
             Registrar otra
@@ -428,13 +402,14 @@ function RegisterPhotoForm({
             style={{
               flex: 1,
               padding: "0.6rem",
-              background: "white",
-              color: "#374151",
-              border: "1px solid #d1d5db",
-              borderRadius: 8,
+              background: colors.bgSurface,
+              color: colors.textPrimary,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.sm,
               fontWeight: 500,
               fontSize: "0.85rem",
               cursor: "pointer",
+              fontFamily: fonts.body,
             }}
           >
             Cerrar
@@ -444,13 +419,36 @@ function RegisterPhotoForm({
     );
   }
 
+  const inputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "0.5rem 0.65rem",
+    border: `1px solid ${colors.borderDefault}`,
+    borderRadius: radius.sm,
+    fontSize: "0.875rem",
+    boxSizing: "border-box" as const,
+    fontFamily: fonts.body,
+    color: colors.textPrimary,
+    background: colors.bgSurface,
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: "0.78rem",
+    fontWeight: 600,
+    marginBottom: "0.35rem",
+    color: colors.textSecondary,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.04em",
+  };
+
   return (
     <form
       onSubmit={(e) => void handleSubmit(e)}
       style={{
-        background: "white",
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
+        background: colors.bgSurface,
+        border: `1px solid ${colors.borderDefault}`,
+        borderRadius: radius.lg,
         padding: "1.25rem",
         marginTop: "1rem",
       }}
@@ -463,7 +461,7 @@ function RegisterPhotoForm({
           marginBottom: "1rem",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "1rem", color: "#111827" }}>
+        <h3 style={{ margin: 0, fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
           Registrar foto de comida
         </h3>
         <button
@@ -471,10 +469,10 @@ function RegisterPhotoForm({
           onClick={onClose}
           style={{
             padding: "0.25rem 0.6rem",
-            border: "1px solid #e5e7eb",
-            borderRadius: 6,
-            background: "white",
-            color: "#6b7280",
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.sm,
+            background: colors.bgSurface,
+            color: colors.textSecondary,
             fontSize: "0.8rem",
             cursor: "pointer",
           }}
@@ -483,43 +481,20 @@ function RegisterPhotoForm({
         </button>
       </div>
 
-      {/* File input — sin capture: el SO ofrece cámara + galería */}
       <div style={{ marginBottom: "1rem" }}>
-        <label
-          style={{
-            display: "block",
-            fontSize: "0.85rem",
-            fontWeight: 600,
-            marginBottom: "0.4rem",
-            color: "#374151",
-          }}
-        >
-          Foto de la comida
-        </label>
+        <label style={labelStyle}>Foto de la comida</label>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={handleFileChange}
-          style={{
-            display: "block",
-            width: "100%",
-            fontSize: "0.85rem",
-            color: "#374151",
-          }}
+          style={{ display: "block", width: "100%", fontSize: "0.85rem", color: colors.textPrimary }}
         />
-        <p
-          style={{
-            margin: "0.3rem 0 0",
-            fontSize: "0.72rem",
-            color: "#9ca3af",
-          }}
-        >
+        <p style={{ margin: "0.3rem 0 0", fontSize: "0.72rem", color: colors.textSecondary }}>
           JPEG, PNG o WebP · máx. 5 MB
         </p>
       </div>
 
-      {/* Preview */}
       {previewUrl && (
         <div style={{ marginBottom: "1rem" }}>
           <img
@@ -529,38 +504,19 @@ function RegisterPhotoForm({
               width: "100%",
               maxHeight: 200,
               objectFit: "cover",
-              borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              borderRadius: radius.sm,
+              border: `1px solid ${colors.borderDefault}`,
             }}
           />
         </div>
       )}
 
-      {/* Tipo de comida */}
       <div style={{ marginBottom: "0.9rem" }}>
-        <label
-          style={{
-            display: "block",
-            fontSize: "0.85rem",
-            fontWeight: 600,
-            marginBottom: "0.4rem",
-            color: "#374151",
-          }}
-        >
-          Tipo de comida
-        </label>
+        <label style={labelStyle}>Tipo de comida</label>
         <select
           value={mealType}
           onChange={(e) => setMealType(e.target.value as MealPhotoType)}
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            border: "1px solid #d1d5db",
-            borderRadius: 6,
-            fontSize: "0.9rem",
-            boxSizing: "border-box",
-            background: "white",
-          }}
+          style={inputStyle}
         >
           {Object.entries(MEAL_TYPE_LABELS).map(([val, label]) => (
             <option key={val} value={val}>
@@ -570,46 +526,27 @@ function RegisterPhotoForm({
         </select>
       </div>
 
-      {/* Comentario opcional */}
       <div style={{ marginBottom: "1rem" }}>
-        <label
-          style={{
-            display: "block",
-            fontSize: "0.85rem",
-            fontWeight: 600,
-            marginBottom: "0.4rem",
-            color: "#374151",
-          }}
-        >
-          Comentario (opcional)
-        </label>
+        <label style={labelStyle}>Comentario (opcional)</label>
         <input
           type="text"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder='Ej: "comí afuera", "no había verdura"'
           maxLength={500}
-          style={{
-            width: "100%",
-            padding: "0.5rem 0.65rem",
-            border: "1px solid #d1d5db",
-            borderRadius: 6,
-            fontSize: "0.85rem",
-            boxSizing: "border-box",
-          }}
+          style={inputStyle}
         />
       </div>
 
-      {/* Aviso dato revisable */}
       <div
         style={{
-          background: "#eff6ff",
-          border: "1px solid #dbeafe",
-          borderRadius: 8,
+          background: colors.infoBg,
+          border: `1px solid ${colors.infoBorder}`,
+          borderRadius: radius.sm,
           padding: "0.65rem 0.8rem",
           marginBottom: "1rem",
           fontSize: "0.78rem",
-          color: "#1e3a8a",
+          color: colors.infoText,
         }}
       >
         Tu foto quedará pendiente de revisión por tu profesional.
@@ -620,10 +557,10 @@ function RegisterPhotoForm({
           style={{
             marginBottom: "1rem",
             padding: "0.6rem 0.75rem",
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: 8,
-            color: "#b91c1c",
+            background: colors.errorBg,
+            border: `1px solid ${colors.errorBorder}`,
+            borderRadius: radius.sm,
+            color: colors.errorText,
             fontSize: "0.82rem",
           }}
         >
@@ -637,12 +574,13 @@ function RegisterPhotoForm({
         style={{
           width: "100%",
           padding: "0.7rem",
-          background: selectedFile && !submitting ? "#2563eb" : "#d1d5db",
-          color: "white",
+          background: selectedFile && !submitting ? colors.greenPrimary : colors.bgMuted,
+          color: selectedFile && !submitting ? "white" : colors.textSecondary,
           border: "none",
-          borderRadius: 8,
+          borderRadius: radius.md,
           fontWeight: 600,
           fontSize: "0.9rem",
+          fontFamily: fonts.body,
           cursor: selectedFile && !submitting ? "pointer" : "not-allowed",
         }}
       >
@@ -652,7 +590,6 @@ function RegisterPhotoForm({
   );
 }
 
-/** Vista Hoy en modo api — login demo paciente + carga desde API. */
 function HoyApiView() {
   const auth = usePatientAuth();
   const [todayView, setTodayView] = useState<PatientTodayView | null>(null);
@@ -669,7 +606,7 @@ function HoyApiView() {
       try {
         const view = await getApiClient().getToday(patientId);
         if (!view) {
-          setTodayError("La API no devolvió la vista Hoy (404).");
+          setTodayError("No pudimos cargar tu día en este momento.");
           setTodayView(null);
         } else {
           setTodayView(view);
@@ -680,14 +617,12 @@ function HoyApiView() {
           setTodayView(null);
         } else {
           setTodayError(
-            e instanceof Error ? e.message : "Error de conexión con la API.",
+            e instanceof Error ? e.message : "No pudimos conectar con tu espacio de seguimiento.",
           );
         }
       } finally {
         setTodayLoading(false);
       }
-      // auth.logout has a stable reference (useCallback with [] deps in usePatientAuth).
-      // Using [auth] caused a new loadToday on every render → infinite fetch loop.
     },
     [auth.logout],
   );
@@ -696,7 +631,7 @@ function HoyApiView() {
     if (auth.user?.patientId) {
       void loadToday(auth.user.patientId);
     } else if (auth.user) {
-      setBlocked("La API no devolvió el patientId del paciente autenticado.");
+      setBlocked("No pudimos asociar esta sesión con un paciente de la demo.");
       setTodayView(null);
     } else {
       setTodayView(null);
@@ -707,10 +642,7 @@ function HoyApiView() {
 
   if (!auth.token) {
     return (
-      <Shell
-        date={today}
-        badge={<ModeBadge label="Demo" tone="api" />}
-      >
+      <Shell date={today} badge={<ModeBadge label="Demo" tone="api" />}>
         <PatientLoginForm
           onSubmit={(email, password) => void auth.login(email, password)}
           loading={auth.loading}
@@ -737,27 +669,28 @@ function HoyApiView() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          background: "white",
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
+          background: colors.bgSurface,
+          border: `1px solid ${colors.borderDefault}`,
+          borderRadius: radius.lg,
           padding: "0.6rem 0.9rem",
           marginBottom: "1rem",
         }}
       >
-        <span style={{ fontSize: "0.8rem", color: "#374151" }}>
+        <span style={{ fontSize: "0.8rem", color: colors.textPrimary }}>
           {auth.user?.email ?? "Sesión activa"}
         </span>
         <button
           type="button"
           onClick={() => auth.logout()}
           style={{
-            padding: "0.35rem 0.75rem",
-            border: "1px solid #d1d5db",
-            borderRadius: 8,
-            background: "white",
-            color: "#374151",
-            fontSize: "0.78rem",
+            padding: "0.3rem 0.7rem",
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.sm,
+            background: colors.bgSurface,
+            color: colors.textSecondary,
+            fontSize: "0.75rem",
             cursor: "pointer",
+            fontFamily: fonts.body,
           }}
         >
           Cerrar sesión
@@ -769,27 +702,27 @@ function HoyApiView() {
       {blocked && (
         <div
           style={{
-            background: "#fff7ed",
-            border: "1px solid #fed7aa",
-            borderRadius: 10,
+            background: colors.warningBg,
+            border: `1px solid ${colors.warningBorder}`,
+            borderRadius: radius.md,
             padding: "0.8rem 0.9rem",
             fontSize: "0.82rem",
-            color: "#9a3412",
+            color: colors.warningText,
           }}
         >
-          ⚠️ {blocked}
+          {blocked}
         </div>
       )}
 
       {todayError && !blocked && (
         <div
           style={{
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: 10,
+            background: colors.errorBg,
+            border: `1px solid ${colors.errorBorder}`,
+            borderRadius: radius.md,
             padding: "0.8rem 0.9rem",
             fontSize: "0.82rem",
-            color: "#b91c1c",
+            color: colors.errorText,
           }}
         >
           No se pudo cargar tu información: {todayError}
@@ -797,7 +730,7 @@ function HoyApiView() {
       )}
 
       {todayLoading && (
-        <div style={{ padding: "2rem", textAlign: "center", color: "#9ca3af" }}>
+        <div style={{ padding: "2rem", textAlign: "center", color: colors.textSecondary }}>
           Cargando tu día…
         </div>
       )}
@@ -806,7 +739,6 @@ function HoyApiView() {
         <TodayContent view={todayView} />
       )}
 
-      {/* Botón y formulario de registro de foto de comida */}
       {auth.user?.patientId && !blocked && (
         <div style={{ marginTop: "1.25rem" }}>
           {!showPhotoForm ? (
@@ -816,12 +748,13 @@ function HoyApiView() {
               style={{
                 width: "100%",
                 padding: "0.75rem",
-                background: "white",
-                border: "2px dashed #93c5fd",
-                borderRadius: 12,
-                color: "#2563eb",
+                background: colors.bgSurface,
+                border: `2px dashed ${colors.greenPrimary}`,
+                borderRadius: radius.lg,
+                color: colors.greenDark,
                 fontSize: "0.9rem",
                 fontWeight: 600,
+                fontFamily: fonts.body,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",

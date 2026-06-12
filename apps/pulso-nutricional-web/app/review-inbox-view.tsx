@@ -10,6 +10,7 @@ import type {
 } from "@pulso/shared";
 import { isApiMode } from "../lib/data-config";
 import { getApiClient, ApiError } from "../lib/api-client";
+import { colors, fonts, radius, shadow } from "../lib/design-tokens";
 
 interface ReviewInboxItemUI {
   id: string;
@@ -24,7 +25,6 @@ interface ReviewInboxItemUI {
   isDemoData: boolean;
 }
 
-// Mock inbox data — usado en modo mock
 const MOCK_INBOX: ReviewInboxItemUI[] = [
   {
     id: "inbox-meal-1",
@@ -116,18 +116,11 @@ function apiItemToUI(item: ReviewInboxItem): ReviewInboxItemUI {
   };
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: "#fef3c7",
-  reviewed: "#dbeafe",
-  accepted: "#dcfce7",
-  flagged: "#fecaca",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "⏳ Pendiente",
-  reviewed: "👁️ Revisado",
-  accepted: "✅ Aceptado",
-  flagged: "🚩 Marcado",
+const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
+  pending: { bg: colors.pendingBg, text: colors.pendingText, label: "Pendiente" },
+  reviewed: { bg: colors.reviewedBg, text: colors.reviewedText, label: "Revisado" },
+  accepted: { bg: colors.acceptedBg, text: colors.acceptedText, label: "Aceptado" },
+  flagged: { bg: colors.flaggedBg, text: colors.flaggedText, label: "Seguimiento" },
 };
 
 interface ReviewionViewProps {
@@ -155,9 +148,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
           setInboxItems(resp.items.map(apiItemToUI));
         })
         .catch((err) => {
-          setLoadError(
-            err instanceof ApiError ? err.message : "Error al cargar bandeja",
-          );
+          setLoadError(err instanceof ApiError ? err.message : "Error al cargar bandeja");
           setInboxItems([]);
         })
         .finally(() => setLoading(false));
@@ -185,9 +176,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
             : prev,
         );
       } catch (err) {
-        setActionError(
-          err instanceof ApiError ? err.message : "Error al ejecutar acción",
-        );
+        setActionError(err instanceof ApiError ? err.message : "Error al ejecutar acción");
       } finally {
         setActionInProgress(null);
       }
@@ -195,7 +184,17 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
       setTimeout(() => {
         setInboxItems((prev) =>
           prev.map((item) =>
-            item.id === itemId ? { ...item, reviewStatus: action === "mark_reviewed" ? "reviewed" : action === "accept" ? "accepted" : "flagged" } : item,
+            item.id === itemId
+              ? {
+                  ...item,
+                  reviewStatus:
+                    action === "mark_reviewed"
+                      ? "reviewed"
+                      : action === "accept"
+                        ? "accepted"
+                        : "flagged",
+                }
+              : item,
           ),
         );
         setActionInProgress(null);
@@ -205,7 +204,7 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
 
   if (loading) {
     return (
-      <div style={{ padding: "2rem", textAlign: "center", color: "#9ca3af" }}>
+      <div style={{ padding: "2rem", textAlign: "center", color: colors.textSecondary }}>
         Cargando bandeja…
       </div>
     );
@@ -216,14 +215,14 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
       <div
         style={{
           padding: "1rem",
-          background: "#fef2f2",
-          border: "1px solid #fecaca",
-          borderRadius: 10,
-          color: "#b91c1c",
+          background: colors.errorBg,
+          border: `1px solid ${colors.errorBorder}`,
+          borderRadius: radius.md,
+          color: colors.errorText,
           fontSize: "0.85rem",
         }}
       >
-        ❌ No se pudo cargar la bandeja: {loadError}
+        No se pudo cargar la bandeja: {loadError}
       </div>
     );
   }
@@ -232,17 +231,18 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
     return (
       <div
         style={{
-          padding: "2rem",
+          padding: "2.5rem 2rem",
           textAlign: "center",
-          color: "#888",
-          border: "1px dashed #d9d9d9",
-          borderRadius: 12,
+          color: colors.textSecondary,
+          border: `1px dashed ${colors.borderDefault}`,
+          borderRadius: radius.lg,
+          background: colors.bgSurface,
         }}
       >
-        <p style={{ fontSize: "1.1rem", margin: "0 0 0.5rem" }}>
+        <p style={{ fontSize: "1rem", margin: "0 0 0.5rem", color: colors.textPrimary, fontWeight: 500 }}>
           Sin registros pendientes de revisión
         </p>
-        <p style={{ margin: 0, fontSize: "0.9rem" }}>
+        <p style={{ margin: 0, fontSize: "0.875rem" }}>
           {useApi
             ? "Cuando el paciente envíe registros desde Mi Pulso, aparecerán aquí."
             : "Todos los registros del paciente están revisados o aceptados."}
@@ -252,20 +252,20 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* Banner modo */}
       <div
         style={{
-          background: useApi ? "#f0fdf4" : "#fffbe6",
-          border: `1px solid ${useApi ? "#bbf7d0" : "#ffe58f"}`,
-          borderRadius: 10,
-          padding: "0.75rem 1rem",
-          fontSize: "0.85rem",
-          color: useApi ? "#166534" : "#614700",
+          background: useApi ? colors.successBg : colors.warningBg,
+          border: `1px solid ${useApi ? colors.successBorder : colors.warningBorder}`,
+          borderRadius: radius.md,
+          padding: "0.65rem 1rem",
+          fontSize: "0.82rem",
+          color: useApi ? colors.successText : colors.warningText,
         }}
       >
         {useApi
-          ? "✓ Registros del paciente · Pendientes de tu revisión."
+          ? "Registros del paciente · Pendientes de tu revisión."
           : "Ambiente de demostración · Datos ficticios"}
       </div>
 
@@ -273,110 +273,130 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
       {actionError && (
         <div
           style={{
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: 8,
+            background: colors.errorBg,
+            border: `1px solid ${colors.errorBorder}`,
+            borderRadius: radius.sm,
             padding: "0.65rem 0.9rem",
             fontSize: "0.82rem",
-            color: "#b91c1c",
+            color: colors.errorText,
           }}
         >
-          ❌ {actionError}
+          {actionError}
         </div>
       )}
 
       {/* Lista de registros */}
       <section>
-        <h3 style={{ margin: "0 0 0.75rem", fontSize: "0.95rem" }}>
-          Registros pendientes/en revisión ({inboxItems.length})
+        <h3
+          style={{
+            margin: "0 0 0.75rem",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.07em",
+            color: colors.textSecondary,
+          }}
+        >
+          Registros ({inboxItems.length})
         </h3>
 
         <div
           style={{
-            border: "1px solid #e5e5e5",
-            borderRadius: 12,
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.lg,
             overflow: "hidden",
+            background: colors.bgSurface,
+            boxShadow: shadow.card,
           }}
         >
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {inboxItems.map((item, idx) => (
-              <li
-                key={item.id}
-                style={{
-                  padding: "1rem 1.25rem",
-                  borderBottom:
-                    idx < inboxItems.length - 1
-                      ? "1px solid #f0f0f0"
-                      : "none",
-                  background: "white",
-                  cursor: "pointer",
-                  transition: "background 0.2s",
-                }}
-                onClick={() => setSelectedItem(item)}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "#fafafa";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "white";
-                }}
-              >
-                <div
+            {inboxItems.map((item, idx) => {
+              const st = STATUS_STYLE[item.reviewStatus] ?? STATUS_STYLE.pending;
+              const isActive = selectedItem?.id === item.id;
+              return (
+                <li
+                  key={item.id}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: "1rem",
+                    padding: "0.9rem 1.1rem",
+                    borderBottom:
+                      idx < inboxItems.length - 1 ? `1px solid ${colors.bgMuted}` : "none",
+                    background: isActive ? "#EBF5EF" : colors.bgSurface,
+                    cursor: "pointer",
+                    transition: "background 0.15s",
+                  }}
+                  onClick={() => setSelectedItem(item)}
+                  onMouseEnter={(e) => {
+                    if (!isActive) (e.currentTarget as HTMLElement).style.background = colors.bgBase;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) (e.currentTarget as HTMLElement).style.background = colors.bgSurface;
                   }}
                 >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.25rem" }}>
-                      <strong style={{ fontSize: "0.95rem", color: "#111" }}>
-                        {item.entryType === "meal_log" && "🍽️ Comida"}
-                        {item.entryType === "weight_log" && "⚖️ Peso"}
-                        {item.entryType === "note" && "💬 Nota"}
-                      </strong>
-                      <span style={{ color: "#666", fontSize: "0.85rem" }}>
-                        {new Date(item.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-
-                    {item.entryType === "meal_log" && (
-                      <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#555" }}>
-                        {(item.data as PatientMealLog).foodDescription}
-                      </p>
-                    )}
-                    {item.entryType === "weight_log" && (
-                      <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#555" }}>
-                        Peso: {(item.data as PatientWeightLog).weight} kg
-                      </p>
-                    )}
-                    {item.entryType === "note" && (
-                      <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#555" }}>
-                        {(item.data as PatientNote).subject}
-                      </p>
-                    )}
-
-                    <p style={{ margin: "0.35rem 0 0", fontSize: "0.75rem", color: "#999" }}>
-                      Origen: paciente · Dato revisable
-                    </p>
-                  </div>
-
-                  <span
+                  <div
                     style={{
-                      fontSize: "0.75rem",
-                      background: STATUS_COLORS[item.reviewStatus],
-                      color: "#333",
-                      padding: "0.35rem 0.65rem",
-                      borderRadius: 6,
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "1rem",
                     }}
                   >
-                    {STATUS_LABELS[item.reviewStatus]}
-                  </span>
-                </div>
-              </li>
-            ))}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.2rem" }}>
+                        <strong style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
+                          {item.entryType === "meal_log" && "Comida"}
+                          {item.entryType === "weight_log" && "Peso"}
+                          {item.entryType === "note" && "Nota"}
+                        </strong>
+                        <span
+                          style={{
+                            color: colors.textSecondary,
+                            fontSize: "0.78rem",
+                            fontFamily: fonts.mono,
+                          }}
+                        >
+                          {new Date(item.createdAt).toLocaleString("es-AR", {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+
+                      {item.entryType === "meal_log" && (
+                        <p style={{ margin: 0, fontSize: "0.82rem", color: colors.textSecondary }}>
+                          {(item.data as PatientMealLog).foodDescription}
+                        </p>
+                      )}
+                      {item.entryType === "weight_log" && (
+                        <p style={{ margin: 0, fontSize: "0.82rem", color: colors.textSecondary }}>
+                          <span style={{ fontFamily: fonts.mono }}>{(item.data as PatientWeightLog).weight}</span> kg
+                        </p>
+                      )}
+                      {item.entryType === "note" && (
+                        <p style={{ margin: 0, fontSize: "0.82rem", color: colors.textSecondary }}>
+                          {(item.data as PatientNote).subject}
+                        </p>
+                      )}
+                    </div>
+
+                    <span
+                      style={{
+                        fontSize: "0.72rem",
+                        background: st.bg,
+                        color: st.text,
+                        padding: "0.25rem 0.6rem",
+                        borderRadius: radius.pill,
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {st.label}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </section>
@@ -384,65 +404,96 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
       {/* Panel de detalles y acciones */}
       {selectedItem && (
         <section>
-          <h3 style={{ margin: "0 0 0.75rem", fontSize: "0.95rem" }}>
+          <h3
+            style={{
+              margin: "0 0 0.75rem",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.07em",
+              color: colors.textSecondary,
+            }}
+          >
             Detalles y acciones
           </h3>
 
           <div
             style={{
-              border: "1px solid #e5e5e5",
-              borderRadius: 12,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.lg,
               padding: "1.25rem",
-              background: "#fafafa",
+              background: colors.bgSurface,
+              boxShadow: shadow.card,
             }}
           >
             <div style={{ marginBottom: "1rem" }}>
-              <h4 style={{ margin: "0 0 0.5rem", color: "#111" }}>
-                {selectedItem.entryType === "meal_log" && "🍽️ Registro de comida"}
-                {selectedItem.entryType === "weight_log" && "⚖️ Registro de peso"}
-                {selectedItem.entryType === "note" && "💬 Nota/Pregunta"}
+              <h4
+                style={{
+                  margin: "0 0 0.75rem",
+                  fontFamily: fonts.heading,
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  color: colors.textPrimary,
+                }}
+              >
+                {selectedItem.entryType === "meal_log" && "Registro de comida"}
+                {selectedItem.entryType === "weight_log" && "Registro de peso"}
+                {selectedItem.entryType === "note" && "Nota del paciente"}
               </h4>
 
               {selectedItem.entryType === "meal_log" && (
-                <div style={{ fontSize: "0.9rem", color: "#555" }}>
-                  <p>
-                    <strong>Descripción:</strong>{" "}
+                <div
+                  style={{
+                    fontSize: "0.875rem",
+                    color: colors.textPrimary,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.35rem",
+                  }}
+                >
+                  <p style={{ margin: 0 }}>
+                    <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Descripción: </span>
                     {(selectedItem.data as PatientMealLog).foodDescription}
                   </p>
                   {(selectedItem.data as PatientMealLog).portion && (
-                    <p>
-                      <strong>Porción:</strong>{" "}
+                    <p style={{ margin: 0 }}>
+                      <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Porción: </span>
                       {(selectedItem.data as PatientMealLog).portion}
                     </p>
                   )}
                   {(selectedItem.data as PatientMealLog).notes && (
-                    <p>
-                      <strong>Notas:</strong> {(selectedItem.data as PatientMealLog).notes}
+                    <p style={{ margin: 0 }}>
+                      <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Notas: </span>
+                      {(selectedItem.data as PatientMealLog).notes}
                     </p>
                   )}
                 </div>
               )}
 
               {selectedItem.entryType === "weight_log" && (
-                <div style={{ fontSize: "0.9rem", color: "#555" }}>
-                  <p>
-                    <strong>Peso:</strong> {(selectedItem.data as PatientWeightLog).weight} kg
+                <div style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
+                  <p style={{ margin: "0 0 0.35rem" }}>
+                    <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Peso: </span>
+                    <span style={{ fontFamily: fonts.mono }}>{(selectedItem.data as PatientWeightLog).weight}</span> kg
                   </p>
                   {(selectedItem.data as PatientWeightLog).notes && (
-                    <p>
-                      <strong>Notas:</strong> {(selectedItem.data as PatientWeightLog).notes}
+                    <p style={{ margin: 0 }}>
+                      <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Notas: </span>
+                      {(selectedItem.data as PatientWeightLog).notes}
                     </p>
                   )}
                 </div>
               )}
 
               {selectedItem.entryType === "note" && (
-                <div style={{ fontSize: "0.9rem", color: "#555" }}>
-                  <p>
-                    <strong>Asunto:</strong> {(selectedItem.data as PatientNote).subject}
+                <div style={{ fontSize: "0.875rem", color: colors.textPrimary, display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <p style={{ margin: 0 }}>
+                    <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Asunto: </span>
+                    {(selectedItem.data as PatientNote).subject}
                   </p>
-                  <p>
-                    <strong>Contenido:</strong> {(selectedItem.data as PatientNote).body}
+                  <p style={{ margin: 0 }}>
+                    <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Contenido: </span>
+                    {(selectedItem.data as PatientNote).body}
                   </p>
                 </div>
               )}
@@ -450,16 +501,16 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
 
             <div
               style={{
-                background: "white",
-                border: "1px solid #dbeafe",
-                borderRadius: 8,
-                padding: "0.75rem",
+                background: colors.infoBg,
+                border: `1px solid ${colors.infoBorder}`,
+                borderRadius: radius.sm,
+                padding: "0.65rem 0.85rem",
                 marginBottom: "1rem",
-                fontSize: "0.85rem",
-                color: "#1e3a8a",
+                fontSize: "0.82rem",
+                color: colors.infoText,
               }}
             >
-              ✓ Dato del paciente pendiente de revisión. Tu acción queda registrada.
+              Dato del paciente pendiente de revisión. Tu acción queda registrada.
             </div>
 
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -467,63 +518,65 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
                 onClick={() => void handleAction(selectedItem.id, "mark_reviewed")}
                 disabled={actionInProgress === selectedItem.id}
                 style={{
-                  padding: "0.6rem 1rem",
-                  background: "#dbeafe",
-                  border: "1px solid #91d5ff",
-                  borderRadius: 6,
-                  color: "#0c63e4",
+                  padding: "0.55rem 1rem",
+                  background: colors.reviewedBg,
+                  border: `1px solid ${colors.reviewedText}22`,
+                  borderRadius: radius.sm,
+                  color: colors.reviewedText,
                   fontWeight: 600,
-                  fontSize: "0.85rem",
+                  fontSize: "0.82rem",
+                  fontFamily: fonts.body,
                   cursor: actionInProgress === selectedItem.id ? "wait" : "pointer",
                   opacity: actionInProgress === selectedItem.id ? 0.6 : 1,
                 }}
               >
-                👁️ Marcar revisado
+                Marcar revisado
               </button>
 
               <button
                 onClick={() => void handleAction(selectedItem.id, "accept")}
                 disabled={actionInProgress === selectedItem.id}
                 style={{
-                  padding: "0.6rem 1rem",
-                  background: "#dcfce7",
-                  border: "1px solid #86efac",
-                  borderRadius: 6,
-                  color: "#166534",
+                  padding: "0.55rem 1rem",
+                  background: colors.acceptedBg,
+                  border: `1px solid ${colors.acceptedText}22`,
+                  borderRadius: radius.sm,
+                  color: colors.acceptedText,
                   fontWeight: 600,
-                  fontSize: "0.85rem",
+                  fontSize: "0.82rem",
+                  fontFamily: fonts.body,
                   cursor: actionInProgress === selectedItem.id ? "wait" : "pointer",
                   opacity: actionInProgress === selectedItem.id ? 0.6 : 1,
                 }}
               >
-                ✅ Aceptar
+                Aceptar
               </button>
 
               <button
                 onClick={() => void handleAction(selectedItem.id, "flag")}
                 disabled={actionInProgress === selectedItem.id}
                 style={{
-                  padding: "0.6rem 1rem",
-                  background: "#fecaca",
-                  border: "1px solid #fca5a5",
-                  borderRadius: 6,
-                  color: "#992211",
+                  padding: "0.55rem 1rem",
+                  background: colors.flaggedBg,
+                  border: `1px solid ${colors.flaggedText}22`,
+                  borderRadius: radius.sm,
+                  color: colors.flaggedText,
                   fontWeight: 600,
-                  fontSize: "0.85rem",
+                  fontSize: "0.82rem",
+                  fontFamily: fonts.body,
                   cursor: actionInProgress === selectedItem.id ? "wait" : "pointer",
                   opacity: actionInProgress === selectedItem.id ? 0.6 : 1,
                 }}
               >
-                🚩 Marcar seguimiento
+                Marcar seguimiento
               </button>
             </div>
 
             <p
               style={{
                 margin: "0.75rem 0 0",
-                fontSize: "0.75rem",
-                color: "#666",
-                fontStyle: "italic",
+                fontSize: "0.72rem",
+                color: colors.textSecondary,
               }}
             >
               Ambiente de demostración · Datos ficticios
