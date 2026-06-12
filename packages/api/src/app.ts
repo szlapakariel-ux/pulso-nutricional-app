@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import type { FastifyError } from "fastify";
 import jwt from "@fastify/jwt";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
@@ -72,6 +73,41 @@ export function buildApp() {
   app.register(pdfRoutes);
   app.register(activityRoutes);
   app.register(mealPhotosRoutes);
+
+  // Manejador global de errores no capturados — evita que Fastify devuelva
+  // un 500 crudo con stack trace cuando un handler lanza sin try/catch.
+  // Preserva el statusCode de errores controlados (validación de schema,
+  // 4xx) y solo cae a 500 cuando no hay un status válido.
+  app.setErrorHandler((error: FastifyError, request, reply) => {
+    const rawStatus = error.statusCode;
+    const statusCode =
+      typeof rawStatus === "number" && rawStatus >= 400 && rawStatus <= 599
+        ? rawStatus
+        : 500;
+
+    // Loguear como error solo los 5xx; los 4xx son esperables (cliente).
+    if (statusCode >= 500) {
+      request.log.error({ err: error }, "Error no controlado en handler");
+    } else {
+      request.log.warn({ err: error }, "Solicitud rechazada");
+    }
+
+    const { code, message } =
+      statusCode >= 500
+        ? {
+            code: "INTERNAL_ERROR",
+            message: "Ocurrió un error inesperado. Intentá de nuevo más tarde.",
+          }
+        : {
+            code: "REQUEST_ERROR",
+            message:
+              "No fue posible procesar la solicitud. Revisá los datos e intentá nuevamente.",
+          };
+
+    void reply.status(statusCode).send({
+      error: { code, message, statusCode },
+    });
+  });
 
   return app;
 }
