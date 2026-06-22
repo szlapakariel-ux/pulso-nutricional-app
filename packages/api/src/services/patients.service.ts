@@ -1,9 +1,10 @@
 import type { PatientDetail, PatientSummary } from "@pulso/shared";
-import { MOCK_PATIENTS } from "../mock-data/patients.mock.js";
+import { MOCK_PATIENTS, addMockPatient, generateMockPatientId } from "../mock-data/patients.mock.js";
 import { isPrismaMode } from "../config/data-source.js";
 import {
   listPatientsFromDB,
   getPatientByIdFromDB,
+  createPatientInDB,
 } from "../repositories/patients.repository.js";
 
 /**
@@ -42,4 +43,23 @@ export async function getPatientById(
     return getPatientByIdFromDB(id);
   }
   return MOCK_PATIENTS.find((p) => p.id === id) ?? null;
+}
+
+export async function createPatient(draft: { fullName: string; age?: number; goal?: string }): Promise<PatientDetail> {
+  if (isPrismaMode()) {
+    return createPatientInDB(draft);
+  }
+  const newPatient: PatientDetail = {
+    id: generateMockPatientId(),
+    fullName: draft.fullName,
+    age: draft.age ?? 0,
+    goal: draft.goal ?? "",
+    lastControl: null,
+    status: "active",
+    professionalNote: "",
+    professionalId: "prof-demo-1",
+    isDemoData: true,
+  };
+  addMockPatient(newPatient);
+  return newPatient;
 }

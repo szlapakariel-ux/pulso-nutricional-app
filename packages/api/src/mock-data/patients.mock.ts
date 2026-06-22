@@ -7,7 +7,7 @@ import type { PatientDetail } from "@pulso/shared";
  * No hay base de datos: este arreglo en memoria es la única fuente en MC-3.
  * Se reemplazará por persistencia real (DB) en microciclos posteriores.
  */
-export const MOCK_PATIENTS: ReadonlyArray<PatientDetail> = [
+export let MOCK_PATIENTS: PatientDetail[] = [
   {
     id: "demo-1",
     fullName: "Paciente Demo Uno",
@@ -42,3 +42,12 @@ export const MOCK_PATIENTS: ReadonlyArray<PatientDetail> = [
     isDemoData: true,
   },
 ];
+
+export function addMockPatient(patient: PatientDetail): void {
+  MOCK_PATIENTS = [...MOCK_PATIENTS, patient];
+}
+
+let mockPatientCounter = 3;
+export function generateMockPatientId(): string {
+  return `demo-${++mockPatientCounter}`;
+}

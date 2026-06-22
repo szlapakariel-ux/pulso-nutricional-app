@@ -93,6 +93,13 @@ class ApiClient {
     return this.fetch<PatientDetail>(`/patients/${id}`);
   }
 
+  async createPatient(draft: { fullName: string; age?: number; goal?: string }): Promise<PatientDetail> {
+    return this.fetch<PatientDetail>("/patients", {
+      method: "POST",
+      body: JSON.stringify(draft),
+    });
+  }
+
   async getMealPlan(
     patientId: string,
   ): Promise<PatientPlanAssignment | null> {
