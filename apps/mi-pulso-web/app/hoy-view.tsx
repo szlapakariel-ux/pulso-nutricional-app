@@ -7,7 +7,14 @@ import { TodayContent } from "./today-content";
 import { getDataConfig } from "../lib/data-config";
 import { ApiError, getApiClient } from "../lib/api-client";
 import { usePatientAuth } from "../lib/use-patient-auth";
-import { colors, fonts, radius } from "../lib/design-tokens";
+import { colors, fonts, radius, shadow } from "../lib/design-tokens";
+
+function formatDateES(dateStr: string): string {
+  if (!dateStr) return "hoy";
+  const parts = dateStr.split("-").map(Number);
+  const date = new Date(parts[0]!, parts[1]! - 1, parts[2]!);
+  return date.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+}
 
 const DEMO_PATIENT_IDS = ["demo-1", "demo-2", "demo-3"];
 
@@ -98,8 +105,8 @@ function Shell({
           </span>
           {badge}
         </div>
-        <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.8, fontFamily: fonts.mono }}>
-          Hoy · {date}
+        <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.88, fontFamily: fonts.body, textTransform: "capitalize" }}>
+          {formatDateES(date)}
         </p>
       </header>
       <main style={{ padding: "1rem 1rem 5rem" }}>{children}</main>
@@ -141,6 +148,7 @@ function HoyMockView() {
           borderRadius: radius.lg,
           padding: "0.85rem 1rem",
           marginBottom: "1.25rem",
+          boxShadow: shadow.card,
         }}
       >
         <p

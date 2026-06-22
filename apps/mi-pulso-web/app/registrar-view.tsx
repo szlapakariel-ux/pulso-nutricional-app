@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type {
   PatientMealLogDraft,
   PatientWeightLogDraft,
@@ -8,12 +8,13 @@ import type {
   PatientExerciseLogDraft,
   ActivityType,
   ActivityIntensity,
+  MealPhotoType,
 } from "@pulso/shared";
 import { DEMO_ACTIVITY_MODULE_ACTIVE } from "./activity.mock";
 import { getDataConfig } from "../lib/data-config";
 import { ApiError, getApiClient } from "../lib/api-client";
 import { usePatientAuth } from "../lib/use-patient-auth";
-import { colors, fonts, radius } from "../lib/design-tokens";
+import { colors, fonts, radius, shadow } from "../lib/design-tokens";
 
 interface RegistroEnviado {
   tipo: "comida" | "peso" | "nota" | "actividad";
@@ -21,12 +22,24 @@ interface RegistroEnviado {
   apiSent?: boolean;
 }
 
+const ALLOWED_PHOTO_MIME = ["image/jpeg", "image/png", "image/webp"];
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+const MEAL_PHOTO_TYPE_LABELS: Record<MealPhotoType, string> = {
+  breakfast: "Desayuno",
+  lunch: "Almuerzo",
+  snack: "Merienda",
+  dinner: "Cena",
+  collation: "Colación",
+  other: "Otro",
+};
+
 const inputStyle = {
   width: "100%",
-  padding: "0.5rem 0.65rem",
+  padding: "0.55rem 0.75rem",
   border: `1px solid ${colors.borderDefault}`,
-  borderRadius: radius.sm,
-  fontSize: "0.875rem",
+  borderRadius: radius.md,
+  fontSize: "0.9rem",
   boxSizing: "border-box" as const,
   fontFamily: fonts.body,
   color: colors.textPrimary,
@@ -35,12 +48,21 @@ const inputStyle = {
 
 const labelStyle = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: "0.72rem",
   fontWeight: 600,
-  marginBottom: "0.35rem",
+  marginBottom: "0.4rem",
   color: colors.textSecondary,
   textTransform: "uppercase" as const,
-  letterSpacing: "0.04em",
+  letterSpacing: "0.05em",
+};
+
+const sectionTitle = {
+  margin: "0 0 0.5rem",
+  fontSize: "0.68rem",
+  fontWeight: 700,
+  color: colors.textSecondary,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.07em",
 };
 
 export function RegistrarView() {
@@ -48,32 +70,135 @@ export function RegistrarView() {
   const dataConfig = getDataConfig();
   const useApi = dataConfig.mode === "api";
 
-  const [activeTab, setActiveTab] = useState<"comida" | "peso" | "nota" | "actividad">(
-    "comida"
-  );
+  const [activeTab, setActiveTab] = useState<"comida" | "peso" | "nota" | "actividad">("comida");
   const [registrosEnviados, setRegistrosEnviados] = useState<RegistroEnviado[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // --- Comida: modo de entrada ---
+  const [mealMode, setMealMode] = useState<"choose" | "photo" | "text">("choose");
+  const [mealSubmitSuccess, setMealSubmitSuccess] = useState(false);
+
+  // --- Comida con foto ---
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [photoMealType, setPhotoMealType] = useState<MealPhotoType>("breakfast");
+  const [photoComment, setPhotoComment] = useState("");
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  // --- Comida sin foto ---
   const [mealDate, setMealDate] = useState(new Date().toISOString().split("T")[0] ?? "");
   const [mealTime, setMealTime] = useState("breakfast");
   const [mealDescription, setMealDescription] = useState("");
   const [mealPortion, setMealPortion] = useState("");
   const [mealNotes, setMealNotes] = useState("");
 
+  // --- Peso ---
   const [weightDate, setWeightDate] = useState(new Date().toISOString().split("T")[0] ?? "");
   const [weight, setWeight] = useState("");
   const [weightNotes, setWeightNotes] = useState("");
 
+  // --- Nota ---
   const [noteType, setNoteType] = useState<"question" | "observation" | "concern">("question");
   const [noteSubject, setNoteSubject] = useState("");
   const [noteBody, setNoteBody] = useState("");
 
+  // --- Actividad ---
   const [actDate, setActDate] = useState(new Date().toISOString().split("T")[0] ?? "");
   const [actType, setActType] = useState<ActivityType>("walking");
   const [actDuration, setActDuration] = useState("");
   const [actIntensity, setActIntensity] = useState<ActivityIntensity>("low");
   const [actNotes, setActNotes] = useState("");
+
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    };
+  }, [photoPreviewUrl]);
+
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setPhotoError(null);
+
+    if (!file) return;
+
+    if (!ALLOWED_PHOTO_MIME.includes(file.type)) {
+      setPhotoError("Formato no soportado. Usá una imagen JPEG, PNG o WebP.");
+      return;
+    }
+
+    if (file.size > MAX_PHOTO_BYTES) {
+      setPhotoError(`La imagen supera los 5 MB. Elegí una más liviana.`);
+      return;
+    }
+
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPhotoFile(file);
+    setPhotoPreviewUrl(URL.createObjectURL(file));
+    setMealMode("photo");
+  };
+
+  const clearPhoto = () => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPhotoFile(null);
+    setPhotoPreviewUrl(null);
+    setPhotoError(null);
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
+  };
+
+  const resetMealForm = () => {
+    clearPhoto();
+    setPhotoComment("");
+    setPhotoMealType("breakfast");
+    setMealDescription("");
+    setMealPortion("");
+    setMealNotes("");
+    setMealSubmitSuccess(false);
+    setMealMode("choose");
+  };
+
+  const handleSubmitMealWithPhoto = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!photoFile || submitting) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    if (useApi && auth.user?.patientId) {
+      try {
+        await getApiClient().createMealPhoto(
+          auth.user.patientId,
+          photoMealType,
+          photoFile,
+          photoComment.trim() || undefined,
+        );
+        setRegistrosEnviados((prev) => [
+          ...prev,
+          { tipo: "comida", timestamp: new Date().toISOString(), apiSent: true },
+        ]);
+        setMealSubmitSuccess(true);
+      } catch (err) {
+        setSubmitError(
+          err instanceof ApiError
+            ? err.message
+            : "No fue posible enviar la foto. Intentá de nuevo.",
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      // mock / demo
+      setRegistrosEnviados((prev) => [
+        ...prev,
+        { tipo: "comida", timestamp: new Date().toISOString(), apiSent: false },
+      ]);
+      setSubmitting(false);
+      setMealSubmitSuccess(true);
+    }
+  };
 
   const handleSubmitMeal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,23 +221,18 @@ export function RegistrarView() {
           ...prev,
           { tipo: "comida", timestamp: new Date().toISOString(), apiSent: true },
         ]);
-        setMealDescription("");
-        setMealPortion("");
-        setMealNotes("");
+        setMealSubmitSuccess(true);
       } catch (err) {
         setSubmitError(err instanceof ApiError ? err.message : "Error al enviar comida");
       } finally {
         setSubmitting(false);
       }
     } else {
-      console.log("Comida enviada (demo):", draft);
       setRegistrosEnviados((prev) => [
         ...prev,
         { tipo: "comida", timestamp: new Date().toISOString(), apiSent: false },
       ]);
-      setMealDescription("");
-      setMealPortion("");
-      setMealNotes("");
+      setMealSubmitSuccess(true);
     }
   };
 
@@ -143,7 +263,6 @@ export function RegistrarView() {
         setSubmitting(false);
       }
     } else {
-      console.log("Peso enviado (demo):", draft);
       setRegistrosEnviados((prev) => [
         ...prev,
         { tipo: "peso", timestamp: new Date().toISOString(), apiSent: false },
@@ -201,7 +320,6 @@ export function RegistrarView() {
         setSubmitting(false);
       }
     } else {
-      console.log("Nota enviada (demo):", draft);
       setRegistrosEnviados((prev) => [
         ...prev,
         { tipo: "nota", timestamp: new Date().toISOString(), apiSent: false },
@@ -210,6 +328,607 @@ export function RegistrarView() {
       setNoteBody("");
     }
   };
+
+  // --- Sección Comida ---
+  function renderComida() {
+    // Éxito: feedback inline antes de resetear
+    if (mealSubmitSuccess) {
+      return (
+        <div
+          style={{
+            background: colors.bgSurface,
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.lg,
+            padding: "1.5rem 1.25rem",
+            marginBottom: "1.5rem",
+            boxShadow: shadow.card,
+          }}
+        >
+          <div
+            style={{
+              background: colors.successBg,
+              border: `1px solid ${colors.successBorder}`,
+              borderRadius: radius.md,
+              padding: "1.1rem",
+              textAlign: "center",
+              marginBottom: "1.25rem",
+            }}
+          >
+            <p style={{ margin: "0 0 0.2rem", fontSize: "1rem", fontWeight: 700, color: colors.successText }}>
+              Comida registrada
+            </p>
+            <p style={{ margin: 0, fontSize: "0.82rem", color: colors.successText }}>
+              Pendiente de revisión por tu nutricionista.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button
+              type="button"
+              onClick={resetMealForm}
+              style={{
+                flex: 1,
+                padding: "0.7rem",
+                background: colors.greenPrimary,
+                color: "white",
+                border: "none",
+                borderRadius: radius.md,
+                fontWeight: 600,
+                fontSize: "0.9rem",
+                cursor: "pointer",
+                fontFamily: fonts.body,
+              }}
+            >
+              Registrar otra
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Elegir modo: foto principal, galería secundaria, sin foto terciaria
+    if (mealMode === "choose") {
+      return (
+        <div
+          style={{
+            background: colors.bgSurface,
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.lg,
+            padding: "1.5rem 1.25rem",
+            marginBottom: "1.5rem",
+            boxShadow: shadow.card,
+          }}
+        >
+          {/* Inputs ocultos: cámara y galería */}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handlePhotoFileChange}
+            style={{ display: "none" }}
+          />
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoFileChange}
+            style={{ display: "none" }}
+          />
+
+          {/* Hero */}
+          <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                background: "#EBF5EF",
+                borderRadius: radius.pill,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.6rem",
+                margin: "0 auto 0.9rem",
+              }}
+            >
+              📷
+            </div>
+            <h3
+              style={{
+                margin: "0 0 0.4rem",
+                fontSize: "1.05rem",
+                fontWeight: 700,
+                color: colors.textPrimary,
+                fontFamily: fonts.heading,
+              }}
+            >
+              Registrar comida
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "0.85rem",
+                color: colors.textSecondary,
+                lineHeight: 1.5,
+              }}
+            >
+              Sacá una foto o contanos qué comiste para que tu nutricionista pueda revisarlo.
+            </p>
+          </div>
+
+          {/* CTA principal: cámara */}
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            style={{
+              width: "100%",
+              padding: "0.85rem",
+              background: colors.greenPrimary,
+              color: "white",
+              border: "none",
+              borderRadius: radius.md,
+              fontWeight: 700,
+              fontSize: "0.95rem",
+              fontFamily: fonts.body,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              marginBottom: "0.65rem",
+            }}
+          >
+            <span>📷</span> Sacar foto de comida
+          </button>
+
+          {/* CTA secundario: galería */}
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              background: colors.bgSurface,
+              color: colors.textPrimary,
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.md,
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              fontFamily: fonts.body,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              marginBottom: "1.1rem",
+            }}
+          >
+            <span>🖼</span> Elegir foto de galería
+          </button>
+
+          {/* Separador */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              marginBottom: "1.1rem",
+            }}
+          >
+            <div style={{ flex: 1, height: 1, background: colors.borderDefault }} />
+            <span style={{ fontSize: "0.75rem", color: colors.textSecondary }}>o</span>
+            <div style={{ flex: 1, height: 1, background: colors.borderDefault }} />
+          </div>
+
+          {/* Sin foto */}
+          <button
+            type="button"
+            onClick={() => setMealMode("text")}
+            style={{
+              width: "100%",
+              padding: "0.6rem",
+              background: "transparent",
+              color: colors.textSecondary,
+              border: "none",
+              fontSize: "0.85rem",
+              fontFamily: fonts.body,
+              cursor: "pointer",
+              textDecoration: "underline",
+              textDecorationStyle: "dotted",
+              textUnderlineOffset: "3px",
+            }}
+          >
+            Registrar sin foto
+          </button>
+
+          {/* Hint desktop */}
+          <p
+            style={{
+              margin: "0.75rem 0 0",
+              fontSize: "0.72rem",
+              color: colors.textSecondary,
+              textAlign: "center",
+              lineHeight: 1.4,
+            }}
+          >
+            En celular se abrirá la cámara. En computadora podés elegir una imagen.
+          </p>
+
+          {photoError && (
+            <div
+              style={{
+                marginTop: "0.75rem",
+                padding: "0.55rem 0.75rem",
+                background: colors.errorBg,
+                border: `1px solid ${colors.errorBorder}`,
+                borderRadius: radius.sm,
+                color: colors.errorText,
+                fontSize: "0.82rem",
+              }}
+            >
+              {photoError}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Modo foto seleccionada
+    if (mealMode === "photo") {
+      return (
+        <form
+          onSubmit={(e) => void handleSubmitMealWithPhoto(e)}
+          style={{
+            background: colors.bgSurface,
+            border: `1px solid ${colors.borderDefault}`,
+            borderRadius: radius.lg,
+            padding: "1.25rem",
+            marginBottom: "1.5rem",
+            boxShadow: shadow.card,
+          }}
+        >
+          {/* Inputs ocultos también aquí para "Cambiar foto" */}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handlePhotoFileChange}
+            style={{ display: "none" }}
+          />
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoFileChange}
+            style={{ display: "none" }}
+          />
+
+          {/* Header */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => { clearPhoto(); setMealMode("choose"); }}
+              style={{
+                padding: "0.2rem 0.5rem",
+                border: `1px solid ${colors.borderDefault}`,
+                borderRadius: radius.sm,
+                background: colors.bgSurface,
+                color: colors.textSecondary,
+                fontSize: "0.78rem",
+                cursor: "pointer",
+                fontFamily: fonts.body,
+              }}
+            >
+              ← Volver
+            </button>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "0.95rem",
+                fontWeight: 700,
+                color: colors.textPrimary,
+                fontFamily: fonts.heading,
+              }}
+            >
+              Registrar comida con foto
+            </h3>
+          </div>
+
+          {/* Preview */}
+          {photoPreviewUrl && (
+            <div style={{ marginBottom: "0.9rem" }}>
+              <img
+                src={photoPreviewUrl}
+                alt="Vista previa de la foto"
+                style={{
+                  width: "100%",
+                  maxHeight: 220,
+                  objectFit: "cover",
+                  borderRadius: radius.md,
+                  border: `1px solid ${colors.borderDefault}`,
+                  display: "block",
+                }}
+              />
+              <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  style={{
+                    flex: 1,
+                    padding: "0.4rem",
+                    border: `1px solid ${colors.borderDefault}`,
+                    borderRadius: radius.sm,
+                    background: colors.bgSurface,
+                    color: colors.textSecondary,
+                    fontSize: "0.78rem",
+                    cursor: "pointer",
+                    fontFamily: fonts.body,
+                  }}
+                >
+                  📷 Cambiar foto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { clearPhoto(); setMealMode("choose"); }}
+                  style={{
+                    flex: 1,
+                    padding: "0.4rem",
+                    border: `1px solid ${colors.errorBorder}`,
+                    borderRadius: radius.sm,
+                    background: colors.errorBg,
+                    color: colors.errorText,
+                    fontSize: "0.78rem",
+                    cursor: "pointer",
+                    fontFamily: fonts.body,
+                  }}
+                >
+                  Quitar foto
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Tipo de comida */}
+          <div style={{ marginBottom: "0.9rem" }}>
+            <label style={labelStyle}>Tipo de comida</label>
+            <select
+              value={photoMealType}
+              onChange={(e) => setPhotoMealType(e.target.value as MealPhotoType)}
+              style={inputStyle}
+            >
+              {Object.entries(MEAL_PHOTO_TYPE_LABELS).map(([val, label]) => (
+                <option key={val} value={val}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Comentario */}
+          <div style={{ marginBottom: "1rem" }}>
+            <label style={labelStyle}>Comentario (opcional)</label>
+            <input
+              type="text"
+              value={photoComment}
+              onChange={(e) => setPhotoComment(e.target.value)}
+              placeholder='Ej: "comí afuera", "no tenía verdura"'
+              maxLength={500}
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Info */}
+          <div
+            style={{
+              background: colors.infoBg,
+              border: `1px solid ${colors.infoBorder}`,
+              borderRadius: radius.sm,
+              padding: "0.6rem 0.8rem",
+              marginBottom: "1rem",
+              fontSize: "0.78rem",
+              color: colors.infoText,
+            }}
+          >
+            Tu foto quedará pendiente de revisión por tu nutricionista.
+          </div>
+
+          {submitError && (
+            <div
+              style={{
+                marginBottom: "1rem",
+                padding: "0.55rem 0.75rem",
+                background: colors.errorBg,
+                border: `1px solid ${colors.errorBorder}`,
+                borderRadius: radius.sm,
+                color: colors.errorText,
+                fontSize: "0.82rem",
+              }}
+            >
+              {submitError}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!photoFile || submitting}
+            style={{
+              width: "100%",
+              padding: "0.8rem",
+              background: photoFile && !submitting ? colors.greenPrimary : colors.bgMuted,
+              color: photoFile && !submitting ? "white" : colors.textSecondary,
+              border: "none",
+              borderRadius: radius.md,
+              fontWeight: 700,
+              fontSize: "0.95rem",
+              fontFamily: fonts.body,
+              cursor: photoFile && !submitting ? "pointer" : "not-allowed",
+            }}
+          >
+            {submitting ? "Enviando…" : "Registrar comida con foto"}
+          </button>
+        </form>
+      );
+    }
+
+    // Modo texto: sin foto
+    return (
+      <form
+        onSubmit={(e) => void handleSubmitMeal(e)}
+        style={{
+          background: colors.bgSurface,
+          border: `1px solid ${colors.borderDefault}`,
+          borderRadius: radius.lg,
+          padding: "1.25rem",
+          marginBottom: "1.5rem",
+          boxShadow: shadow.card,
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            marginBottom: "1rem",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setMealMode("choose")}
+            style={{
+              padding: "0.2rem 0.5rem",
+              border: `1px solid ${colors.borderDefault}`,
+              borderRadius: radius.sm,
+              background: colors.bgSurface,
+              color: colors.textSecondary,
+              fontSize: "0.78rem",
+              cursor: "pointer",
+              fontFamily: fonts.body,
+            }}
+          >
+            ← Volver
+          </button>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "0.95rem",
+              fontWeight: 700,
+              color: colors.textPrimary,
+              fontFamily: fonts.heading,
+            }}
+          >
+            Registrar sin foto
+          </h3>
+        </div>
+
+        <div style={{ marginBottom: "0.9rem" }}>
+          <label style={labelStyle}>Fecha</label>
+          <input type="date" value={mealDate} onChange={(e) => setMealDate(e.target.value)} style={inputStyle} />
+        </div>
+
+        <div style={{ marginBottom: "0.9rem" }}>
+          <label style={labelStyle}>Momento del día</label>
+          <select value={mealTime} onChange={(e) => setMealTime(e.target.value)} style={inputStyle}>
+            <option value="breakfast">Desayuno</option>
+            <option value="mid_morning">Media mañana</option>
+            <option value="lunch">Almuerzo</option>
+            <option value="afternoon">Tarde</option>
+            <option value="snack">Merienda</option>
+            <option value="dinner">Cena</option>
+            <option value="night">Noche</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "0.9rem" }}>
+          <label style={labelStyle}>¿Qué comiste?</label>
+          <textarea
+            value={mealDescription}
+            onChange={(e) => setMealDescription(e.target.value)}
+            placeholder="Ej: café, tostadas con mermelada, jugo"
+            style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "0.9rem" }}>
+          <label style={labelStyle}>Porción (opcional)</label>
+          <input
+            type="text"
+            value={mealPortion}
+            onChange={(e) => setMealPortion(e.target.value)}
+            placeholder="Ej: 1 taza, 2 rebanadas"
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <label style={labelStyle}>Notas (opcional)</label>
+          <input
+            type="text"
+            value={mealNotes}
+            onChange={(e) => setMealNotes(e.target.value)}
+            placeholder="Cómo te sentiste, si faltaban ingredientes, etc."
+            style={inputStyle}
+          />
+        </div>
+
+        <div
+          style={{
+            background: colors.infoBg,
+            border: `1px solid ${colors.infoBorder}`,
+            borderRadius: radius.sm,
+            padding: "0.65rem 0.75rem",
+            marginBottom: "1rem",
+            fontSize: "0.78rem",
+            color: colors.infoText,
+          }}
+        >
+          Tu comida se enviará a revisión de tu nutricionista. Estado: pendiente.
+        </div>
+
+        {submitError && (
+          <div
+            style={{
+              marginBottom: "1rem",
+              padding: "0.55rem 0.75rem",
+              background: colors.errorBg,
+              border: `1px solid ${colors.errorBorder}`,
+              borderRadius: radius.sm,
+              color: colors.errorText,
+              fontSize: "0.82rem",
+            }}
+          >
+            {submitError}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={!mealDescription.trim() || submitting}
+          style={{
+            width: "100%",
+            padding: "0.8rem",
+            background: mealDescription.trim() && !submitting ? colors.greenPrimary : colors.bgMuted,
+            color: mealDescription.trim() && !submitting ? "white" : colors.textSecondary,
+            border: "none",
+            borderRadius: radius.md,
+            fontWeight: 700,
+            fontFamily: fonts.body,
+            cursor: mealDescription.trim() && !submitting ? "pointer" : "not-allowed",
+            fontSize: "0.95rem",
+          }}
+        >
+          {submitting ? "Enviando…" : "Enviar comida"}
+        </button>
+      </form>
+    );
+  }
 
   return (
     <div
@@ -232,7 +951,14 @@ export function RegistrarView() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.1rem" }}>
-          <span style={{ fontSize: "1.3rem", fontWeight: 700, letterSpacing: "-0.3px", fontFamily: fonts.heading }}>
+          <span
+            style={{
+              fontSize: "1.3rem",
+              fontWeight: 700,
+              letterSpacing: "-0.3px",
+              fontFamily: fonts.heading,
+            }}
+          >
             Mi Pulso
           </span>
           <span
@@ -240,14 +966,15 @@ export function RegistrarView() {
               fontSize: "0.68rem",
               background: "rgba(255,255,255,0.22)",
               padding: "0.1rem 0.5rem",
-              borderRadius: 99,
+              borderRadius: radius.pill,
+              fontFamily: fonts.body,
             }}
           >
             demo
           </span>
         </div>
-        <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.8 }}>
-          Registrar
+        <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.85, fontFamily: fonts.body }}>
+          Registrá tu día
         </p>
       </header>
 
@@ -265,7 +992,7 @@ export function RegistrarView() {
               color: colors.successText,
             }}
           >
-            Sesión activa ({auth.user.email ?? "paciente"}). Tus registros se envían a tu profesional y quedan pendientes de revisión.
+            Sesión activa ({auth.user.email ?? "paciente"}). Tus registros se envían a tu profesional.
           </div>
         ) : useApi ? (
           <div
@@ -293,12 +1020,69 @@ export function RegistrarView() {
               color: colors.warningText,
             }}
           >
-            Datos ficticios de demostración. Tus registros quedarán pendientes de revisión por tu profesional.
+            Datos ficticios de demostración. Tus registros quedarán pendientes de revisión.
           </div>
         )}
 
-        {/* Error de envío */}
-        {submitError && (
+        {/* Tabs */}
+        <div
+          style={{
+            display: "flex",
+            gap: "0.35rem",
+            marginBottom: "1.25rem",
+            background: colors.bgMuted,
+            borderRadius: radius.md,
+            padding: "0.3rem",
+          }}
+        >
+          {(["comida", "peso", "nota"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => { setActiveTab(tab); if (tab !== "comida") setSubmitError(null); }}
+              style={{
+                flex: 1,
+                padding: "0.5rem 0.4rem",
+                border: "none",
+                background: activeTab === tab ? colors.bgSurface : "transparent",
+                boxShadow: activeTab === tab ? shadow.card : "none",
+                color: activeTab === tab ? colors.greenDark : colors.textSecondary,
+                fontWeight: activeTab === tab ? 600 : 400,
+                cursor: "pointer",
+                fontSize: "0.82rem",
+                fontFamily: fonts.body,
+                borderRadius: radius.sm,
+                transition: "background 0.15s",
+              }}
+            >
+              {tab === "comida" && "🍽 Comida"}
+              {tab === "peso" && "⚖️ Peso"}
+              {tab === "nota" && "💬 Nota"}
+            </button>
+          ))}
+          {DEMO_ACTIVITY_MODULE_ACTIVE && (
+            <button
+              onClick={() => { setActiveTab("actividad"); setSubmitError(null); }}
+              style={{
+                flex: 1,
+                padding: "0.5rem 0.4rem",
+                border: "none",
+                background: activeTab === "actividad" ? colors.bgSurface : "transparent",
+                boxShadow: activeTab === "actividad" ? shadow.card : "none",
+                color: activeTab === "actividad" ? colors.greenDark : colors.textSecondary,
+                fontWeight: activeTab === "actividad" ? 600 : 400,
+                cursor: "pointer",
+                fontSize: "0.82rem",
+                fontFamily: fonts.body,
+                borderRadius: radius.sm,
+              }}
+            >
+              🏃 Activ.
+            </button>
+          )}
+        </div>
+
+        {/* Error de envío general */}
+        {submitError && activeTab !== "comida" && (
           <div
             style={{
               background: colors.errorBg,
@@ -314,170 +1098,23 @@ export function RegistrarView() {
           </div>
         )}
 
-        {/* Tabs */}
-        <div
-          style={{
-            display: "flex",
-            gap: "0",
-            marginBottom: "1.25rem",
-            borderBottom: `1px solid ${colors.borderDefault}`,
-          }}
-        >
-          {(["comida", "peso", "nota"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "0.65rem 0.9rem",
-                border: "none",
-                background: "transparent",
-                borderBottom: activeTab === tab ? `2px solid ${colors.greenPrimary}` : "2px solid transparent",
-                color: activeTab === tab ? colors.greenDark : colors.textSecondary,
-                fontWeight: activeTab === tab ? 600 : 400,
-                cursor: "pointer",
-                fontSize: "0.875rem",
-                fontFamily: fonts.body,
-              }}
-            >
-              {tab === "comida" && "Comida"}
-              {tab === "peso" && "Peso"}
-              {tab === "nota" && "Nota"}
-            </button>
-          ))}
-          {DEMO_ACTIVITY_MODULE_ACTIVE && (
-            <button
-              onClick={() => setActiveTab("actividad")}
-              style={{
-                padding: "0.65rem 0.9rem",
-                border: "none",
-                background: "transparent",
-                borderBottom: activeTab === "actividad" ? `2px solid ${colors.greenPrimary}` : "2px solid transparent",
-                color: activeTab === "actividad" ? colors.greenDark : colors.textSecondary,
-                fontWeight: activeTab === "actividad" ? 600 : 400,
-                cursor: "pointer",
-                fontSize: "0.875rem",
-                fontFamily: fonts.body,
-              }}
-            >
-              Actividad
-            </button>
-          )}
-        </div>
-
         {/* Comida */}
-        {activeTab === "comida" && (
-          <form
-            onSubmit={handleSubmitMeal}
-            style={{
-              background: colors.bgSurface,
-              border: `1px solid ${colors.borderDefault}`,
-              borderRadius: radius.lg,
-              padding: "1.25rem",
-              marginBottom: "1.5rem",
-            }}
-          >
-            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
-              Registrar comida
-            </h3>
-
-            <div style={{ marginBottom: "0.9rem" }}>
-              <label style={labelStyle}>Fecha</label>
-              <input type="date" value={mealDate} onChange={(e) => setMealDate(e.target.value)} style={inputStyle} />
-            </div>
-
-            <div style={{ marginBottom: "0.9rem" }}>
-              <label style={labelStyle}>Momento del día</label>
-              <select value={mealTime} onChange={(e) => setMealTime(e.target.value)} style={inputStyle}>
-                <option value="breakfast">Desayuno</option>
-                <option value="mid_morning">Media mañana</option>
-                <option value="lunch">Almuerzo</option>
-                <option value="afternoon">Tarde</option>
-                <option value="snack">Merienda</option>
-                <option value="dinner">Cena</option>
-                <option value="night">Noche</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: "0.9rem" }}>
-              <label style={labelStyle}>¿Qué comiste?</label>
-              <textarea
-                value={mealDescription}
-                onChange={(e) => setMealDescription(e.target.value)}
-                placeholder="Ej: café, tostadas con mermelada, jugo"
-                style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "0.9rem" }}>
-              <label style={labelStyle}>Porción (opcional)</label>
-              <input
-                type="text"
-                value={mealPortion}
-                onChange={(e) => setMealPortion(e.target.value)}
-                placeholder="Ej: 1 taza, 2 rebanadas, medianas"
-                style={inputStyle}
-              />
-            </div>
-
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={labelStyle}>Notas (opcional)</label>
-              <input
-                type="text"
-                value={mealNotes}
-                onChange={(e) => setMealNotes(e.target.value)}
-                placeholder="Cómo te sentiste, si faltaban ingredientes, etc."
-                style={inputStyle}
-              />
-            </div>
-
-            <div
-              style={{
-                background: colors.infoBg,
-                border: `1px solid ${colors.infoBorder}`,
-                borderRadius: radius.sm,
-                padding: "0.65rem 0.75rem",
-                marginBottom: "1rem",
-                fontSize: "0.78rem",
-                color: colors.infoText,
-              }}
-            >
-              Tu comida se enviará a revisión de tu profesional. Estado: pendiente.
-            </div>
-
-            <button
-              type="submit"
-              disabled={!mealDescription.trim() || submitting}
-              style={{
-                width: "100%",
-                padding: "0.7rem",
-                background: mealDescription.trim() && !submitting ? colors.greenPrimary : colors.bgMuted,
-                color: mealDescription.trim() && !submitting ? "white" : colors.textSecondary,
-                border: "none",
-                borderRadius: radius.md,
-                fontWeight: 600,
-                fontFamily: fonts.body,
-                cursor: mealDescription.trim() && !submitting ? "pointer" : "not-allowed",
-                fontSize: "0.9rem",
-              }}
-            >
-              {submitting ? "Enviando…" : "Enviar comida"}
-            </button>
-          </form>
-        )}
+        {activeTab === "comida" && renderComida()}
 
         {/* Peso */}
         {activeTab === "peso" && (
           <form
-            onSubmit={handleSubmitWeight}
+            onSubmit={(e) => void handleSubmitWeight(e)}
             style={{
               background: colors.bgSurface,
               border: `1px solid ${colors.borderDefault}`,
               borderRadius: radius.lg,
               padding: "1.25rem",
               marginBottom: "1.5rem",
+              boxShadow: shadow.card,
             }}
           >
-            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
+            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading, fontWeight: 700 }}>
               Registrar peso
             </h3>
 
@@ -504,7 +1141,7 @@ export function RegistrarView() {
                 type="text"
                 value={weightNotes}
                 onChange={(e) => setWeightNotes(e.target.value)}
-                placeholder="Hora, circunstancias, cómo te sientes"
+                placeholder="Hora, circunstancias, cómo te sentís"
                 style={inputStyle}
               />
             </div>
@@ -528,15 +1165,15 @@ export function RegistrarView() {
               disabled={!weight.trim() || submitting}
               style={{
                 width: "100%",
-                padding: "0.7rem",
+                padding: "0.8rem",
                 background: weight.trim() && !submitting ? colors.greenPrimary : colors.bgMuted,
                 color: weight.trim() && !submitting ? "white" : colors.textSecondary,
                 border: "none",
                 borderRadius: radius.md,
-                fontWeight: 600,
+                fontWeight: 700,
                 fontFamily: fonts.body,
                 cursor: weight.trim() && !submitting ? "pointer" : "not-allowed",
-                fontSize: "0.9rem",
+                fontSize: "0.95rem",
               }}
             >
               {submitting ? "Enviando…" : "Enviar peso"}
@@ -547,16 +1184,17 @@ export function RegistrarView() {
         {/* Nota */}
         {activeTab === "nota" && (
           <form
-            onSubmit={handleSubmitNote}
+            onSubmit={(e) => void handleSubmitNote(e)}
             style={{
               background: colors.bgSurface,
               border: `1px solid ${colors.borderDefault}`,
               borderRadius: radius.lg,
               padding: "1.25rem",
               marginBottom: "1.5rem",
+              boxShadow: shadow.card,
             }}
           >
-            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
+            <h3 style={{ margin: "0 0 1rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading, fontWeight: 700 }}>
               Enviar nota o pregunta
             </h3>
 
@@ -585,7 +1223,7 @@ export function RegistrarView() {
               <textarea
                 value={noteBody}
                 onChange={(e) => setNoteBody(e.target.value)}
-                placeholder="Cuéntanos más..."
+                placeholder="Contanos más…"
                 style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }}
               />
             </div>
@@ -609,15 +1247,15 @@ export function RegistrarView() {
               disabled={!noteSubject.trim() || !noteBody.trim() || submitting}
               style={{
                 width: "100%",
-                padding: "0.7rem",
+                padding: "0.8rem",
                 background: noteSubject.trim() && noteBody.trim() && !submitting ? colors.greenPrimary : colors.bgMuted,
                 color: noteSubject.trim() && noteBody.trim() && !submitting ? "white" : colors.textSecondary,
                 border: "none",
                 borderRadius: radius.md,
-                fontWeight: 600,
+                fontWeight: 700,
                 fontFamily: fonts.body,
                 cursor: noteSubject.trim() && noteBody.trim() && !submitting ? "pointer" : "not-allowed",
-                fontSize: "0.9rem",
+                fontSize: "0.95rem",
               }}
             >
               {submitting ? "Enviando…" : "Enviar nota"}
@@ -635,9 +1273,10 @@ export function RegistrarView() {
               borderRadius: radius.lg,
               padding: "1.25rem",
               marginBottom: "1.5rem",
+              boxShadow: shadow.card,
             }}
           >
-            <h3 style={{ margin: "0 0 0.25rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading }}>
+            <h3 style={{ margin: "0 0 0.25rem", fontSize: "0.95rem", color: colors.textPrimary, fontFamily: fonts.heading, fontWeight: 700 }}>
               Registrar actividad física
             </h3>
             <p style={{ margin: "0 0 1rem", fontSize: "0.78rem", color: colors.textSecondary }}>
@@ -718,15 +1357,15 @@ export function RegistrarView() {
               disabled={!actDuration.trim() || Number(actDuration) <= 0}
               style={{
                 width: "100%",
-                padding: "0.7rem",
+                padding: "0.8rem",
                 background: actDuration.trim() && Number(actDuration) > 0 ? colors.greenPrimary : colors.bgMuted,
                 color: actDuration.trim() && Number(actDuration) > 0 ? "white" : colors.textSecondary,
                 border: "none",
                 borderRadius: radius.md,
-                fontWeight: 600,
+                fontWeight: 700,
                 fontFamily: fonts.body,
                 cursor: actDuration.trim() && Number(actDuration) > 0 ? "pointer" : "not-allowed",
-                fontSize: "0.9rem",
+                fontSize: "0.95rem",
               }}
             >
               Enviar actividad
@@ -737,24 +1376,14 @@ export function RegistrarView() {
         {/* Histórico de registros enviados */}
         {registrosEnviados.length > 0 && (
           <section style={{ marginTop: "2rem" }}>
-            <h3
-              style={{
-                margin: "0 0 0.75rem",
-                fontSize: "0.7rem",
-                fontWeight: 700,
-                color: colors.textSecondary,
-                textTransform: "uppercase",
-                letterSpacing: "0.07em",
-              }}
-            >
-              Registros enviados esta sesión
-            </h3>
+            <h3 style={sectionTitle}>Registros enviados esta sesión</h3>
             <div
               style={{
                 background: colors.bgSurface,
                 border: `1px solid ${colors.borderDefault}`,
                 borderRadius: radius.lg,
                 overflow: "hidden",
+                boxShadow: shadow.card,
               }}
             >
               <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
@@ -779,7 +1408,14 @@ export function RegistrarView() {
                         {r.tipo === "nota" && "Nota"}
                         {r.tipo === "actividad" && "Actividad"}
                       </strong>
-                      <p style={{ margin: "0.1rem 0 0", fontSize: "0.72rem", color: colors.textSecondary, fontFamily: fonts.mono }}>
+                      <p
+                        style={{
+                          margin: "0.1rem 0 0",
+                          fontSize: "0.72rem",
+                          color: colors.textSecondary,
+                          fontFamily: fonts.mono,
+                        }}
+                      >
                         {new Date(r.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
