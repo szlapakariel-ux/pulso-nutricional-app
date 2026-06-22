@@ -84,6 +84,7 @@ export function RegistrarView() {
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [submittedPhotoPreviewUrl, setSubmittedPhotoPreviewUrl] = useState<string | null>(null);
   const [photoMealType, setPhotoMealType] = useState<MealPhotoType>("breakfast");
   const [photoComment, setPhotoComment] = useState("");
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -118,6 +119,12 @@ export function RegistrarView() {
     };
   }, [photoPreviewUrl]);
 
+  useEffect(() => {
+    return () => {
+      if (submittedPhotoPreviewUrl) URL.revokeObjectURL(submittedPhotoPreviewUrl);
+    };
+  }, [submittedPhotoPreviewUrl]);
+
   const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setPhotoError(null);
@@ -151,6 +158,10 @@ export function RegistrarView() {
 
   const resetMealForm = () => {
     clearPhoto();
+    if (submittedPhotoPreviewUrl) {
+      URL.revokeObjectURL(submittedPhotoPreviewUrl);
+      setSubmittedPhotoPreviewUrl(null);
+    }
     setPhotoComment("");
     setPhotoMealType("breakfast");
     setMealDescription("");
@@ -175,6 +186,8 @@ export function RegistrarView() {
           photoFile,
           photoComment.trim() || undefined,
         );
+        // Preserve the local preview for the success screen (before clearPhoto revokes it)
+        if (photoPreviewUrl) setSubmittedPhotoPreviewUrl(photoPreviewUrl);
         setRegistrosEnviados((prev) => [
           ...prev,
           { tipo: "comida", timestamp: new Date().toISOString(), apiSent: true },
@@ -191,6 +204,7 @@ export function RegistrarView() {
       }
     } else {
       // mock / demo
+      if (photoPreviewUrl) setSubmittedPhotoPreviewUrl(photoPreviewUrl);
       setRegistrosEnviados((prev) => [
         ...prev,
         { tipo: "comida", timestamp: new Date().toISOString(), apiSent: false },
@@ -344,6 +358,22 @@ export function RegistrarView() {
             boxShadow: shadow.card,
           }}
         >
+          {submittedPhotoPreviewUrl && (
+            <div style={{ marginBottom: "1rem" }}>
+              <img
+                src={submittedPhotoPreviewUrl}
+                alt="Foto registrada"
+                style={{
+                  width: "100%",
+                  maxHeight: 240,
+                  objectFit: "cover",
+                  borderRadius: radius.md,
+                  border: `1px solid ${colors.borderDefault}`,
+                  display: "block",
+                }}
+              />
+            </div>
+          )}
           <div
             style={{
               background: colors.successBg,
