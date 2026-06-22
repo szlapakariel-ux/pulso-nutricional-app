@@ -222,6 +222,43 @@ if (patientToken && patientId) {
       noImageUrl ? "✓" : "✗",
       noImageUrl,
     );
+
+    // 8b. Descarga del binario vía endpoint con guard (MC-FOTOS-MVP-4)
+    if (photoId) {
+      const imgRes = await fetch(
+        `${BASE}/patients/${patientId}/meal-photos/${photoId}/image`,
+        { headers: { Authorization: `Bearer ${patientToken}` } },
+      );
+      const imgOk = imgRes.status === 200;
+      const ct = imgRes.headers.get("content-type") ?? "";
+      const buf = imgOk ? Buffer.from(await imgRes.arrayBuffer()) : Buffer.alloc(0);
+
+      record(
+        "GET /meal-photos/:id/image (descarga binario)",
+        imgRes.status,
+        imgOk,
+      );
+      printRow(
+        "GET .../image → descarga binario",
+        imgRes.status,
+        imgOk,
+      );
+
+      const isImage = ct.startsWith("image/");
+      record("Content-Type es image/*", ct || "(vacío)", isImage);
+      printRow("Content-Type image/*", ct || "(vacío)", isImage);
+
+      const hasBytes = buf.length > 0;
+      record("Binario no vacío", `${buf.length} bytes`, hasBytes);
+      printRow("Binario no vacío", `${buf.length} bytes`, hasBytes);
+
+      if (!imgOk) {
+        const err = await imgRes.text().catch(() => "");
+        console.log(`         → error body: ${err.slice(0, 120)}`);
+      } else {
+        console.log(`         → descargado: ${buf.length} bytes, ${ct}`);
+      }
+    }
   } else {
     const err = await uploadRes.text();
     console.log(`         → error body: ${err.slice(0, 120)}`);
@@ -352,8 +389,8 @@ console.log(`  Resultado: ${passed} OK · ${failed} FAIL`);
 console.log();
 
 if (failed === 0) {
-  console.log("  ✅ MC-FOTOS-PROD-1: upload S3 end-to-end verificado.");
-  console.log("     Bucket activo · metadata en DB · flujo profesional OK.");
+  console.log("  ✅ MC-FOTOS-PROD-1 + MVP-4: upload y descarga S3 end-to-end verificados.");
+  console.log("     Bucket activo · metadata en DB · binario descargable · flujo profesional OK.");
 } else {
   console.log("  ❌ Algunos pasos fallaron:");
   results

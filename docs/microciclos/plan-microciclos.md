@@ -822,7 +822,7 @@
 | MC-FOTOS-PROD-1 (db:push + bucket + deploy API) | ✅ Completado — smoke E2E 10/10, fix patientId mergeado a main (ADR 0033) |
 | MC-FOTOS-PROD-2 (deploy Mi Pulso + smoke upload) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | ✅ Completado (mergeado en `main`) |
-| MC-FOTOS-MVP-4 (smoke integral Railway) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-4 (entrega de imagen al panel + smoke) | 🟡 Implementado — endpoint streaming proxy con guard (ADR 0034); pendiente redeploy + smoke prod |
 | MC-INTEGRACION-1 (flujo paciente→profesional) | ✅ Completado (código implementado) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
 

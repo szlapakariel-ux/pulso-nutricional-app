@@ -34,6 +34,20 @@ export const IMAGE_EXTENSION_BY_MIME: Record<string, string> = {
   "image/webp": "webp",
 };
 
+/** MIME type por extensión (para servir el binario con el Content-Type correcto). */
+export const MIME_BY_IMAGE_EXTENSION: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+
+/** Deriva el Content-Type desde la extensión de una storageKey. */
+export function contentTypeFromKey(key: string): string {
+  const ext = key.split(".").pop()?.toLowerCase() ?? "";
+  return MIME_BY_IMAGE_EXTENSION[ext] ?? "application/octet-stream";
+}
+
 /** Límite preliminar de tamaño de imagen: 5 MB. */
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 

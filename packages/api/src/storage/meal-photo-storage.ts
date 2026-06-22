@@ -18,12 +18,18 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import {
   getStorageConfig,
   IMAGE_EXTENSION_BY_MIME,
   type StorageConfig,
 } from "../config/storage.js";
+
+/** Binario recuperado del storage + su content-type (cuando el bucket lo expone). */
+export interface StoredObject {
+  body: Buffer;
+  contentType: string | undefined;
+}
 
 /**
  * Contrato del adapter. Implementado por S3MealPhotoStorage (real)
@@ -37,6 +43,11 @@ export interface MealPhotoStorageAdapter {
    * En modo fallback, descarta el binario y registra un aviso.
    */
   putObject(key: string, body: Buffer, contentType: string): Promise<void>;
+  /**
+   * Recupera el binario de la foto. Devuelve null si el objeto no existe
+   * (NoSuchKey) o si el adapter no tiene un bucket real (fallback local).
+   */
+  getObject(key: string): Promise<StoredObject | null>;
 }
 
 /**
@@ -93,6 +104,23 @@ class S3MealPhotoStorage implements MealPhotoStorageAdapter {
       }),
     );
   }
+
+  async getObject(key: string): Promise<StoredObject | null> {
+    try {
+      const res = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+      if (!res.Body) return null;
+      // transformToByteArray existe en el SdkStream del SDK v3 (Node).
+      const bytes = await res.Body.transformToByteArray();
+      return { body: Buffer.from(bytes), contentType: res.ContentType };
+    } catch (err: unknown) {
+      const name = (err as { name?: string }).name;
+      // Objeto inexistente → null (la UI cae al placeholder con gracia).
+      if (name === "NoSuchKey" || name === "NotFound") return null;
+      throw err;
+    }
+  }
 }
 
 /**
@@ -112,6 +140,11 @@ class LocalFallbackStorage implements MealPhotoStorageAdapter {
         `key=${key}. Configura S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY_ID, ` +
         `S3_SECRET_ACCESS_KEY y S3_BUCKET para producción.`,
     );
+  }
+
+  async getObject(): Promise<StoredObject | null> {
+    // Sin bucket real no hay binario para entregar; la UI cae al placeholder.
+    return null;
   }
 }
 
