@@ -15,6 +15,7 @@ import { getDataConfig } from "../lib/data-config";
 import { ApiError, getApiClient } from "../lib/api-client";
 import { usePatientAuth } from "../lib/use-patient-auth";
 import { colors, fonts, radius, shadow } from "../lib/design-tokens";
+import { MealPhotosHistory } from "./meal-photos-history";
 
 interface RegistroEnviado {
   tipo: "comida" | "peso" | "nota" | "actividad";
@@ -78,6 +79,8 @@ export function RegistrarView() {
   // --- Comida: modo de entrada ---
   const [mealMode, setMealMode] = useState<"choose" | "photo" | "text">("choose");
   const [mealSubmitSuccess, setMealSubmitSuccess] = useState(false);
+  // Se incrementa al subir una foto OK: dispara el refetch del historial real.
+  const [photosRefreshKey, setPhotosRefreshKey] = useState(0);
 
   // --- Comida con foto ---
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -192,6 +195,8 @@ export function RegistrarView() {
           ...prev,
           { tipo: "comida", timestamp: new Date().toISOString(), apiSent: true },
         ]);
+        // Refresca el historial para traer la foto recién subida desde el backend.
+        setPhotosRefreshKey((k) => k + 1);
         setMealSubmitSuccess(true);
       } catch (err) {
         setSubmitError(
@@ -1130,6 +1135,9 @@ export function RegistrarView() {
 
         {/* Comida */}
         {activeTab === "comida" && renderComida()}
+
+        {/* Historial real de fotos (recuperadas desde el backend, no la preview local) */}
+        {activeTab === "comida" && <MealPhotosHistory refreshKey={photosRefreshKey} />}
 
         {/* Peso */}
         {activeTab === "peso" && (

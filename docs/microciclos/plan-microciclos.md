@@ -823,7 +823,7 @@
 | MC-FOTOS-PROD-2 (deploy Mi Pulso + smoke upload) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-4 (entrega de imagen al panel + smoke) | ✅ Completado — streaming proxy con guard desplegado, imágenes reales visibles en panel (ADR 0034) |
-| MC-FOTOS-MVP-4b (imágenes en Mi Pulso, vista paciente) | Pendiente (ticket separado, no bloquea) |
+| MC-FOTOS-MVP-4b (imágenes en Mi Pulso, vista paciente) | ✅ Completado — vista "Mis fotos" recupera desde backend; smoke cubre sesión nueva (ADR 0034) |
 | MC-INTEGRACION-1 (flujo paciente→profesional) | ✅ Completado (código implementado) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
 

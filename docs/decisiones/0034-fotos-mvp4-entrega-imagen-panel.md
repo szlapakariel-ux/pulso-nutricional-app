@@ -91,12 +91,41 @@ registros sin binario en bucket siguen mostrando el placeholder sin error.
 | Deploy en producción (merge `b524155` a `main` → Railway) | ✅ |
 | Imágenes reales visibles en el panel profesional (verificado por Ariel) | ✅ |
 
+## MC-FOTOS-MVP-4b — el paciente recupera sus fotos desde el backend
+
+Extensión del mismo patrón al lado paciente (Mi Pulso). Cierra el round-trip
+verificable desde la app del paciente, no solo desde el panel profesional.
+
+| Archivo | Cambio |
+|---------|--------|
+| `apps/mi-pulso-web/lib/api-client.ts` | `listMealPhotos()` + `getMealPhotoImageUrl()` (espejo del panel). |
+| `apps/mi-pulso-web/app/meal-photos-history.tsx` | Vista "Mis fotos": lista desde el backend + descarga cada binario con token. |
+| `apps/mi-pulso-web/app/registrar-view.tsx` | Preview local en la pantalla de éxito + historial real bajo el tab Comida; refetch tras subir. |
+| `scripts/smoke-fotos-s3-upload.mjs` | Check 8c: **sesión nueva** del paciente (re-login) → lista + binario recuperados desde S3. |
+
+### Distinción importante: preview local vs. recuperación real
+
+- La **preview** de la pantalla "Comida registrada" es el archivo local recién
+  elegido (objectURL del `File`). Mejora la UX inmediata pero **no prueba** que
+  S3 guardó nada.
+- La sección **"Mis fotos"** lista desde Postgres (`GET /meal-photos`) y trae
+  cada binario desde el bucket (`GET .../image`) con token. **Esto sí** prueba
+  persistencia + recuperación: al refrescar o entrar desde otro dispositivo, las
+  fotos cargan desde el backend, no desde una preview local.
+
+### Criterio de cierre del round-trip (verificable en Railway)
+
+`Paciente sube → archivo persiste → paciente lo revé en sesión nueva → profesional lo ve autenticado.`
+
+El smoke `scripts/smoke-fotos-s3-upload.mjs` cubre la cadena completa de forma
+automatizada, incluida la **sesión nueva** (check 8c: re-login del paciente y
+recuperación del binario desde S3 con token fresco). La verificación manual
+desde navegador (subir desde el celular, refrescar, ver en el panel) sigue
+recomendada como confirmación visual.
+
 ## Pendiente
 
-1. **MC-FOTOS-MVP-4b (ticket separado):** aplicar el mismo `getMealPhotoImageUrl`
-   en Mi Pulso para que el paciente revea sus propias fotos. No bloquea este
-   cierre — el criterio reportado era el panel profesional.
-2. **Limpieza:** huérfanos pre-fix bajo `patients/demo-1/` en el bucket (sin fila
+1. **Limpieza:** huérfanos pre-fix bajo `patients/demo-1/` en el bucket (sin fila
    DB, inocuos) — borrar desde el dashboard cuando se quiera.
 
 > **Seguridad:** sin URL pública permanente, binario tras guard, `storageKey`

@@ -268,6 +268,78 @@ if (patientToken && patientId) {
   failed += 4;
 }
 
+// 8c. Sesión NUEVA del paciente (otro login = otro device): la foto persiste
+//     y se recupera desde el backend, NO desde la preview local (MC-FOTOS-MVP-4b).
+if (photoId) {
+  console.log();
+  console.log("  → Simulando sesión nueva del paciente (re-login = otro device)…");
+  const reloginRes = await httpPost("/auth/login", {
+    email: PATIENT_EMAIL,
+    password: PATIENT_PASSWORD,
+  });
+  const reloginOk = reloginRes.status === 200;
+  record("POST /auth/login (paciente, sesión nueva)", reloginRes.status, reloginOk);
+  printRow("Re-login paciente (sesión nueva)", reloginRes.status, reloginOk);
+
+  let freshToken = null;
+  if (reloginOk) {
+    const body = await reloginRes.json();
+    freshToken = body?.data?.token ?? null;
+  } else {
+    await reloginRes.text();
+  }
+
+  if (freshToken) {
+    // El paciente lista sus fotos en la sesión nueva.
+    const listRes = await httpGet(`/patients/${patientId}/meal-photos`, freshToken);
+    record(
+      "GET /meal-photos (paciente, sesión nueva)",
+      listRes.status,
+      listRes.status === 200,
+    );
+    printRow("Paciente lista sus fotos (sesión nueva)", listRes.status, listRes.status === 200);
+
+    let foundInFresh = false;
+    if (listRes.ok) {
+      const body = await listRes.json();
+      const list = body?.data ?? [];
+      foundInFresh = list.some((p) => p.id === photoId);
+      console.log(`         → fotos en la sesión nueva: ${list.length}`);
+    } else {
+      await listRes.text();
+    }
+    record(
+      "Foto subida persiste en sesión nueva del paciente",
+      foundInFresh ? "encontrada" : "no encontrada",
+      foundInFresh,
+    );
+    printRow("Foto persiste en sesión nueva", foundInFresh ? "✓" : "✗", foundInFresh);
+
+    // El binario se recupera desde S3 con el token nuevo (no es la preview local).
+    const freshImgRes = await fetch(
+      `${BASE}/patients/${patientId}/meal-photos/${photoId}/image`,
+      { headers: { Authorization: `Bearer ${freshToken}` } },
+    );
+    const freshImgOk = freshImgRes.status === 200;
+    const freshCt = freshImgRes.headers.get("content-type") ?? "";
+    const freshBuf = freshImgOk
+      ? Buffer.from(await freshImgRes.arrayBuffer())
+      : Buffer.alloc(0);
+    if (!freshImgOk) await freshImgRes.text().catch(() => "");
+
+    record(
+      "Paciente recupera el binario desde S3 (sesión nueva)",
+      freshImgRes.status,
+      freshImgOk && freshCt.startsWith("image/") && freshBuf.length > 0,
+    );
+    printRow(
+      "Binario recuperado desde S3 (sesión nueva)",
+      `${freshBuf.length}B`,
+      freshImgOk && freshCt.startsWith("image/") && freshBuf.length > 0,
+    );
+  }
+}
+
 // 9. Login como profesional y verificar que la foto aparece en la lista
 let profToken = null;
 if (patientId) {
@@ -389,7 +461,8 @@ console.log(`  Resultado: ${passed} OK · ${failed} FAIL`);
 console.log();
 
 if (failed === 0) {
-  console.log("  ✅ MC-FOTOS-PROD-1 + MVP-4: upload y descarga S3 end-to-end verificados.");
+  console.log("  ✅ MC-FOTOS-PROD-1 + MVP-4 + MVP-4b: round-trip S3 end-to-end verificado.");
+  console.log("     Paciente sube → persiste → lo recupera en SESIÓN NUEVA → profesional lo ve.");
   console.log("     Bucket activo · metadata en DB · binario descargable · flujo profesional OK.");
 } else {
   console.log("  ❌ Algunos pasos fallaron:");

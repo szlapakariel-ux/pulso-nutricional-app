@@ -143,6 +143,16 @@ class ApiClient {
   }
 
   /**
+   * GET /patients/:patientId/meal-photos — MC-FOTOS-MVP-4b.
+   *
+   * Lista los registros de fotos del paciente (metadata, sin binario).
+   * Permite que el paciente revea su propio historial en una sesión nueva.
+   */
+  async listMealPhotos(patientId: string): Promise<MealPhotoLog[]> {
+    return this.fetch<MealPhotoLog[]>(`/patients/${patientId}/meal-photos`);
+  }
+
+  /**
    * GET /patients/:patientId/meal-photos/:photoId/image — MC-FOTOS-MVP-4b.
    *
    * Descarga el binario autenticado (Bearer) y devuelve un object URL para
