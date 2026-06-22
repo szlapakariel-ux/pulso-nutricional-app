@@ -819,7 +819,7 @@
 | MC-FOTOS-MVP-1 (API + storage) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-2 (Mi Pulso carga foto + upload real) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-PROD-0 (preflight db:push + bucket + deploy) | ✅ Completado (runbook documental) |
-| MC-FOTOS-PROD-1 (db:push + bucket + deploy API) | 🟡 En curso — db:push + bucket OK; fix patientId aplicado (ADR 0033); pendiente redeploy + smoke verde |
+| MC-FOTOS-PROD-1 (db:push + bucket + deploy API) | ✅ Completado — smoke E2E 10/10, fix patientId mergeado a main (ADR 0033) |
 | MC-FOTOS-PROD-2 (deploy Mi Pulso + smoke upload) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-4 (smoke integral Railway) | Pendiente (requiere autorización) |

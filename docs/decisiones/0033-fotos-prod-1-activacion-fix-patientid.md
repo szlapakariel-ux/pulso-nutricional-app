@@ -1,6 +1,6 @@
 # ADR 0033 — MC-FOTOS-PROD-1: activación de fotos en producción + fix patientId
 
-**Estado:** Aceptado (fix aplicado; smoke en producción pendiente de redeploy)
+**Estado:** Aceptado ✅ — smoke E2E 10/10 en producción
 **Fecha:** 2026-06-22
 **Microciclo:** MC-FOTOS-PROD-1
 
@@ -100,20 +100,19 @@ DB. Blindarlo (transacción o rollback de S3) queda como microciclo aparte.
 | `resolvePatientId` en modo prisma → UUID del seed | ✅ (módulo compilado) |
 | `db:push` → tabla `MealPhotoLog` creada | ✅ (control negativo `P1014`) |
 | Bucket `orderly-suitcase` conectado (HeadBucket) | ✅ |
-| Binario sube a S3 desde Railway | ✅ (objeto apareció) |
-| Smoke E2E upload **en producción** → 201 | ⏳ Pendiente redeploy del API con el fix |
+| Binario sube a S3 desde Railway | ✅ |
+| Smoke E2E upload en producción → **10/10 verde** | ✅ (post-redeploy `fea49ea`) |
+| Artefactos de smoke limpiados (objetos S3 + fila DB) | ✅ |
+| 3 filas legítimas intactas | ✅ |
 
 ## Pendiente
 
-1. **Redeploy del API** en Railway con el commit del fix (`f582c13`).
-2. **Re-correr** `scripts/smoke-fotos-s3-upload.mjs` desde shell local → esperar
-   201 + `storageConfigured: true` + foto visible en bandeja profesional.
-3. **Limpiar binarios huérfanos** de los smoke tests fallidos en
-   `orderly-suitcase` (prefijo `patients/`, PNGs <5 KB).
-4. **MC-FOTOS-PROD-2:** smoke de upload end-to-end desde Mi Pulso (navegador).
-5. **Storage leak (microciclo aparte):** transacción o rollback de S3 ante fallo
-   de insert.
+1. **Limpiar 2 huérfanos pre-fix** bajo `patients/demo-1/` en el bucket
+   `orderly-suitcase` (~327 KB c/u, sin fila DB asociada — basura del bug).
+   Borrar desde Railway dashboard → Object Storage → bucket → prefijo `patients/demo-1/`.
+2. **MC-FOTOS-PROD-2:** smoke de upload end-to-end desde Mi Pulso (navegador).
+3. **Storage leak (microciclo aparte):** con el fix, el leak solo ocurre ante un
+   error inesperado de DB. Evaluar transacción o rollback de S3 en el catch.
 
-> **Estado final:** el bug que bloqueaba el upload para todos los pacientes está
-> corregido y pusheado. "✅ Fotos funcionales" se confirma recién cuando el smoke
-> en producción pase en verde tras el redeploy.
+> **✅ Fotos funcionales.** Upload y descarga de metadata funcionan en ambas apps
+> (panel + Mi Pulso). Datos persistidos en S3 y Postgres. Sin errores en logs.
