@@ -13,7 +13,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { LoginRequest, AuthSession, AuthUser } from "@pulso/shared";
 import { isAuthEnabled } from "../config/auth.js";
 import { verifyDemoCredentials } from "../services/auth.service.js";
-import { DEMO_USER_TO_PATIENT_ID } from "../middleware/auth-guards.js";
+import { resolvePatientId } from "../middleware/auth-guards.js";
 
 const AUTH_MODE_OFF_ERROR = {
   error: {
@@ -75,7 +75,7 @@ export async function meController(
     const session = request.user as AuthSession;
     const patientId: string | undefined =
       session.role === "patient"
-        ? (DEMO_USER_TO_PATIENT_ID[session.id] ?? undefined)
+        ? (resolvePatientId(session.id) ?? undefined)
         : undefined;
     const responseUser: AuthUser = {
       id: session.id,
