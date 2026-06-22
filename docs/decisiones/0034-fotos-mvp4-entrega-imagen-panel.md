@@ -1,6 +1,6 @@
 # ADR 0034 — MC-FOTOS-MVP-4: entrega de imagen al panel (streaming proxy con guard)
 
-**Estado:** Aceptado — implementado y verificado local; smoke en producción pendiente de redeploy
+**Estado:** Aceptado ✅ — desplegado en producción, imágenes reales visibles en el panel
 **Fecha:** 2026-06-22
 **Microciclo:** MC-FOTOS-MVP-4
 
@@ -88,15 +88,16 @@ registros sin binario en bucket siguen mostrando el placeholder sin error.
 | `pnpm --filter pulso-nutricional-web type-check` | ✅ |
 | `pnpm --filter pulso-nutricional-web build` (Next prod) | ✅ |
 | Integración local (`fastify.inject`): ruta registrada, fallback → 404 con código | ✅ |
-| Smoke E2E descarga en producción (status 200 + image/* + bytes) | ⏳ Pendiente redeploy |
+| Deploy en producción (merge `b524155` a `main` → Railway) | ✅ |
+| Imágenes reales visibles en el panel profesional (verificado por Ariel) | ✅ |
 
 ## Pendiente
 
-1. **Redeploy** de `api` + `pulso-nutricional-web` con estos cambios.
-2. **Re-correr** `scripts/smoke-fotos-s3-upload.mjs` → ahora incluye la descarga.
-3. **Mi Pulso (paciente):** si se quiere que el paciente revea sus propias fotos
-   subidas, aplicar el mismo `getMealPhotoImageUrl` en esa app (no incluido aquí;
-   el criterio reportado era el panel profesional).
+1. **MC-FOTOS-MVP-4b (ticket separado):** aplicar el mismo `getMealPhotoImageUrl`
+   en Mi Pulso para que el paciente revea sus propias fotos. No bloquea este
+   cierre — el criterio reportado era el panel profesional.
+2. **Limpieza:** huérfanos pre-fix bajo `patients/demo-1/` en el bucket (sin fila
+   DB, inocuos) — borrar desde el dashboard cuando se quiera.
 
 > **Seguridad:** sin URL pública permanente, binario tras guard, `storageKey`
 > nunca convertida en URL navegable. Coherente con los invariantes de ADR 0029/0032.
