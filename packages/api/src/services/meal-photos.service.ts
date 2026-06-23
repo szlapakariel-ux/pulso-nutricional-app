@@ -25,9 +25,11 @@ import type {
   MealPhotoReviewDraft,
 } from "@pulso/shared";
 import { isPrismaMode } from "../config/data-source.js";
+import { contentTypeFromKey } from "../config/storage.js";
 import {
   buildMealPhotoStorageKey,
   getMealPhotoStorage,
+  type StoredObject,
 } from "../storage/meal-photo-storage.js";
 import {
   generateMealPhotoLogId,
@@ -60,6 +62,33 @@ export async function getMealPhoto(
     return getMealPhotoFromDB(patientId, photoId);
   }
   return findMockMealPhoto(patientId, photoId) ?? null;
+}
+
+/**
+ * Recupera el binario de una foto de comida — MC-FOTOS-MVP-4.
+ *
+ * Valida que la foto exista y pertenezca al paciente (vía getMealPhoto), luego
+ * pide el binario al storage. Devuelve null si la foto no existe o si el binario
+ * no está disponible (objeto inexistente o fallback local sin bucket): el caller
+ * responde 404 y la UI cae al placeholder con gracia.
+ *
+ * El Content-Type sale del bucket cuando lo expone; si no, se deriva de la
+ * extensión de la storageKey.
+ */
+export async function getMealPhotoImage(
+  patientId: string,
+  photoId: string,
+): Promise<StoredObject | null> {
+  const photo = await getMealPhoto(patientId, photoId);
+  if (!photo) return null;
+
+  const obj = await getMealPhotoStorage().getObject(photo.storageKey);
+  if (!obj) return null;
+
+  return {
+    body: obj.body,
+    contentType: obj.contentType ?? contentTypeFromKey(photo.storageKey),
+  };
 }
 
 /**

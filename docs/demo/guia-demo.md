@@ -2,6 +2,10 @@
 
 > Cómo mostrar Pulso Nutricional a una nutricionista o potencial comprador.
 > La demo funciona completamente online sin instalación.
+>
+> Para presentaciones comerciales, usar también:
+> - [`guion-demo-comercial.md`](guion-demo-comercial.md) — guion de 7 y 15 minutos con manejo de objeciones.
+> - [`checklist-presentacion-demo.md`](checklist-presentacion-demo.md) — checklist previo a la demo.
 
 ---
 
@@ -167,6 +171,8 @@ moderno, y los datos se almacenan en servidores cloud seguros.
 
 ## Notas para el presentador
 
+- Antes de cualquier demo, completar el
+  [checklist de presentación](checklist-presentacion-demo.md).
 - Si la demo es presencial, abrir el panel en la pantalla grande y Mi Pulso en
   el celular para contrastar ambas experiencias simultáneamente.
 - El modo `api` (con Railway) requiere login. Si la sesión expira, simplemente

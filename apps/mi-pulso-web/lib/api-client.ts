@@ -143,6 +143,39 @@ class ApiClient {
   }
 
   /**
+   * GET /patients/:patientId/meal-photos — MC-FOTOS-MVP-4b.
+   *
+   * Lista los registros de fotos del paciente (metadata, sin binario).
+   * Permite que el paciente revea su propio historial en una sesión nueva.
+   */
+  async listMealPhotos(patientId: string): Promise<MealPhotoLog[]> {
+    return this.fetch<MealPhotoLog[]>(`/patients/${patientId}/meal-photos`);
+  }
+
+  /**
+   * GET /patients/:patientId/meal-photos/:photoId/image — MC-FOTOS-MVP-4b.
+   *
+   * Descarga el binario autenticado (Bearer) y devuelve un object URL para
+   * usar en <img src>. El caller debe revocar la URL (URL.revokeObjectURL)
+   * al desmontar. Lanza ApiError si el binario no está disponible (404).
+   */
+  async getMealPhotoImageUrl(
+    patientId: string,
+    photoId: string,
+  ): Promise<string> {
+    const url = `${this.baseUrl}/patients/${patientId}/meal-photos/${photoId}/image`;
+    const headers = new Headers();
+    if (this.token) headers.set("Authorization", `Bearer ${this.token}`);
+
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      throw new ApiError(`HTTP ${response.status}`, response.status);
+    }
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  }
+
+  /**
    * POST /patients/:patientId/meal-photos — sube foto de comida.
    *
    * Envía multipart/form-data con los campos:

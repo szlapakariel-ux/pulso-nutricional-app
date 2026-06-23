@@ -127,6 +127,16 @@ interface ReviewionViewProps {
   patient: PatientDetail;
 }
 
+const PREDEFINED_REPLIES = [
+  "Revisé tu nota. Seguí el plan indicado sin cambios por ahora.",
+  "Gracias por avisarme. Lo tenemos en cuenta para la próxima consulta.",
+  "Sin problemas, ese cambio de horario es compatible con tu plan.",
+  "Podés sustituir ese ingrediente por una opción equivalente — lo vemos en la próxima consulta.",
+  "Muy bien, el progreso es el esperado. Continuá así.",
+  "Agendamos para aclarar este punto en la próxima consulta.",
+  "Consultá con tu médico si el síntoma persiste — yo reviso el aspecto nutricional en la consulta.",
+];
+
 export function ReviewInboxView({ patient }: ReviewionViewProps) {
   const useApi = isApiMode();
 
@@ -136,6 +146,9 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
   const [selectedItem, setSelectedItem] = useState<ReviewInboxItemUI | null>(null);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [replyDrafts, setReplyDrafts] = useState<Map<string, string>>(new Map());
+  const [sentReplies, setSentReplies] = useState<Map<string, string>>(new Map());
+  const [sendingReply, setSendingReply] = useState<string | null>(null);
 
   useEffect(() => {
     if (useApi) {
@@ -157,22 +170,22 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
     }
   }, [useApi, patient.id]);
 
-  const handleAction = async (itemId: string, action: string) => {
+  const handleAction = async (itemId: string, action: string, comment?: string) => {
     setActionInProgress(itemId);
     setActionError(null);
     if (useApi) {
       try {
-        const result = await getApiClient().postReviewAction(itemId, action);
+        const result = await getApiClient().postReviewAction(itemId, action, comment);
         setInboxItems((prev) =>
           prev.map((item) =>
             item.id === itemId
-              ? { ...item, reviewStatus: result.newStatus, lastActionAt: result.executedAt }
+              ? { ...item, reviewStatus: result.newStatus, lastActionAt: result.executedAt, comment: result.comment ?? item.comment }
               : item,
           ),
         );
         setSelectedItem((prev) =>
           prev?.id === itemId
-            ? { ...prev, reviewStatus: result.newStatus, lastActionAt: result.executedAt }
+            ? { ...prev, reviewStatus: result.newStatus, lastActionAt: result.executedAt, comment: result.comment ?? prev.comment }
             : prev,
         );
       } catch (err) {
@@ -188,17 +201,44 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
               ? {
                   ...item,
                   reviewStatus:
-                    action === "mark_reviewed"
-                      ? "reviewed"
-                      : action === "accept"
-                        ? "accepted"
-                        : "flagged",
+                    action === "comment"
+                      ? item.reviewStatus
+                      : action === "mark_reviewed"
+                        ? "reviewed"
+                        : action === "accept"
+                          ? "accepted"
+                          : "flagged",
+                  comment: action === "comment" ? comment ?? item.comment : item.comment,
                 }
               : item,
           ),
         );
         setActionInProgress(null);
       }, 300);
+    }
+  };
+
+  const handleSendReply = async (itemId: string) => {
+    const text = replyDrafts.get(itemId)?.trim();
+    if (!text) return;
+    setSendingReply(itemId);
+    if (useApi) {
+      try {
+        await getApiClient().postReviewAction(itemId, "comment", text);
+        setSentReplies((prev) => new Map(prev).set(itemId, text));
+        setReplyDrafts((prev) => { const m = new Map(prev); m.delete(itemId); return m; });
+      } catch (err) {
+        setActionError(err instanceof ApiError ? err.message : "Error al enviar respuesta");
+      } finally {
+        setSendingReply(null);
+      }
+    } else {
+      // mock: just record locally
+      setTimeout(() => {
+        setSentReplies((prev) => new Map(prev).set(itemId, text));
+        setReplyDrafts((prev) => { const m = new Map(prev); m.delete(itemId); return m; });
+        setSendingReply(null);
+      }, 200);
     }
   };
 
@@ -495,6 +535,133 @@ export function ReviewInboxView({ patient }: ReviewionViewProps) {
                     <span style={{ color: colors.textSecondary, fontWeight: 500 }}>Contenido: </span>
                     {(selectedItem.data as PatientNote).body}
                   </p>
+                </div>
+              )}
+
+              {/* Respuesta enviada */}
+              {selectedItem.entryType === "note" && (sentReplies.get(selectedItem.id) ?? selectedItem.comment) && (
+                <div
+                  style={{
+                    marginTop: "0.85rem",
+                    background: colors.successBg,
+                    border: `1px solid ${colors.successBorder}`,
+                    borderRadius: radius.md,
+                    padding: "0.75rem 1rem",
+                    fontSize: "0.85rem",
+                    color: colors.successText,
+                  }}
+                >
+                  <span style={{ fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>Respuesta enviada</span>
+                  {sentReplies.get(selectedItem.id) ?? selectedItem.comment}
+                </div>
+              )}
+
+              {/* Compositor de respuesta */}
+              {selectedItem.entryType === "note" && (
+                <div
+                  style={{
+                    marginTop: "1rem",
+                    border: `1px solid ${colors.borderDefault}`,
+                    borderRadius: radius.md,
+                    padding: "1rem",
+                    background: colors.bgBase,
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: "0 0 0.6rem",
+                      fontSize: "0.82rem",
+                      fontWeight: 600,
+                      color: colors.textPrimary,
+                      fontFamily: fonts.body,
+                    }}
+                  >
+                    Responder
+                  </p>
+
+                  {/* Chips de respuestas predefinidas */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0.4rem",
+                      marginBottom: "0.75rem",
+                    }}
+                  >
+                    {PREDEFINED_REPLIES.map((reply) => (
+                      <button
+                        key={reply}
+                        type="button"
+                        onClick={() =>
+                          setReplyDrafts((prev) => new Map(prev).set(selectedItem.id, reply))
+                        }
+                        style={{
+                          padding: "0.3rem 0.65rem",
+                          border: `1px solid ${colors.borderDefault}`,
+                          borderRadius: radius.pill,
+                          background: colors.bgSurface,
+                          color: colors.textSecondary,
+                          fontSize: "0.75rem",
+                          fontFamily: fonts.body,
+                          cursor: "pointer",
+                          transition: "border-color 0.15s, color 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.borderColor = colors.greenPrimary;
+                          (e.currentTarget as HTMLElement).style.color = colors.greenDark;
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.borderColor = colors.borderDefault;
+                          (e.currentTarget as HTMLElement).style.color = colors.textSecondary;
+                        }}
+                      >
+                        {reply}
+                      </button>
+                    ))}
+                  </div>
+
+                  <textarea
+                    value={replyDrafts.get(selectedItem.id) ?? ""}
+                    onChange={(e) =>
+                      setReplyDrafts((prev) => new Map(prev).set(selectedItem.id, e.target.value))
+                    }
+                    placeholder="Escribí tu respuesta al paciente…"
+                    rows={3}
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      padding: "0.6rem 0.75rem",
+                      border: `1px solid ${colors.borderDefault}`,
+                      borderRadius: radius.md,
+                      fontSize: "0.875rem",
+                      fontFamily: fonts.body,
+                      color: colors.textPrimary,
+                      background: colors.bgSurface,
+                      resize: "vertical",
+                      outline: "none",
+                      marginBottom: "0.6rem",
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => void handleSendReply(selectedItem.id)}
+                    disabled={sendingReply === selectedItem.id || !(replyDrafts.get(selectedItem.id)?.trim())}
+                    style={{
+                      padding: "0.55rem 1.1rem",
+                      background: colors.greenPrimary,
+                      border: "none",
+                      borderRadius: radius.md,
+                      color: "white",
+                      fontWeight: 600,
+                      fontSize: "0.82rem",
+                      fontFamily: fonts.body,
+                      cursor: (sendingReply === selectedItem.id || !(replyDrafts.get(selectedItem.id)?.trim())) ? "not-allowed" : "pointer",
+                      opacity: (sendingReply === selectedItem.id || !(replyDrafts.get(selectedItem.id)?.trim())) ? 0.6 : 1,
+                    }}
+                  >
+                    {sendingReply === selectedItem.id ? "Enviando…" : "Enviar respuesta"}
+                  </button>
                 </div>
               )}
             </div>

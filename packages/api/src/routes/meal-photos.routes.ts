@@ -3,6 +3,7 @@ import {
   createMealPhotoController,
   listMealPhotosController,
   getMealPhotoController,
+  getMealPhotoImageController,
   reviewMealPhotoController,
 } from "../controllers/meal-photos.controller.js";
 import {
@@ -85,6 +86,17 @@ export async function mealPhotosRoutes(app: FastifyInstance): Promise<void> {
       schema: { params: photoParamsSchema },
     },
     getMealPhotoController,
+  );
+
+  // GET /patients/:patientId/meal-photos/:photoId/image — binario (MC-FOTOS-MVP-4)
+  // Streaming proxy con guard: nunca expone URL pública.
+  app.get(
+    "/patients/:patientId/meal-photos/:photoId/image",
+    {
+      preHandler: requirePatientSelf as any,
+      schema: { params: photoParamsSchema },
+    },
+    getMealPhotoImageController,
   );
 
   // POST /patients/:patientId/meal-photos/:photoId/review — solo profesional

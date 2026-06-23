@@ -101,6 +101,78 @@ function PhotoPlaceholder({ mealType }: { mealType: MealPhotoType }) {
   );
 }
 
+// ─── imagen real (MC-FOTOS-MVP-4) ──────────────────────────────────────────────
+
+/**
+ * Muestra el binario real de la foto (descargado con auth vía object URL).
+ * Mientras carga muestra el placeholder; si el binario no está disponible
+ * (404 / fallback local / no-API), cae al placeholder con gracia.
+ */
+function PhotoImage({
+  photo,
+  patientId,
+  useApi,
+}: {
+  photo: MealPhotoLog;
+  patientId: string;
+  useApi: boolean;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!useApi) {
+      setFailed(true);
+      return;
+    }
+    let active = true;
+    let objectUrl: string | null = null;
+    setUrl(null);
+    setFailed(false);
+
+    getApiClient()
+      .getMealPhotoImageUrl(patientId, photo.id)
+      .then((u) => {
+        if (active) {
+          objectUrl = u;
+          setUrl(u);
+        } else {
+          URL.revokeObjectURL(u);
+        }
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      });
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [useApi, patientId, photo.id]);
+
+  if (failed || !url) {
+    if (failed) return <PhotoPlaceholder mealType={photo.mealType} />;
+    // Cargando: placeholder neutro (mismo box) para evitar salto de layout.
+    return <PhotoPlaceholder mealType={photo.mealType} />;
+  }
+
+  return (
+    <img
+      src={url}
+      alt={`Foto de comida (${photo.mealType})`}
+      style={{
+        width: "100%",
+        aspectRatio: "4/3",
+        objectFit: "cover",
+        display: "block",
+        borderRadius: `${radius.sm}px ${radius.sm}px 0 0`,
+        border: `1px solid ${colors.borderDefault}`,
+        borderBottom: "none",
+      }}
+    />
+  );
+}
+
 // ─── main component ───────────────────────────────────────────────────────────
 
 interface MealPhotosViewProps {
@@ -252,7 +324,7 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
         }}
       >
         {useApi
-          ? "Registros de fotos del paciente · Las imágenes no están disponibles en este ambiente."
+          ? "Registros de fotos del paciente · Imágenes cargadas desde el almacenamiento seguro."
           : "Ambiente de demostración · Datos ficticios"}
       </div>
 
@@ -338,7 +410,7 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                       transition: "box-shadow 0.15s",
                     }}
                   >
-                    <PhotoPlaceholder mealType={photo.mealType} />
+                    <PhotoImage photo={photo} patientId={patient.id} useApi={useApi} />
 
                     <div style={{ padding: "0.7rem 0.85rem" }}>
                       <div
@@ -434,7 +506,11 @@ export function MealPhotosView({ patient }: MealPhotosViewProps) {
                   marginBottom: "1rem",
                 }}
               >
-                <PhotoPlaceholder mealType={selectedPhoto.mealType} />
+                <PhotoImage
+                  photo={selectedPhoto}
+                  patientId={patient.id}
+                  useApi={useApi}
+                />
 
                 <div style={{ fontSize: "0.875rem", color: colors.textPrimary }}>
                   <div style={{ marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>

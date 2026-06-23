@@ -35,6 +35,31 @@ export async function listPatientsFromDB(): Promise<PatientSummary[]> {
   }));
 }
 
+export async function createPatientInDB(draft: { fullName: string; age?: number; goal?: string }): Promise<PatientDetail> {
+  const prisma = getPrismaClient();
+  const patient = await prisma.patient.create({
+    data: {
+      fullName: draft.fullName,
+      age: draft.age ?? null,
+      goal: draft.goal ?? null,
+      status: "active",
+      isDemoData: false,
+      // userId is optional (null = no app account yet)
+    },
+  });
+  return {
+    id: patient.id,
+    fullName: patient.fullName,
+    age: patient.age ?? 0,
+    goal: patient.goal ?? "",
+    lastControl: patient.lastControl,
+    status: mapStatus(patient.status),
+    professionalNote: patient.professionalNote ?? "",
+    professionalId: "",
+    isDemoData: false,
+  };
+}
+
 export async function getPatientByIdFromDB(
   id: string,
 ): Promise<PatientDetail | null> {

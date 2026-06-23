@@ -28,6 +28,7 @@ import type {
 import {
   createMealPhoto,
   getMealPhoto,
+  getMealPhotoImage,
   listMealPhotos,
   reviewMealPhoto,
 } from "../services/meal-photos.service.js";
@@ -265,6 +266,44 @@ export async function getMealPhotoController(
   }
 
   await reply.send({ data: photo, meta: { demo: true } });
+}
+
+/**
+ * GET /patients/:patientId/meal-photos/:photoId/image — MC-FOTOS-MVP-4
+ *
+ * Entrega el binario de la foto vía streaming proxy con guard
+ * (requirePatientSelf): el paciente accede a lo propio, el profesional a sus
+ * pacientes. NUNCA expone una URL pública permanente: la storageKey no se
+ * convierte en URL, el binario se sirve desde el endpoint controlado.
+ *
+ * 404 si la foto no existe, no pertenece al paciente, o el binario no está
+ * disponible (objeto inexistente o fallback local sin bucket). La UI cae al
+ * placeholder con gracia.
+ */
+export async function getMealPhotoImageController(
+  request: FastifyRequest<{ Params: PhotoParams }>,
+  reply: FastifyReply,
+): Promise<void> {
+  const { patientId, photoId } = request.params;
+
+  const image = await getMealPhotoImage(patientId, photoId);
+  if (!image) {
+    await reply.code(404).send({
+      error: {
+        code: "MEAL_PHOTO_IMAGE_NOT_AVAILABLE",
+        message: "La imagen de esta foto no está disponible.",
+        statusCode: 404,
+      },
+    });
+    return;
+  }
+
+  await reply
+    .header("Content-Type", image.contentType ?? "application/octet-stream")
+    // Cache privado de corta duración: el binario no cambia, pero es dato
+    // sensible — nunca cache compartido/público.
+    .header("Cache-Control", "private, max-age=300")
+    .send(image.body);
 }
 
 /**

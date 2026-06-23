@@ -11,7 +11,7 @@ import { ActivityView } from "./activity-view";
 import { MealPhotosView } from "./meal-photos-view";
 import { useApiAuth } from "../lib/use-api-auth";
 import { isApiMode } from "../lib/data-config";
-import { getApiClient } from "../lib/api-client";
+import { getApiClient, ApiError } from "../lib/api-client";
 import { colors, fonts, radius, shadow } from "../lib/design-tokens";
 
 const STATUS_LABEL: Record<PatientStatus, string> = {
@@ -48,6 +48,10 @@ export function PanelView() {
   const [selectedDetail, setSelectedDetail] = useState<PatientDetail | null>(null);
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [showNewPatientModal, setShowNewPatientModal] = useState(false);
+  const [newPatientForm, setNewPatientForm] = useState({ fullName: "", age: "", goal: "" });
+  const [newPatientSubmitting, setNewPatientSubmitting] = useState(false);
+  const [newPatientError, setNewPatientError] = useState<string | null>(null);
 
   const authState = useApiAuth();
   const useApi = isApiMode();
@@ -123,6 +127,28 @@ export function PanelView() {
     setSelectedDetail(null);
     setSelectedId("");
     setQuery("");
+  };
+
+  const handleCreatePatient = async () => {
+    if (!newPatientForm.fullName.trim()) return;
+    setNewPatientSubmitting(true);
+    setNewPatientError(null);
+    try {
+      const patient = await getApiClient().createPatient({
+        fullName: newPatientForm.fullName.trim(),
+        age: newPatientForm.age ? parseInt(newPatientForm.age, 10) : undefined,
+        goal: newPatientForm.goal.trim() || undefined,
+      });
+      setPatientSummaries((prev) => [...prev, patient]);
+      setSelectedId(patient.id);
+      setActiveTab("ficha");
+      setShowNewPatientModal(false);
+      setNewPatientForm({ fullName: "", age: "", goal: "" });
+    } catch (err) {
+      setNewPatientError(err instanceof Error ? err.message : "Error al crear paciente");
+    } finally {
+      setNewPatientSubmitting(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -366,6 +392,26 @@ export function PanelView() {
             </li>
           )}
         </ul>
+
+        <button
+          type="button"
+          onClick={() => { setShowNewPatientModal(true); setNewPatientError(null); }}
+          style={{
+            width: "100%",
+            marginTop: "0.75rem",
+            padding: "0.55rem",
+            border: `1px dashed ${colors.greenPrimary}`,
+            background: "transparent",
+            color: colors.greenDark,
+            borderRadius: radius.md,
+            fontSize: "0.82rem",
+            fontWeight: 600,
+            fontFamily: fonts.body,
+            cursor: "pointer",
+          }}
+        >
+          + Nuevo paciente
+        </button>
       </aside>
 
       {/* Main content */}
@@ -436,6 +482,224 @@ export function PanelView() {
           <p style={{ color: colors.textSecondary }}>Seleccioná un paciente para comenzar.</p>
         )}
       </main>
+
+      {/* Modal: Nuevo paciente */}
+      {showNewPatientModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowNewPatientModal(false); }}
+        >
+          <div
+            style={{
+              background: colors.bgSurface,
+              maxWidth: 420,
+              width: "100%",
+              padding: "2rem",
+              borderRadius: radius.lg,
+              boxShadow: shadow.elevated,
+            }}
+          >
+            <h2
+              style={{
+                margin: "0 0 1.25rem",
+                fontFamily: fonts.heading,
+                fontWeight: 700,
+                fontSize: "1.2rem",
+                color: colors.textPrimary,
+              }}
+            >
+              Nuevo paciente
+            </h2>
+
+            {!useApi && (
+              <div
+                style={{
+                  marginBottom: "1rem",
+                  padding: "0.75rem 1rem",
+                  background: colors.warningBg,
+                  border: `1px solid ${colors.warningBorder}`,
+                  borderRadius: radius.sm,
+                  color: colors.warningText,
+                  fontSize: "0.82rem",
+                }}
+              >
+                Solo disponible en modo API. Los cambios no se persisten en demo.
+              </div>
+            )}
+
+            {newPatientError && (
+              <div
+                style={{
+                  marginBottom: "1rem",
+                  padding: "0.75rem 1rem",
+                  background: colors.errorBg,
+                  border: `1px solid ${colors.errorBorder}`,
+                  borderRadius: radius.sm,
+                  color: colors.errorText,
+                  fontSize: "0.82rem",
+                }}
+              >
+                {newPatientError}
+              </div>
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    color: colors.textSecondary,
+                    marginBottom: "0.3rem",
+                    fontFamily: fonts.body,
+                  }}
+                >
+                  Nombre completo *
+                </label>
+                <input
+                  type="text"
+                  value={newPatientForm.fullName}
+                  onChange={(e) => setNewPatientForm((prev) => ({ ...prev, fullName: e.target.value }))}
+                  disabled={!useApi || newPatientSubmitting}
+                  placeholder="Nombre y apellido del paciente"
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "0.55rem 0.75rem",
+                    border: `1px solid ${colors.borderDefault}`,
+                    borderRadius: radius.md,
+                    fontSize: "0.875rem",
+                    fontFamily: fonts.body,
+                    color: colors.textPrimary,
+                    background: (!useApi || newPatientSubmitting) ? colors.bgMuted : colors.bgSurface,
+                    outline: "none",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    color: colors.textSecondary,
+                    marginBottom: "0.3rem",
+                    fontFamily: fonts.body,
+                  }}
+                >
+                  Edad (opcional)
+                </label>
+                <input
+                  type="number"
+                  value={newPatientForm.age}
+                  onChange={(e) => setNewPatientForm((prev) => ({ ...prev, age: e.target.value }))}
+                  disabled={!useApi || newPatientSubmitting}
+                  placeholder="Ej: 35"
+                  min={1}
+                  max={120}
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "0.55rem 0.75rem",
+                    border: `1px solid ${colors.borderDefault}`,
+                    borderRadius: radius.md,
+                    fontSize: "0.875rem",
+                    fontFamily: fonts.body,
+                    color: colors.textPrimary,
+                    background: (!useApi || newPatientSubmitting) ? colors.bgMuted : colors.bgSurface,
+                    outline: "none",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    color: colors.textSecondary,
+                    marginBottom: "0.3rem",
+                    fontFamily: fonts.body,
+                  }}
+                >
+                  Objetivo (opcional)
+                </label>
+                <input
+                  type="text"
+                  value={newPatientForm.goal}
+                  onChange={(e) => setNewPatientForm((prev) => ({ ...prev, goal: e.target.value }))}
+                  disabled={!useApi || newPatientSubmitting}
+                  placeholder="Ej: Bajar de peso, mejorar hábitos…"
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "0.55rem 0.75rem",
+                    border: `1px solid ${colors.borderDefault}`,
+                    borderRadius: radius.md,
+                    fontSize: "0.875rem",
+                    fontFamily: fonts.body,
+                    color: colors.textPrimary,
+                    background: (!useApi || newPatientSubmitting) ? colors.bgMuted : colors.bgSurface,
+                    outline: "none",
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => { setShowNewPatientModal(false); setNewPatientForm({ fullName: "", age: "", goal: "" }); }}
+                disabled={newPatientSubmitting}
+                style={{
+                  padding: "0.55rem 1.1rem",
+                  background: "transparent",
+                  border: `1px solid ${colors.borderDefault}`,
+                  borderRadius: radius.md,
+                  color: colors.textSecondary,
+                  fontWeight: 600,
+                  fontSize: "0.82rem",
+                  fontFamily: fonts.body,
+                  cursor: newPatientSubmitting ? "not-allowed" : "pointer",
+                  opacity: newPatientSubmitting ? 0.6 : 1,
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleCreatePatient()}
+                disabled={!useApi || newPatientSubmitting || !newPatientForm.fullName.trim()}
+                style={{
+                  padding: "0.55rem 1.1rem",
+                  background: colors.greenPrimary,
+                  border: "none",
+                  borderRadius: radius.md,
+                  color: "white",
+                  fontWeight: 600,
+                  fontSize: "0.82rem",
+                  fontFamily: fonts.body,
+                  cursor: (!useApi || newPatientSubmitting || !newPatientForm.fullName.trim()) ? "not-allowed" : "pointer",
+                  opacity: (!useApi || newPatientSubmitting || !newPatientForm.fullName.trim()) ? 0.6 : 1,
+                }}
+              >
+                {newPatientSubmitting ? "Creando…" : "Crear paciente"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

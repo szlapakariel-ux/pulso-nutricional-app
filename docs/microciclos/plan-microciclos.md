@@ -845,10 +845,11 @@
 | MC-FOTOS-MVP-1 (API + storage) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-MVP-2 (Mi Pulso carga foto + upload real) | ✅ Completado (mergeado en `main`) |
 | MC-FOTOS-PROD-0 (preflight db:push + bucket + deploy) | ✅ Completado (runbook documental) |
-| MC-FOTOS-PROD-1 (db:push + bucket + deploy API) | Pendiente (requiere autorización) |
+| MC-FOTOS-PROD-1 (db:push + bucket + deploy API) | ✅ Completado — smoke E2E 10/10, fix patientId mergeado a main (ADR 0033) |
 | MC-FOTOS-PROD-2 (deploy Mi Pulso + smoke upload) | Pendiente (requiere autorización) |
 | MC-FOTOS-MVP-3 (panel profesional revisa) | ✅ Completado (mergeado en `main`) |
-| MC-FOTOS-MVP-4 (smoke integral Railway) | Pendiente (requiere autorización) |
+| MC-FOTOS-MVP-4 (entrega de imagen al panel + smoke) | ✅ Completado — streaming proxy con guard desplegado, imágenes reales visibles en panel (ADR 0034) |
+| MC-FOTOS-MVP-4b (imágenes en Mi Pulso, vista paciente) | ✅ Completado — vista "Mis fotos" recupera desde backend; smoke cubre sesión nueva (ADR 0034) |
 | MC-INTEGRACION-1 (flujo paciente→profesional) | ✅ Completado (código implementado) |
 | MC-PWA-1 (Mi Pulso como PWA instalable) | ✅ Completado (mergeado en rama de trabajo) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |

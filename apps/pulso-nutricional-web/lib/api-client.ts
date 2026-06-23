@@ -93,6 +93,13 @@ class ApiClient {
     return this.fetch<PatientDetail>(`/patients/${id}`);
   }
 
+  async createPatient(draft: { fullName: string; age?: number; goal?: string }): Promise<PatientDetail> {
+    return this.fetch<PatientDetail>("/patients", {
+      method: "POST",
+      body: JSON.stringify(draft),
+    });
+  }
+
   async getMealPlan(
     patientId: string,
   ): Promise<PatientPlanAssignment | null> {
@@ -133,6 +140,34 @@ class ApiClient {
   /** GET /patients/:patientId/meal-photos — listado de fotos (MC-FOTOS-MVP-3). */
   async listMealPhotos(patientId: string): Promise<MealPhotoLog[]> {
     return this.fetch<MealPhotoLog[]>(`/patients/${patientId}/meal-photos`);
+  }
+
+  /**
+   * GET /patients/:patientId/meal-photos/:photoId/image — binario (MC-FOTOS-MVP-4).
+   *
+   * Descarga el binario autenticado (Bearer) y devuelve un object URL para usar
+   * en <img src>. El caller debe revocar la URL (URL.revokeObjectURL) al
+   * desmontar. Lanza ApiError si el binario no está disponible (404) — la UI
+   * cae al placeholder.
+   */
+  async getMealPhotoImageUrl(
+    patientId: string,
+    photoId: string,
+  ): Promise<string> {
+    const url = `${this.baseUrl}/patients/${patientId}/meal-photos/${photoId}/image`;
+    const headers = new Headers();
+    if (this.token) {
+      headers.set("Authorization", `Bearer ${this.token}`);
+    }
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.token = null;
+      }
+      throw new ApiError(`HTTP ${response.status}`, response.status);
+    }
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
   }
 
   /** POST /patients/:patientId/meal-photos/:photoId/review — revisar foto (MC-FOTOS-MVP-3). */

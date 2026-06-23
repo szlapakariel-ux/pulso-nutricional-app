@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import {
   getPatientController,
   listPatientsController,
+  createPatientController,
 } from "../controllers/patients.controller.js";
 import {
   requireProfessional,
@@ -33,5 +34,25 @@ export async function patientsRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     getPatientController,
+  );
+
+  // POST /patients — registrar nuevo paciente (sin cuenta)
+  app.post(
+    "/patients",
+    {
+      preHandler: requireProfessional as any,
+      schema: {
+        body: {
+          type: "object",
+          properties: {
+            fullName: { type: "string", minLength: 1, maxLength: 200 },
+            age: { type: "number", minimum: 1, maximum: 120 },
+            goal: { type: "string", maxLength: 500 },
+          },
+          required: ["fullName"],
+        },
+      },
+    },
+    createPatientController,
   );
 }

@@ -14,13 +14,36 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import type { AuthSession } from "@pulso/shared";
 import { isEnforcementActive } from "../config/enforcement.js";
+import { isPrismaMode } from "../config/data-source.js";
 
-// Demo mapping: userId (JWT) → patientId (mock / DB)
-export const DEMO_USER_TO_PATIENT_ID: Record<string, string> = {
+// Demo mapping: userId (JWT) → patientId.
+//
+// CRÍTICO: el patientId debe coincidir con la fuente de datos activa, o los
+// endpoints patient-self fallan (mock → 404; prisma → violación de FK / 503).
+//   - mock   → los mock stores se indexan por "demo-N".
+//   - prisma → el seed crea Patient con UUIDs (IDS.patientNId de prisma/seed.ts).
+const DEMO_USER_TO_MOCK_PATIENT_ID: Record<string, string> = {
   "d0000000-0000-0000-0000-000000000011": "demo-1",
   "d0000000-0000-0000-0000-000000000012": "demo-2",
   "d0000000-0000-0000-0000-000000000013": "demo-3",
 };
+
+const DEMO_USER_TO_PRISMA_PATIENT_ID: Record<string, string> = {
+  "d0000000-0000-0000-0000-000000000011": "d0000000-0000-0001-0000-000000000011",
+  "d0000000-0000-0000-0000-000000000012": "d0000000-0000-0001-0000-000000000012",
+  "d0000000-0000-0000-0000-000000000013": "d0000000-0000-0001-0000-000000000013",
+};
+
+/**
+ * Resuelve el patientId de un usuario demo según la fuente de datos activa.
+ * Devuelve undefined si el userId no corresponde a un paciente demo.
+ */
+export function resolvePatientId(userId: string): string | undefined {
+  const map = isPrismaMode()
+    ? DEMO_USER_TO_PRISMA_PATIENT_ID
+    : DEMO_USER_TO_MOCK_PATIENT_ID;
+  return map[userId];
+}
 
 async function verifyAndGetUser(
   request: FastifyRequest,
@@ -79,7 +102,7 @@ export async function requirePatientSelf(
 
   const params = request.params as Record<string, string>;
   const requestedPatientId = params["patientId"];
-  const userPatientId = DEMO_USER_TO_PATIENT_ID[user.id];
+  const userPatientId = resolvePatientId(user.id);
 
   if (
     !userPatientId ||
