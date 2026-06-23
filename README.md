@@ -103,13 +103,13 @@ docs/
 |----------|--------|
 | API | ✅ Operativa en Railway |
 | Panel profesional | ✅ Operativo en Railway |
-| Mi Pulso | ✅ Operativo en Railway |
+| Mi Pulso | ✅ Operativo en Railway · ✅ PWA instalable configurada |
 | PostgreSQL | ✅ Online en Railway |
 | Upload fotos (bucket S3) | Pendiente de activación (PROD-1) |
 
 Módulos implementados: gestión de pacientes, consultas, planes, agenda,
 bandeja de revisión, actividad física opcional, upload de fotos (código listo,
-pendiente de activación en producción), PDF de plan.
+pendiente de activación en producción), PDF de plan, PWA instalable (MC-PWA-1).
 
 Ver el estado completo en
 [`docs/microciclos/plan-microciclos.md`](docs/microciclos/plan-microciclos.md).

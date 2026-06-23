@@ -782,6 +782,32 @@
 
 ---
 
+## MC-PWA-1 — Configurar Mi Pulso como PWA funcional
+
+- **Objetivo:** convertir Mi Pulso en una Progressive Web App instalable en
+  dispositivos móviles y desktop, con manifest, service worker y cacheo básico.
+- **Alcance permitido:**
+  - Instalar y configurar `@ducanh2912/next-pwa` en `apps/mi-pulso-web`.
+  - Crear `public/manifest.json` con metadatos de la app.
+  - Crear íconos placeholder 192×192 y 512×512 (verde primario `#52B788`).
+  - Actualizar `next.config.mjs` para envolver la config con `withPWA`.
+  - Actualizar `app/layout.tsx`: exportar `viewport` correctamente (Next.js 15),
+    agregar metadatos `manifest` y `appleWebApp`, `apple-touch-icon`, y
+    `mobile-web-app-capable`.
+  - Crear `lib/pwa-register.ts` y el Client Component `app/pwa-register.tsx`.
+  - Actualizar `.gitignore` para excluir artefactos generados (`sw.js`, `workbox-*.js`).
+  - Actualizar documentación (README de la app, este archivo, README raíz).
+- **Qué NO tocar:** no publicar en tiendas (eso es MC-12), no credenciales de
+  publicación, no datos reales, no deploy manual a Railway.
+- **Criterios de aceptación:**
+  - `pnpm --filter @pulso/mi-pulso-web build` pasa sin errores.
+  - El plugin genera `public/sw.js` con scope `/`.
+  - El manifest es válido y referencia los íconos.
+  - En Chrome/Android aparece el botón de instalación; en Safari iOS la opción
+    "Agregar a pantalla de inicio" funciona correctamente.
+
+---
+
 ## Estado del plan
 
 | Microciclo | Estado     |
@@ -825,6 +851,7 @@
 | MC-FOTOS-MVP-4 (entrega de imagen al panel + smoke) | ✅ Completado — streaming proxy con guard desplegado, imágenes reales visibles en panel (ADR 0034) |
 | MC-FOTOS-MVP-4b (imágenes en Mi Pulso, vista paciente) | ✅ Completado — vista "Mis fotos" recupera desde backend; smoke cubre sesión nueva (ADR 0034) |
 | MC-INTEGRACION-1 (flujo paciente→profesional) | ✅ Completado (código implementado) |
+| MC-PWA-1 (Mi Pulso como PWA instalable) | ✅ Completado (mergeado en rama de trabajo) |
 | Dominio, Play Store, MC-11, MC-12 | Pendientes |
 
 > **MC-FOTOS-MVP-2 completado. Mi Pulso ya incorpora UI para registrar fotos de
@@ -897,3 +924,22 @@
 > db:push, ni se configuró bucket real.** Quedan pendientes: MC-FOTOS-MVP-4
 > (smoke integral Railway con imagen real), MC-DEMO-VENDIBLE-1, MC-11/12,
 > dominio, sin avanzar sin nueva indicación explícita.
+
+> **MC-PWA-1 completado.** Mi Pulso es ahora una Progressive Web App instalable.
+> Se instaló `@ducanh2912/next-pwa@10.2.9` (fork activo de next-pwa, compatible
+> con Next.js 15 + App Router); se configuró `next.config.mjs` con `withPWA`
+> (dest `public`, deshabilitado en dev, Workbox con caché agresivo de navegación);
+> se creó `public/manifest.json` (name: "Mi Pulso", display: standalone,
+> theme_color: `#52B788`, background_color: `#F8F7F4`, categories:
+> health/productivity, íconos 192×192 y 512×512); se crearon íconos placeholder
+> PNG con el verde primario del brand; se actualizó `app/layout.tsx` corrigiendo
+> el viewport deprecado (exporta `viewport: Viewport` de Next.js 15 con
+> `themeColor`) y agregando `manifest`, `appleWebApp`, `apple-touch-icon` y
+> `mobile-web-app-capable`; se creó `lib/pwa-register.ts` con
+> `registerServiceWorker()` y el Client Component `app/pwa-register.tsx`; se
+> actualizó `.gitignore` para excluir artefactos generados (`sw.js`,
+> `workbox-*.js`, `swe-worker-*.js`). `pnpm --filter @pulso/mi-pulso-web build`
+> pasa sin errores; el plugin genera `public/sw.js` con scope `/`. **No se tocó
+> Railway, Postgres, db:push, deploy ni credenciales reales. No se publicó en
+> tiendas.** Quedan pendientes: MC-FOTOS-MVP-4, deploy Railway de esta
+> configuración PWA, MC-11/12, dominio, Play Store.

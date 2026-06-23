@@ -20,6 +20,50 @@ Credenciales: `paciente-demo-uno@pulsonutricional.demo` / `demo-paciente-2026`
 
 Para abrir desde el celular, visitar la URL en el navegador móvil.
 
+## Capacidades PWA
+
+Mi Pulso está configurada como Progressive Web App instalable:
+
+- **Instalable:** en Chrome/Edge (Android/desktop) aparece el botón "Instalar" en la
+  barra de dirección. En Safari iOS: "Compartir → Agregar a pantalla de inicio".
+- **Experiencia nativa:** abre sin barra de navegador (`display: standalone`),
+  con la barra de estado en verde primario (`#52B788`).
+- **Caché offline:** las rutas ya visitadas quedan disponibles sin conexión
+  (estrategia Workbox, gestionada por `@ducanh2912/next-pwa`).
+- **Reconexión automática:** al recuperar la conexión la app se recarga para
+  mostrar contenido fresco.
+
+### Cómo instalar en celular
+
+**Android (Chrome):**
+1. Abrir `https://mi-pulso-web-production.up.railway.app` en Chrome.
+2. Tocar el ícono de instalación en la barra de dirección (o menú ⋮ → "Instalar app").
+3. Confirmar. Mi Pulso aparece en el escritorio como app nativa.
+
+**iOS (Safari):**
+1. Abrir la URL en Safari.
+2. Tocar el botón de compartir (□↑) → "Agregar a pantalla de inicio".
+3. Confirmar. Mi Pulso aparece en el Dock.
+
+### Archivos PWA generados en build
+
+Los siguientes archivos se regeneran automáticamente con cada `next build`
+y están excluidos del repo via `.gitignore`:
+
+```
+public/sw.js             # Service Worker principal
+public/workbox-*.js      # Librería Workbox
+public/swe-worker-*.js   # Worker auxiliar
+```
+
+Los archivos estáticos sí se commitean:
+
+```
+public/manifest.json      # Web App Manifest
+public/icon-192x192.png   # Ícono placeholder 192×192
+public/icon-512x512.png   # Ícono placeholder 512×512
+```
+
 ## Modo de datos
 
 La app soporta dos modos configurables por variable de entorno:
