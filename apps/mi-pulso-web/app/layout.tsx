@@ -32,7 +32,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           rel="stylesheet"
         />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <meta name="mobile-web-app-capable" content="yes" />
+        {/* Safari iOS solo reconoce esta etiqueta (deprecada por Apple pero aún
+            necesaria) para abrir en modo standalone desde "Agregar a inicio".
+            El equivalente moderno `mobile-web-app-capable` lo emite el metadata
+            API vía appleWebApp.capable, para Chrome/Android. */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
       <body
         style={{
